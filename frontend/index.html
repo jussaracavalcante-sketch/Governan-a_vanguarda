@@ -34,7 +34,6 @@
     <div class="nav-title">OPERAÇÃO</div>
     <nav class="nav">
       <button class="active" data-page="dashboard">◈ &nbsp; Visão executiva</button>
-      <button data-page="portfolio">▦ &nbsp; Portfólio de clientes</button>
       <button data-page="tools">◉ &nbsp; Stack & homologação</button>
       <button data-page="prompts">✦ &nbsp; Biblioteca de prompts</button>
       <button data-page="people">◌ &nbsp; Pessoas & skills</button>
@@ -63,7 +62,6 @@
       </div>
     </section>
 
-    <section id="portfolio" class="page"><header class="top"><div><div class="eyebrow">Cliente no centro</div><h1>Portfólio e governança de marca</h1><p>Controle objetivos, sensibilidade de dados, playbooks e aprovação humana por conta.</p></div><button class="btn" onclick="openModal('client')">+ Novo cliente</button></header><div class="toolbar"><input placeholder="Buscar cliente, squad ou playbook" oninput="filterRows(this.value,'clientRows')"><select onchange="void 0"><option>Todos os estágios</option><option>Ativo</option><option>Em onboarding</option><option>Em risco</option></select></div><div class="card"><table><thead><tr><th>Cliente</th><th>Squad</th><th>Uso de IA</th><th>Brand safety</th><th>Responsável</th><th></th></tr></thead><tbody id="clientRows"></tbody></table></div></section>
 
     <section id="tools" class="page"><header class="top"><div><div class="eyebrow">Stack oficial</div><h1>Ferramentas, licenças e homologação</h1><p>Somente soluções aprovadas pelo Comitê de IA podem operar com dados internos ou de clientes.</p></div><button class="btn" onclick="openModal('tool')">+ Solicitar ferramenta</button></header><div class="two-col"><div class="card"><h3 class="section-title">Inventário homologado</h3><div class="list" id="stackList"></div></div><div class="card"><h3 class="section-title">Checklist de homologação</h3><div class="notice">Toda nova ferramenta passa por avaliação de segurança, LGPD, propriedade intelectual, custo, integração e plano de contingência.</div><div class="timeline" style="margin-top:18px"><div class="event"><b>1. Solicitação pela área</b><span>Caso de uso, dados e responsável</span></div><div class="event"><b>2. Avaliação técnica e de risco</b><span>CIO de IA + Segurança + Jurídico quando aplicável</span></div><div class="event"><b>3. Piloto controlado</b><span>Métricas de eficiência, qualidade e segurança</span></div><div class="event"><b>4. Deliberação do Comitê</b><span>Homologação, restrição ou reprovação</span></div></div></div></div></section>
 
@@ -206,12 +204,12 @@ async function boot(){
   try{
     if(!CURRENT){try{CURRENT=await api('/auth/me');}catch(e){logout();return;}}
     document.getElementById('whoami').textContent=(CURRENT&&CURRENT.name)||'—';
-    const [ov,clients,stack,prompts,skills,training,inits,adoption,incidents,audit,obs]=await Promise.all([
-      api('/governance/overview'),api('/governance/clients'),api('/governance/stack'),api('/governance/prompts'),
+    const [ov,stack,prompts,skills,training,inits,adoption,incidents,audit,obs]=await Promise.all([
+      api('/governance/overview'),api('/governance/stack'),api('/governance/prompts'),
       api('/governance/skills'),api('/governance/training'),api('/governance/initiatives'),api('/governance/adoption'),
       api('/governance/incidents'),api('/governance/audit'),api('/governance/observability')
     ]);
-    setKpis(ov);renderClients(clients);renderStack(stack);renderPrompts(prompts);renderSkills(skills);
+    setKpis(ov);renderStack(stack);renderPrompts(prompts);renderSkills(skills);
     renderTraining(training);renderInitiatives(inits);renderAdoption(adoption);renderIncidents(incidents);
     renderAudit(audit);renderObs(obs);
   }catch(ex){if(ex.message!=='401')toast('Falha ao carregar: '+ex.message,false);}
@@ -220,7 +218,6 @@ async function boot(){
 // ---- modal / cadastros ----
 const FORMS={
   initiative:{title:'Registrar iniciativa',ep:'/governance/initiatives',fields:[['Iniciativa','text','Ex.: Agente de briefing','name'],['Área responsável','text','Ex.: Atendimento + Criação','area'],['Status','select','Em validação|Em produção|Em homologação|Risco: dados','status'],['Horas economizadas (estimadas)','text','Ex.: 40','hours_saved']]},
-  client:{title:'Novo cliente',ep:'/governance/clients',fields:[['Cliente','text','Nome da conta','name'],['Segmento','text','Ex.: Performance & conteúdo','segment'],['Squad responsável','text','Ex.: Growth','squad'],['Uso de IA','text','Ex.: Em onboarding','ai_usage'],['Brand safety / nível de dados','select','Uso interno|Confidencial|Restrito|Revisão obrigatória|Validação de imagem','brand_safety'],['Responsável','text','Ex.: Account Lead','responsible'],['Estágio','select','active|onboarding|at-risk','stage']]},
   tool:{title:'Solicitar ferramenta',ep:'/governance/stack',fields:[['Ferramenta','text','Nome da solução','name'],['Descrição / caso de uso','text','Objetivo operacional','description'],['Status','select','Em análise|Homologada|Restrita|Reprovada','status']]},
   prompt:{title:'Novo prompt institucional',ep:'/governance/prompts',fields:[['Título','text','Ex.: Diagnóstico de campanha','title'],['Descrição','text','Resumo do objetivo','description'],['Área','select','Criação|Atendimento|Planejamento|Mídia|Social|Comercial','area'],['Conteúdo','textarea','Escreva o prompt com variáveis e critérios de revisão','content'],['Repositório hospedado','text','https://github.com/org/repo (opcional)','repo_url'],['Controle','select','Revisão pendente|Aprovado|Reprovado','control']]},
   skill:{title:'Mapear competência',ep:'/governance/skills',fields:[['Time / área','text','Ex.: Social Media','area'],['Competência','text','Ex.: análise de tendências','description'],['Nível','select','Iniciante|Intermediário|Avançado|Especialista|Prioridade','level'],['Responsável pela avaliação','text','Nome do líder','reviewer']]},
