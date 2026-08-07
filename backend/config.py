@@ -50,7 +50,7 @@ class Settings(BaseSettings):
     vjob_client_secret: str = ""
 
     # Admin
-    admin_email: str = "admin@vanguardian.local"
+    admin_email: str = "admin@vanguardian.com"
     admin_password: str = "admin123"  # Change in production!
 
     class Config:

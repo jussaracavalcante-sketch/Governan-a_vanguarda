@@ -46,7 +46,7 @@ uvicorn main:app --reload
 - Metrics: http://localhost:8000/health/metrics
 
 ## Credenciais demo
-- admin@vanguardian.local / admin123
+- admin@vanguardian.com / admin123
 - ana.souza@empresa.com / 123456
 
 ## Frontend

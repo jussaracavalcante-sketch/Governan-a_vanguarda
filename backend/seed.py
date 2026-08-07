@@ -10,7 +10,7 @@ def seed():
     try:
         seed_initial_data(db)
         print("Seed concluído com sucesso.")
-        print("Admin: admin@vanguardian.local / admin123")
+        print("Admin: admin@vanguardian.com / admin123")
         print("Users: ana.souza@empresa.com / 123456")
     finally:
         db.close()

@@ -6,7 +6,7 @@ import { ApiError } from '@/lib/api'
 
 export default function Login() {
   const { user, login } = useAuth()
-  const [email, setEmail] = useState('admin@vanguardian.local')
+  const [email, setEmail] = useState('admin@vanguardian.com')
   const [password, setPassword] = useState('')
   const [remember, setRemember] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -106,7 +106,7 @@ export default function Login() {
           </Button>
 
           <p className="muted" style={{ fontSize: '0.72rem', textAlign: 'center', marginTop: '1rem' }}>
-            Demo: admin@vanguardian.local · admin123
+            Demo: admin@vanguardian.com · admin123
           </p>
         </form>
       </div>

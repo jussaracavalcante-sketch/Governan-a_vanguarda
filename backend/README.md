@@ -31,7 +31,7 @@ Swagger: `http://localhost:8000/docs`
 
 ## Credenciais demo (seed)
 
-- **Admin:** admin@vanguardian.local / admin123
+- **Admin:** admin@vanguardian.com / admin123
 - **Manager:** ana.souza@empresa.com / 123456
 
 ## Variáveis de Ambiente

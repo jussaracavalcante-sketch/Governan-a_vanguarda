@@ -116,7 +116,7 @@ docker compose up --build
 
 | Perfil | E-mail | Senha |
 |--------|--------|-------|
-| Admin | `admin@vanguardian.local` | `admin123` |
+| Admin | `admin@vanguardian.com` | `admin123` |
 | Manager | `ana.souza@empresa.com` | `123456` |
 
 ---

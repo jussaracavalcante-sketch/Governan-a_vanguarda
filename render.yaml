@@ -29,6 +29,6 @@ services:
       - key: LOG_FORMAT
         value: json
       - key: ADMIN_EMAIL
-        value: admin@vanguardian.local
+        value: admin@vanguardian.com
       - key: ADMIN_PASSWORD
         value: admin123
