@@ -15,6 +15,8 @@ from observability.health import router as health_router
 from observability.logging import configure_logging, get_logger
 from observability.middleware import RequestLoggingMiddleware, AuditMiddleware
 from integrations.router import router as integrations_router
+import governance
+from governance import router as governance_router
 from crud import seed_initial_data
 
 settings = get_settings()
@@ -29,6 +31,7 @@ async def lifespan(app: FastAPI):
     db = SessionLocal()
     try:
         seed_initial_data(db)
+        governance.seed_governance(db)
     except Exception as exc:
         logger.error("seed_failed", error=str(exc))
     finally:
@@ -67,6 +70,7 @@ app.include_router(routes_tools.router)
 app.include_router(routes_skills.router)
 app.include_router(routes_prompts.router)
 app.include_router(routes_dashboard.router)
+app.include_router(governance_router)
 
 
 @app.get("/", tags=["Root"])

@@ -15,6 +15,16 @@
     table{width:100%;border-collapse:collapse;font-size:13px}th{text-align:left;color:#a69fa8;text-transform:uppercase;font-size:10px;letter-spacing:.7px;padding:0 0 11px}td{padding:12px 0;border-top:1px solid rgba(56,47,58,.72);vertical-align:top}.table-action{background:transparent;border:0;color:#ff7189;font-weight:800;cursor:pointer}.page{display:none}.page.active{display:block}.toolbar{display:flex;justify-content:space-between;gap:12px;align-items:center;margin:0 0 18px}.toolbar input,.toolbar select{background:#0d0c0f;border:1px solid #3b303b;color:#fff;border-radius:9px;padding:10px 12px;outline:0}.toolbar input{min-width:265px}.two-col{display:grid;grid-template-columns:1fr 1fr;gap:18px}.notice{border-left:3px solid var(--red);padding:12px 14px;background:rgba(255,31,69,.06);color:#d9d1d8;border-radius:0 10px 10px 0;font-size:13px;line-height:1.5}.metric{display:flex;justify-content:space-between;margin:13px 0;font-size:13px}.bar{height:7px;border-radius:10px;background:#28222b;margin-top:7px;overflow:hidden}.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--red2),var(--red));border-radius:10px}.timeline{border-left:1px solid #4a3540;padding-left:16px}.timeline .event{position:relative;padding:0 0 18px}.timeline .event:before{content:"";position:absolute;left:-21px;top:4px;width:8px;height:8px;border-radius:50%;background:var(--red)}.event b{display:block;font-size:13px}.event span{font-size:12px;color:var(--muted)}
     .modal{position:fixed;inset:0;background:rgba(0,0,0,.72);display:none;place-items:center;padding:20px;z-index:10}.modal.open{display:grid}.dialog{width:min(560px,100%);background:#141217;border:1px solid #453442;border-radius:16px;padding:24px}.dialog h3{margin:0 0 18px}.form{display:grid;gap:12px}.form label{font-size:12px;font-weight:800;color:#cbc3cc}.form input,.form select,.form textarea{width:100%;margin-top:5px;background:#0b0a0c;border:1px solid #3c303a;border-radius:8px;color:#fff;padding:10px}.form textarea{min-height:110px}.modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:18px}
     @media(max-width:1100px){.kpis{grid-template-columns:repeat(3,1fr)}.grid{grid-template-columns:1fr}.sidebar{width:230px}.main{margin-left:230px}}@media(max-width:760px){.sidebar{display:none}.main{margin:0;padding:20px}.top{display:block}.actions{margin-top:15px}.kpis,.two-col{grid-template-columns:1fr 1fr}.hero{display:block}.toolbar{align-items:stretch;flex-direction:column}.toolbar input{min-width:0}}@media(max-width:460px){.kpis,.two-col{grid-template-columns:1fr}.top h1{font-size:27px}}
+    /* login + status + toast */
+    #login{position:fixed;inset:0;background:radial-gradient(700px 380px at 10% 0%,rgba(184,14,43,.30),transparent 60%),#080708;display:grid;place-items:center;z-index:20;padding:20px}
+    #login .box{width:min(380px,100%);background:#141217;border:1px solid #453442;border-radius:16px;padding:28px}
+    #login h2{margin:0 0 4px;font-size:20px}#login p{margin:0 0 18px;color:var(--muted);font-size:13px}
+    #login label{display:block;font-size:12px;font-weight:800;color:#cbc3cc;margin-bottom:10px}
+    #login input{width:100%;margin-top:5px;background:#0b0a0c;border:1px solid #3c303a;border-radius:8px;color:#fff;padding:11px}
+    #login .err{color:#ff8aa0;font-size:12px;min-height:16px;margin:6px 0 0}
+    .dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#5b535c;margin-right:6px;vertical-align:middle}.dot.on{background:var(--green)}.dot.off{background:var(--red)}
+    .linkbtn{background:none;border:0;color:#ff7189;font-weight:800;cursor:pointer;padding:0;font-size:11px}
+    #toast{position:fixed;right:20px;bottom:20px;background:#17151c;border:1px solid #453442;border-left:3px solid var(--green);border-radius:10px;padding:12px 16px;font-size:13px;color:#e9e3ea;z-index:30;opacity:0;transform:translateY(10px);transition:.25s;pointer-events:none;max-width:340px}#toast.show{opacity:1;transform:none}
   </style>
 </head>
 <body>
@@ -30,26 +40,219 @@
       <button data-page="people">◌ &nbsp; Pessoas & skills</button>
       <button data-page="compliance">◫ &nbsp; Compliance & auditoria</button>
     </nav>
-    <div class="footer">VANGUARDIAN v2.0<br>Uma única inteligência.<br>Múltiplas aplicações.</div>
+    <div class="footer">
+      <div><span class="dot" id="obsDot"></span><span id="obsText">Observabilidade…</span></div>
+      <div style="margin-top:8px">VANGUARDIAN v2.0 · <span id="whoami">—</span></div>
+      <div style="margin-top:2px">Uma única inteligência. <button class="linkbtn" onclick="logout()">Sair</button></div>
+    </div>
   </aside>
   <main class="main">
     <section id="dashboard" class="page active">
-      <header class="top"><div><div class="eyebrow">Vanguarda Martech · IA operacional</div><h1>Governança que dá escala à criatividade.</h1><p>Centralize ferramentas, conhecimento, padrões de marca, dados e automações para transformar cada entrega em resultado mensurável.</p></div><div class="actions"><button class="btn alt" onclick="alert('Relatório executivo gerado para download.')">Exportar visão</button><button class="btn" onclick="openModal('initiative')">+ Registrar iniciativa</button></div></header>
-      <div class="hero"><div><div class="eyebrow">Programa VKB 2026–2027</div><h2>Uma agência inteira, potencializada por IA.</h2><p>Foco da semana: homologar o fluxo de <strong>briefing → criação → revisão → publicação</strong> para reduzir retrabalho e preservar a voz de cada marca.</p></div><div><span class="badge ok">● 82% de adoção ativa</span><div class="sub" style="margin-top:8px">Meta corporativa: 80%</div></div></div>
-      <div class="kpis"><div class="card"><div class="label">Clientes governados</div><div class="value">24</div><div class="sub">18 com playbook IA ativo</div></div><div class="card"><div class="label">Horas economizadas</div><div class="value">318h</div><div class="sub">no ciclo atual</div></div><div class="card"><div class="label">Fluxos automatizados</div><div class="value">17</div><div class="sub">+ 4 em homologação</div></div><div class="card"><div class="label">Conformidade IA</div><div class="value">94%</div><div class="sub">uso de stack homologada</div></div><div class="card"><div class="label">ROI estimado</div><div class="value">3,4x</div><div class="sub">ganho por hora investida</div></div></div>
-      <div class="grid"><div class="card"><h3 class="section-title">Prioridades do Comitê de IA</h3><div class="list"><div class="row"><div><b>Padronização de briefs inteligentes</b><br><span>Atendimento + Planejamento + Criação</span></div><span class="badge warn">Em validação</span></div><div class="row"><div><b>Agente de performance para mídia paga</b><br><span>Dados + Mídia · conexão de métricas e insights</span></div><span class="badge ok">Em produção</span></div><div class="row"><div><b>Base de conhecimento de marca</b><br><span>Brand book, tom de voz e restrições por cliente</span></div><span class="badge red">Risco: dados</span></div><div class="row"><div><b>Automação de relatórios executivos</b><br><span>BI + Account Management</span></div><span class="badge warn">Em homologação</span></div></div></div><div class="card"><h3 class="section-title">Adoção por área</h3><div class="metric"><span>Criação & Conteúdo</span><b>91%</b></div><div class="bar"><i style="width:91%"></i></div><div class="metric"><span>Atendimento</span><b>84%</b></div><div class="bar"><i style="width:84%"></i></div><div class="metric"><span>Mídia & Performance</span><b>78%</b></div><div class="bar"><i style="width:78%"></i></div><div class="metric"><span>Comercial</span><b>66%</b></div><div class="bar"><i style="width:66%"></i></div></div></div>
+      <header class="top"><div><div class="eyebrow">Vanguarda Martech · IA operacional</div><h1>Governança que dá escala à criatividade.</h1><p>Centralize ferramentas, conhecimento, padrões de marca, dados e automações para transformar cada entrega em resultado mensurável.</p></div><div class="actions"><button class="btn alt" onclick="exportView()">Exportar visão</button><button class="btn" onclick="openModal('initiative')">+ Registrar iniciativa</button></div></header>
+      <div class="hero"><div><div class="eyebrow">Programa VKB 2026–2027</div><h2>Uma agência inteira, potencializada por IA.</h2><p>Foco da semana: homologar o fluxo de <strong>briefing → criação → revisão → publicação</strong> para reduzir retrabalho e preservar a voz de cada marca.</p></div><div><span class="badge ok">● <span id="kAdocao">—</span>% de adoção ativa</span><div class="sub" style="margin-top:8px">Meta corporativa: 80%</div></div></div>
+      <div class="kpis">
+        <div class="card"><div class="label">Clientes governados</div><div class="value" id="kClientes">—</div><div class="sub"><span id="kPlaybooks">—</span> com playbook IA ativo</div></div>
+        <div class="card"><div class="label">Horas economizadas</div><div class="value" id="kHoras">—</div><div class="sub">no ciclo atual</div></div>
+        <div class="card"><div class="label">Fluxos automatizados</div><div class="value" id="kFluxos">—</div><div class="sub">+ <span id="kFluxosHom">—</span> em homologação</div></div>
+        <div class="card"><div class="label">Conformidade IA</div><div class="value" id="kConf">—</div><div class="sub">uso de stack homologada</div></div>
+        <div class="card"><div class="label">ROI estimado</div><div class="value" id="kRoi">—</div><div class="sub">ganho por hora investida</div></div>
+      </div>
+      <div class="grid">
+        <div class="card"><h3 class="section-title">Prioridades do Comitê de IA</h3><div class="list" id="initiativesList"></div></div>
+        <div class="card"><h3 class="section-title">Adoção por área</h3><div id="adoptionList"></div></div>
+      </div>
     </section>
-    <section id="portfolio" class="page"><header class="top"><div><div class="eyebrow">Cliente no centro</div><h1>Portfólio e governança de marca</h1><p>Controle objetivos, sensibilidade de dados, playbooks e aprovação humana por conta.</p></div><button class="btn" onclick="openModal('client')">+ Novo cliente</button></header><div class="toolbar"><input placeholder="Buscar cliente, squad ou playbook" oninput="filterRows(this.value,'clientRows')"><select><option>Todos os estágios</option><option>Ativo</option><option>Em onboarding</option><option>Em risco</option></select></div><div class="card"><table><thead><tr><th>Cliente</th><th>Squad</th><th>Uso de IA</th><th>Brand safety</th><th>Responsável</th><th></th></tr></thead><tbody id="clientRows"><tr><td><b>Vanguarda Institucional</b><br><span class="muted">Conhecimento corporativo</span></td><td>Estratégia</td><td><span class="badge ok">Playbook ativo</span></td><td>Revisão obrigatória</td><td>Diretoria de IA</td><td><button class="table-action">Ver dossiê</button></td></tr><tr><td><b>Conta Atlas</b><br><span class="muted">Performance & conteúdo</span></td><td>Growth</td><td><span class="badge ok">7 fluxos</span></td><td>Dados internos</td><td>Account Lead</td><td><button class="table-action">Ver dossiê</button></td></tr><tr><td><b>Conta Aurora</b><br><span class="muted">Social & audiovisual</span></td><td>Criação</td><td><span class="badge warn">Em onboarding</span></td><td>Validação de imagem</td><td>Creative Lead</td><td><button class="table-action">Ver dossiê</button></td></tr><tr><td><b>Conta Nexo</b><br><span class="muted">Comercial B2B</span></td><td>Comercial</td><td><span class="badge red">1 pendência</span></td><td>Dados confidenciais</td><td>Sales Ops</td><td><button class="table-action">Ver dossiê</button></td></tr></tbody></table></div></section>
-    <section id="tools" class="page"><header class="top"><div><div class="eyebrow">Stack oficial</div><h1>Ferramentas, licenças e homologação</h1><p>Somente soluções aprovadas pelo Comitê de IA podem operar com dados internos ou de clientes.</p></div><button class="btn" onclick="openModal('tool')">+ Solicitar ferramenta</button></header><div class="two-col"><div class="card"><h3 class="section-title">Inventário homologado</h3><div class="list"><div class="row"><div><b>ChatGPT Enterprise</b><br><span>Texto, análise e automação assistida</span></div><span class="badge ok">Homologada</span></div><div class="row"><div><b>Adobe Firefly</b><br><span>Imagem e criação com revisão autoral</span></div><span class="badge ok">Homologada</span></div><div class="row"><div><b>Make / APIs</b><br><span>Integrações e automações operacionais</span></div><span class="badge ok">Homologada</span></div><div class="row"><div><b>Ferramenta externa de vídeo</b><br><span>Solicitação #VG-204</span></div><span class="badge warn">Em análise</span></div></div></div><div class="card"><h3 class="section-title">Checklist de homologação</h3><div class="notice">Toda nova ferramenta passa por avaliação de segurança, LGPD, propriedade intelectual, custo, integração e plano de contingência.</div><div class="timeline" style="margin-top:18px"><div class="event"><b>1. Solicitação pela área</b><span>Caso de uso, dados e responsável</span></div><div class="event"><b>2. Avaliação técnica e de risco</b><span>CIO de IA + Segurança + Jurídico quando aplicável</span></div><div class="event"><b>3. Piloto controlado</b><span>Métricas de eficiência, qualidade e segurança</span></div><div class="event"><b>4. Deliberação do Comitê</b><span>Homologação, restrição ou reprovação</span></div></div></div></div></section>
-    <section id="prompts" class="page"><header class="top"><div><div class="eyebrow">Conhecimento que escala</div><h1>Biblioteca institucional de prompts</h1><p>Prompts reutilizáveis, versionados e alinhados à identidade da Vanguarda Martech e aos critérios de cada cliente.</p></div><button class="btn" onclick="openModal('prompt')">+ Novo prompt</button></header><div class="toolbar"><input placeholder="Buscar por objetivo, área ou cliente" oninput="filterRows(this.value,'promptRows')"><select><option>Todas as áreas</option><option>Criação</option><option>Atendimento</option><option>Planejamento</option><option>Mídia</option></select></div><div class="card"><table><thead><tr><th>Prompt / playbook</th><th>Área</th><th>Controle</th><th>Última revisão</th><th>Uso</th><th></th></tr></thead><tbody id="promptRows"><tr><td><b>Briefing estratégico 360°</b><br><span class="muted">Transforma demanda em contexto, objetivos e critérios de entrega.</span></td><td>Planejamento</td><td><span class="badge ok">Aprovado</span></td><td>04 ago 2026</td><td>86</td><td><button class="table-action" onclick="copyPrompt('Briefing estratégico 360° copiado para sua área de transferência.')">Copiar</button></td></tr><tr><td><b>Legendas com voz de marca</b><br><span class="muted">Gera variações com tom, persona e restrições do cliente.</span></td><td>Social</td><td><span class="badge ok">Aprovado</span></td><td>02 ago 2026</td><td>143</td><td><button class="table-action" onclick="copyPrompt('Prompt de legendas copiado para sua área de transferência.')">Copiar</button></td></tr><tr><td><b>Insight de performance semanal</b><br><span class="muted">Converte dados de mídia em decisões acionáveis.</span></td><td>Mídia</td><td><span class="badge warn">Revisão pendente</span></td><td>28 jul 2026</td><td>48</td><td><button class="table-action" onclick="copyPrompt('Prompt de performance copiado para sua área de transferência.')">Copiar</button></td></tr></tbody></table></div></section>
-    <section id="people" class="page"><header class="top"><div><div class="eyebrow">Cultura IA</div><h1>Pessoas, times e competências</h1><p>Mapeie capacidade por área, trilhas de capacitação e embaixadores que sustentam a adoção responsável.</p></div><button class="btn" onclick="openModal('skill')">+ Mapear competência</button></header><div class="two-col"><div class="card"><h3 class="section-title">Matriz de maturidade</h3><div class="list"><div class="row"><div><b>Criação</b><br><span>Ideação, imagem, vídeo e revisão criativa</span></div><span class="badge ok">Avançado</span></div><div class="row"><div><b>Planejamento & Estratégia</b><br><span>Research, personas, SWOT e propostas</span></div><span class="badge ok">Avançado</span></div><div class="row"><div><b>Atendimento</b><br><span>Briefing, atas, cronogramas e SLA</span></div><span class="badge warn">Intermediário</span></div><div class="row"><div><b>Financeiro & RH</b><br><span>Processos sensíveis e dados restritos</span></div><span class="badge red">Prioridade</span></div></div></div><div class="card"><h3 class="section-title">Trilhas obrigatórias</h3><div class="metric"><span>Fundamentos e uso responsável</span><b>100%</b></div><div class="bar"><i style="width:100%"></i></div><div class="metric"><span>Segurança e LGPD</span><b>88%</b></div><div class="bar"><i style="width:88%"></i></div><div class="metric"><span>Engenharia de prompts</span><b>76%</b></div><div class="bar"><i style="width:76%"></i></div><div class="metric"><span>Automação por área</span><b>54%</b></div><div class="bar"><i style="width:54%"></i></div></div></div></section>
-    <section id="compliance" class="page"><header class="top"><div><div class="eyebrow">Confiança por design</div><h1>Compliance, riscos e auditoria</h1><p>Monitore o cumprimento da Política Corporativa de IA, da LGPD e dos padrões de qualidade das entregas.</p></div><button class="btn" onclick="openModal('incident')">+ Registrar ocorrência</button></header><div class="kpis" style="grid-template-columns:repeat(4,1fr)"><div class="card"><div class="label">Auditorias no mês</div><div class="value">12</div><div class="sub">todas as áreas críticas</div></div><div class="card"><div class="label">Pendências abertas</div><div class="value">3</div><div class="sub">2 de baixa criticidade</div></div><div class="card"><div class="label">Saídas revisadas</div><div class="value">97%</div><div class="sub">antes da entrega externa</div></div><div class="card"><div class="label">Incidentes críticos</div><div class="value">0</div><div class="sub">nos últimos 90 dias</div></div></div><div class="grid"><div class="card"><h3 class="section-title">Registro de auditoria</h3><div class="list"><div class="row"><div><b>Biblioteca de prompts · revisão de versão</b><br><span>Planejamento · 06 ago 2026, 10:20</span></div><span class="badge ok">Conforme</span></div><div class="row"><div><b>Solicitação de ferramenta externa</b><br><span>Criação · 05 ago 2026, 16:40</span></div><span class="badge warn">Em análise</span></div><div class="row"><div><b>Uso de dados confidenciais fora do fluxo</b><br><span>Conta Nexo · 05 ago 2026, 09:10</span></div><span class="badge red">Ação necessária</span></div></div></div><div class="card"><h3 class="section-title">Regras inegociáveis</h3><div class="notice">• Não inserir dados confidenciais em ferramentas não homologadas.<br>• Toda entrega externa passa por revisão humana responsável.<br>• Novos casos de uso, prompts e automações devem ser registrados.<br>• Incidentes devem ser reportados imediatamente.</div></div></div></section>
+
+    <section id="portfolio" class="page"><header class="top"><div><div class="eyebrow">Cliente no centro</div><h1>Portfólio e governança de marca</h1><p>Controle objetivos, sensibilidade de dados, playbooks e aprovação humana por conta.</p></div><button class="btn" onclick="openModal('client')">+ Novo cliente</button></header><div class="toolbar"><input placeholder="Buscar cliente, squad ou playbook" oninput="filterRows(this.value,'clientRows')"><select onchange="void 0"><option>Todos os estágios</option><option>Ativo</option><option>Em onboarding</option><option>Em risco</option></select></div><div class="card"><table><thead><tr><th>Cliente</th><th>Squad</th><th>Uso de IA</th><th>Brand safety</th><th>Responsável</th><th></th></tr></thead><tbody id="clientRows"></tbody></table></div></section>
+
+    <section id="tools" class="page"><header class="top"><div><div class="eyebrow">Stack oficial</div><h1>Ferramentas, licenças e homologação</h1><p>Somente soluções aprovadas pelo Comitê de IA podem operar com dados internos ou de clientes.</p></div><button class="btn" onclick="openModal('tool')">+ Solicitar ferramenta</button></header><div class="two-col"><div class="card"><h3 class="section-title">Inventário homologado</h3><div class="list" id="stackList"></div></div><div class="card"><h3 class="section-title">Checklist de homologação</h3><div class="notice">Toda nova ferramenta passa por avaliação de segurança, LGPD, propriedade intelectual, custo, integração e plano de contingência.</div><div class="timeline" style="margin-top:18px"><div class="event"><b>1. Solicitação pela área</b><span>Caso de uso, dados e responsável</span></div><div class="event"><b>2. Avaliação técnica e de risco</b><span>CIO de IA + Segurança + Jurídico quando aplicável</span></div><div class="event"><b>3. Piloto controlado</b><span>Métricas de eficiência, qualidade e segurança</span></div><div class="event"><b>4. Deliberação do Comitê</b><span>Homologação, restrição ou reprovação</span></div></div></div></div></section>
+
+    <section id="prompts" class="page"><header class="top"><div><div class="eyebrow">Conhecimento que escala</div><h1>Biblioteca institucional de prompts</h1><p>Prompts reutilizáveis, versionados e alinhados à identidade da Vanguarda Martech e aos critérios de cada cliente.</p></div><button class="btn" onclick="openModal('prompt')">+ Novo prompt</button></header><div class="toolbar"><input placeholder="Buscar por objetivo, área ou cliente" oninput="filterRows(this.value,'promptRows')"><select onchange="void 0"><option>Todas as áreas</option><option>Criação</option><option>Atendimento</option><option>Planejamento</option><option>Mídia</option></select></div><div class="card"><table><thead><tr><th>Prompt / playbook</th><th>Área</th><th>Controle</th><th>Última revisão</th><th>Uso</th><th></th></tr></thead><tbody id="promptRows"></tbody></table></div></section>
+
+    <section id="people" class="page"><header class="top"><div><div class="eyebrow">Cultura IA</div><h1>Pessoas, times e competências</h1><p>Mapeie capacidade por área, trilhas de capacitação e embaixadores que sustentam a adoção responsável.</p></div><button class="btn" onclick="openModal('skill')">+ Mapear competência</button></header><div class="two-col"><div class="card"><h3 class="section-title">Matriz de maturidade</h3><div class="list" id="skillsList"></div></div><div class="card"><h3 class="section-title">Trilhas obrigatórias</h3><div id="trainingList"></div></div></div></section>
+
+    <section id="compliance" class="page"><header class="top"><div><div class="eyebrow">Confiança por design</div><h1>Compliance, riscos e auditoria</h1><p>Monitore o cumprimento da Política Corporativa de IA, da LGPD e dos padrões de qualidade das entregas.</p></div><button class="btn" onclick="openModal('incident')">+ Registrar ocorrência</button></header>
+      <div class="kpis" style="grid-template-columns:repeat(4,1fr)">
+        <div class="card"><div class="label">Auditorias no mês</div><div class="value" id="cAudit">—</div><div class="sub">eventos na trilha (30d)</div></div>
+        <div class="card"><div class="label">Pendências abertas</div><div class="value" id="cPend">—</div><div class="sub"><span id="cPendBaixa">—</span> de baixa criticidade</div></div>
+        <div class="card"><div class="label">Saídas revisadas</div><div class="value" id="cRev">—</div><div class="sub">antes da entrega externa</div></div>
+        <div class="card"><div class="label">Incidentes críticos</div><div class="value" id="cCrit">—</div><div class="sub">nos últimos 90 dias</div></div>
+      </div>
+      <div class="grid">
+        <div class="card"><h3 class="section-title">Registro de auditoria</h3><div class="list" id="incidentsList"></div></div>
+        <div class="card"><h3 class="section-title">Regras inegociáveis</h3><div class="notice">• Não inserir dados confidenciais em ferramentas não homologadas.<br>• Toda entrega externa passa por revisão humana responsável.<br>• Novos casos de uso, prompts e automações devem ser registrados.<br>• Incidentes devem ser reportados imediatamente.</div></div>
+      </div>
+      <div class="grid" style="margin-top:18px">
+        <div class="card"><h3 class="section-title">Trilha de auditoria (tempo real)</h3><div class="list" id="auditList"></div></div>
+        <div class="card"><h3 class="section-title">Observabilidade</h3><div id="obsPanel" class="list"></div></div>
+      </div>
+    </section>
   </main>
 </div>
-<div class="modal" id="modal"><div class="dialog"><h3 id="modalTitle">Registrar item</h3><div class="form" id="modalForm"></div><div class="modal-actions"><button class="btn alt" onclick="closeModal()">Cancelar</button><button class="btn" onclick="saveItem()">Salvar registro</button></div></div></div>
+
+<div class="modal" id="modal"><div class="dialog"><h3 id="modalTitle">Registrar item</h3><div class="form" id="modalForm"></div><div class="modal-actions"><button class="btn alt" onclick="closeModal()">Cancelar</button><button class="btn" id="saveBtn" onclick="saveItem()">Salvar registro</button></div></div></div>
+
+<div id="login"><div class="box">
+  <div class="eyebrow">VANGUARDA.IA · Governança</div>
+  <h2>Entrar no VANGUARDIAN</h2>
+  <p>Acesse com suas credenciais corporativas.</p>
+  <form onsubmit="doLogin(event)">
+    <label>E-mail<input id="lEmail" type="email" value="admin@vanguardian.com" autocomplete="username"></label>
+    <label>Senha<input id="lPass" type="password" placeholder="••••••" autocomplete="current-password"></label>
+    <div class="err" id="lErr"></div>
+    <button class="btn" style="width:100%;justify-content:center" id="lBtn" type="submit">Entrar</button>
+  </form>
+  <p style="margin-top:14px;font-size:11px">Demo: admin@vanguardian.com · admin123</p>
+</div></div>
+
+<div id="toast"></div>
+
 <script>
-const modal=document.getElementById('modal'), form=document.getElementById('modalForm'), title=document.getElementById('modalTitle');let modalType='';
+const API = "https://vanguardian-api-omg6.onrender.com";
+const TKEY = "vanguardian.token";
+let CURRENT = null;
+
+// ---- infra ----
+function toast(msg, ok=true){const t=document.getElementById('toast');t.textContent=msg;t.style.borderLeftColor=ok?'var(--green)':'var(--red)';t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2600);}
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+async function api(path, opts={}){
+  const t=localStorage.getItem(TKEY);
+  const r=await fetch(API+path,{...opts,headers:{'Content-Type':'application/json',...(t?{Authorization:'Bearer '+t}:{}),...(opts.headers||{})}});
+  if(r.status===401){logout();throw new Error('401');}
+  if(!r.ok){let d='HTTP '+r.status;try{const j=await r.json();d=j.detail||d;}catch(e){}throw new Error(typeof d==='string'?d:'Erro');}
+  return r.status===204?null:r.json();
+}
+
+// ---- nav ----
 document.querySelectorAll('.nav button').forEach(b=>b.onclick=()=>{document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));b.classList.add('active');document.getElementById(b.dataset.page).classList.add('active');});
-function openModal(type){modalType=type;const config={initiative:['Registrar iniciativa', [['Iniciativa','text','Ex.: Agente de briefing'],['Área responsável','text','Ex.: Atendimento'],['Objetivo de negócio','text','Ex.: reduzir tempo de briefing'],['Classificação dos dados','select','Público|Uso interno|Confidencial|Restrito']]],client:['Novo cliente', [['Cliente','text','Nome da conta'],['Squad responsável','text','Ex.: Growth'],['Nível de dados','select','Público|Uso interno|Confidencial|Restrito'],['Playbook de marca','text','Link ou referência']]],tool:['Solicitar ferramenta', [['Ferramenta','text','Nome da solução'],['Categoria','text','Ex.: vídeo, automação, análise'],['Caso de uso','text','Objetivo operacional'],['Dados que serão tratados','select','Público|Uso interno|Confidencial|Restrito']]],prompt:['Novo prompt institucional', [['Título','text','Ex.: Diagnóstico de campanha'],['Área','select','Criação|Atendimento|Planejamento|Mídia|Comercial'],['Conteúdo','textarea','Escreva o prompt com variáveis e critérios de revisão']]],skill:['Mapear competência', [['Time','text','Ex.: Social Media'],['Skill','text','Ex.: análise de tendências'],['Nível','select','Iniciante|Intermediário|Avançado|Especialista'],['Responsável pela avaliação','text','Nome do líder']]],incident:['Registrar ocorrência', [['Tipo de ocorrência','select','Uso indevido|Dados|Qualidade|Ferramenta|Outro'],['Criticidade','select','Baixa|Média|Alta|Crítica'],['Descrição','textarea','Contexto, impacto e ação imediata']]]}[type];title.textContent=config[0];form.innerHTML=config[1].map(([label,kind,placeholder])=>`<label>${label}${kind==='textarea'?`<textarea placeholder="${placeholder}"></textarea>`:kind==='select'?`<select>${placeholder.split('|').map(o=>`<option>${o}</option>`).join('')}</select>`:`<input type="${kind}" placeholder="${placeholder}">`}</label>`).join('');modal.classList.add('open')}
-function closeModal(){modal.classList.remove('open')}function saveItem(){closeModal();alert('Registro salvo no VANGUARDIAN. A ação foi incluída na trilha de auditoria.')}function filterRows(q,id){q=q.toLowerCase();document.querySelectorAll('#'+id+' tr').forEach(r=>r.style.display=r.innerText.toLowerCase().includes(q)?'':'none')}function copyPrompt(message){navigator.clipboard?.writeText('Prompt institucional Vanguarda Martech');alert(message)}
-</script></body></html>
+
+// ---- auth ----
+async function doLogin(e){
+  e.preventDefault();
+  const btn=document.getElementById('lBtn'), err=document.getElementById('lErr');
+  err.textContent=''; btn.disabled=true; btn.textContent='Entrando…';
+  try{
+    const res=await fetch(API+'/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:document.getElementById('lEmail').value,password:document.getElementById('lPass').value,remember_me:true})});
+    if(!res.ok){const j=await res.json().catch(()=>({}));throw new Error(j.detail||'Credenciais inválidas');}
+    const data=await res.json();
+    localStorage.setItem(TKEY,data.access_token);
+    CURRENT=data.user;
+    document.getElementById('login').style.display='none';
+    boot();
+  }catch(ex){err.textContent=ex.message;}
+  finally{btn.disabled=false; btn.textContent='Entrar';}
+}
+function logout(){localStorage.removeItem(TKEY);CURRENT=null;document.getElementById('login').style.display='grid';}
+
+// ---- tone helpers ----
+const stageTone=c=>{const u=(c.ai_usage||'').toLowerCase();return u.includes('pend')?'red':u.includes('onboarding')?'warn':'ok';};
+const toolTone=s=>s==='Homologada'?'ok':s==='Em análise'?'warn':'red';
+const ctrlTone=c=>c==='Aprovado'?'ok':'warn';
+const lvlTone=l=>['Avançado','Especialista'].includes(l)?'ok':l==='Intermediário'?'warn':'red';
+const initTone=s=>s==='Em produção'?'ok':(s||'').toLowerCase().startsWith('risco')?'red':'warn';
+const incTone=s=>s==='Conforme'?'ok':s==='Ação necessária'?'red':'warn';
+
+// ---- render ----
+function rowItem(title,sub,badgeHtml){return `<div class="row"><div><b>${esc(title)}</b><br><span>${esc(sub)}</span></div>${badgeHtml}</div>`;}
+function bar(label,pct){return `<div class="metric"><span>${esc(label)}</span><b>${pct}%</b></div><div class="bar"><i style="width:${pct}%"></i></div>`;}
+
+function renderClients(list){
+  document.getElementById('clientRows').innerHTML=list.map(c=>`<tr><td><b>${esc(c.name)}</b><br><span class="muted">${esc(c.segment)}</span></td><td>${esc(c.squad)}</td><td><span class="badge ${stageTone(c)}">${esc(c.ai_usage)}</span></td><td>${esc(c.brand_safety)}</td><td>${esc(c.responsible)}</td><td><button class="table-action" onclick="toast('Dossiê de ${esc(c.name)} — em breve.')">Ver dossiê</button></td></tr>`).join('');
+}
+function renderStack(list){
+  document.getElementById('stackList').innerHTML=list.map(t=>rowItem(t.name,t.description,`<span class="badge ${toolTone(t.status)}">${esc(t.status)}</span>`)).join('');
+}
+function renderPrompts(list){
+  document.getElementById('promptRows').innerHTML=list.map(p=>`<tr><td><b>${esc(p.title)}</b><br><span class="muted">${esc(p.description)}</span></td><td>${esc(p.area)}</td><td><span class="badge ${ctrlTone(p.control)}">${esc(p.control)}</span></td><td>${esc(p.last_review)}</td><td>${p.uses}</td><td><button class="table-action" onclick='copyPrompt(${JSON.stringify(p.content||p.title)})'>Copiar</button></td></tr>`).join('');
+}
+function renderSkills(list){
+  document.getElementById('skillsList').innerHTML=list.map(s=>rowItem(s.area,s.description,`<span class="badge ${lvlTone(s.level)}">${esc(s.level)}</span>`)).join('');
+}
+function renderTraining(list){document.getElementById('trainingList').innerHTML=list.map(t=>bar(t.name,t.percent)).join('');}
+function renderInitiatives(list){document.getElementById('initiativesList').innerHTML=list.map(i=>rowItem(i.name,i.area,`<span class="badge ${initTone(i.status)}">${esc(i.status)}</span>`)).join('');}
+function renderAdoption(list){document.getElementById('adoptionList').innerHTML=list.map(a=>bar(a.area,a.percent)).join('');}
+function renderIncidents(list){document.getElementById('incidentsList').innerHTML=list.map(i=>rowItem(i.title,(i.area?i.area+' · ':'')+'Criticidade '+i.criticality,`<span class="badge ${incTone(i.status)}">${esc(i.status)}</span>`)).join('');}
+function renderAudit(list){
+  const el=document.getElementById('auditList');
+  if(!list.length){el.innerHTML='<span class="muted">Sem eventos ainda.</span>';return;}
+  el.innerHTML=list.map(a=>{const d=a.timestamp?new Date(a.timestamp).toLocaleString('pt-BR'):'';return rowItem(`${a.action} · ${a.resource_type}`,`${a.user_email||'—'} · ${d}`,`<span class="badge ${a.success?'ok':'red'}">${a.success?'OK':'Falha'}</span>`);}).join('');
+}
+function renderObs(o){
+  const rows=[['Status',o.status],['Eventos (24h)',o.events_24h],['Total de eventos',o.total_audit_events],['Clientes',o.clients],['Prompts',o.prompts],['Ocorrências abertas',o.incidents_open]];
+  document.getElementById('obsPanel').innerHTML=rows.map(([k,v])=>`<div class="row"><span>${k}</span><b>${esc(v)}</b></div>`).join('');
+  const dot=document.getElementById('obsDot'), txt=document.getElementById('obsText');
+  dot.className='dot '+(o.status==='operational'?'on':'off');
+  txt.textContent=o.status==='operational'?'Operacional · '+o.events_24h+' eventos/24h':'Indisponível';
+}
+function setKpis(ov){
+  const d=ov.dashboard,c=ov.compliance;
+  document.getElementById('kAdocao').textContent=d.adocao_ativa;
+  document.getElementById('kClientes').textContent=d.clientes_governados;
+  document.getElementById('kPlaybooks').textContent=d.playbooks_ativos;
+  document.getElementById('kHoras').textContent=d.horas_economizadas+'h';
+  document.getElementById('kFluxos').textContent=d.fluxos_automatizados;
+  document.getElementById('kFluxosHom').textContent=d.fluxos_homologacao;
+  document.getElementById('kConf').textContent=d.conformidade_ia+'%';
+  document.getElementById('kRoi').textContent=String(d.roi_estimado).replace('.',',')+'x';
+  document.getElementById('cAudit').textContent=c.auditorias_mes;
+  document.getElementById('cPend').textContent=c.pendencias_abertas;
+  document.getElementById('cPendBaixa').textContent=c.pendencias_baixas;
+  document.getElementById('cRev').textContent=c.saidas_revisadas+'%';
+  document.getElementById('cCrit').textContent=c.incidentes_criticos;
+}
+
+// ---- load ----
+async function boot(){
+  try{
+    if(!CURRENT){try{CURRENT=await api('/auth/me');}catch(e){logout();return;}}
+    document.getElementById('whoami').textContent=(CURRENT&&CURRENT.name)||'—';
+    const [ov,clients,stack,prompts,skills,training,inits,adoption,incidents,audit,obs]=await Promise.all([
+      api('/governance/overview'),api('/governance/clients'),api('/governance/stack'),api('/governance/prompts'),
+      api('/governance/skills'),api('/governance/training'),api('/governance/initiatives'),api('/governance/adoption'),
+      api('/governance/incidents'),api('/governance/audit'),api('/governance/observability')
+    ]);
+    setKpis(ov);renderClients(clients);renderStack(stack);renderPrompts(prompts);renderSkills(skills);
+    renderTraining(training);renderInitiatives(inits);renderAdoption(adoption);renderIncidents(incidents);
+    renderAudit(audit);renderObs(obs);
+  }catch(ex){if(ex.message!=='401')toast('Falha ao carregar: '+ex.message,false);}
+}
+
+// ---- modal / cadastros ----
+const FORMS={
+  initiative:{title:'Registrar iniciativa',ep:'/governance/initiatives',fields:[['Iniciativa','text','Ex.: Agente de briefing','name'],['Área responsável','text','Ex.: Atendimento + Criação','area'],['Status','select','Em validação|Em produção|Em homologação|Risco: dados','status'],['Horas economizadas (estimadas)','text','Ex.: 40','hours_saved']]},
+  client:{title:'Novo cliente',ep:'/governance/clients',fields:[['Cliente','text','Nome da conta','name'],['Segmento','text','Ex.: Performance & conteúdo','segment'],['Squad responsável','text','Ex.: Growth','squad'],['Uso de IA','text','Ex.: Em onboarding','ai_usage'],['Brand safety / nível de dados','select','Uso interno|Confidencial|Restrito|Revisão obrigatória|Validação de imagem','brand_safety'],['Responsável','text','Ex.: Account Lead','responsible'],['Estágio','select','active|onboarding|at-risk','stage']]},
+  tool:{title:'Solicitar ferramenta',ep:'/governance/stack',fields:[['Ferramenta','text','Nome da solução','name'],['Descrição / caso de uso','text','Objetivo operacional','description'],['Status','select','Em análise|Homologada|Restrita|Reprovada','status']]},
+  prompt:{title:'Novo prompt institucional',ep:'/governance/prompts',fields:[['Título','text','Ex.: Diagnóstico de campanha','title'],['Descrição','text','Resumo do objetivo','description'],['Área','select','Criação|Atendimento|Planejamento|Mídia|Social|Comercial','area'],['Conteúdo','textarea','Escreva o prompt com variáveis e critérios de revisão','content'],['Controle','select','Revisão pendente|Aprovado','control']]},
+  skill:{title:'Mapear competência',ep:'/governance/skills',fields:[['Time / área','text','Ex.: Social Media','area'],['Competência','text','Ex.: análise de tendências','description'],['Nível','select','Iniciante|Intermediário|Avançado|Especialista|Prioridade','level'],['Responsável pela avaliação','text','Nome do líder','reviewer']]},
+  incident:{title:'Registrar ocorrência',ep:'/governance/incidents',fields:[['Tipo / título','text','Ex.: Uso de dados fora do fluxo','title'],['Área','text','Ex.: Conta Nexo','area'],['Criticidade','select','Baixa|Média|Alta|Crítica','criticality'],['Status','select','Em análise|Conforme|Ação necessária','status'],['Descrição','textarea','Contexto, impacto e ação imediata','description']]},
+};
+let CURRENT_FORM=null;
+const modal=document.getElementById('modal'), form=document.getElementById('modalForm'), title=document.getElementById('modalTitle');
+function openModal(type){
+  const cfg=FORMS[type];CURRENT_FORM=cfg;title.textContent=cfg.title;
+  form.innerHTML=cfg.fields.map(([label,kind,ph,key])=>`<label>${label}${kind==='textarea'?`<textarea data-k="${key}" placeholder="${ph}"></textarea>`:kind==='select'?`<select data-k="${key}">${ph.split('|').map(o=>`<option>${o}</option>`).join('')}</select>`:`<input data-k="${key}" type="text" placeholder="${ph}">`}</label>`).join('');
+  modal.classList.add('open');
+}
+function closeModal(){modal.classList.remove('open');}
+async function saveItem(){
+  if(!CURRENT_FORM)return;
+  const payload={};form.querySelectorAll('[data-k]').forEach(el=>{payload[el.dataset.k]=el.value;});
+  if('hours_saved' in payload)payload.hours_saved=parseInt(payload.hours_saved,10)||0;
+  if('playbook_active' in payload)payload.playbook_active=!!payload.playbook_active;
+  const btn=document.getElementById('saveBtn');btn.disabled=true;btn.textContent='Salvando…';
+  try{
+    await api(CURRENT_FORM.ep,{method:'POST',body:JSON.stringify(payload)});
+    closeModal();toast('Registro salvo. Incluído na trilha de auditoria.');
+    boot();
+  }catch(ex){toast('Erro ao salvar: '+ex.message,false);}
+  finally{btn.disabled=false;btn.textContent='Salvar registro';}
+}
+function filterRows(q,id){q=q.toLowerCase();document.querySelectorAll('#'+id+' tr').forEach(r=>r.style.display=r.innerText.toLowerCase().includes(q)?'':'none');}
+function copyPrompt(text){navigator.clipboard?.writeText(text);toast('Prompt copiado para a área de transferência.');}
+function exportView(){toast('Relatório executivo gerado para download.');}
+
+// ---- start ----
+if(localStorage.getItem(TKEY)){document.getElementById('login').style.display='none';boot();}
+</script>
+</body>
+</html>
