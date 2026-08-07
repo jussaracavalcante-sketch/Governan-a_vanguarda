@@ -15,8 +15,12 @@ services:
         value: "False"
       - key: VERSION
         value: "1.0.0"
+      # Banco de produção (Supabase) é infra externa — configure o valor real
+      # no painel do Render (Environment). Ex.:
+      # postgresql://postgres.<ref>:<SENHA>@aws-1-sa-east-1.pooler.supabase.com:5432/postgres?sslmode=require
+      # Ver docs/SUPABASE.md. Fallback SQLite se não definido.
       - key: DATABASE_URL
-        value: sqlite:///./vanguardian.db
+        sync: false
       - key: SECRET_KEY
         generateValue: true
       - key: LOG_LEVEL

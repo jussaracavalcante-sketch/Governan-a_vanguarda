@@ -39,7 +39,8 @@ Governan-a_vanguarda/
 │   ├── PROPRIEDADE-INTELECTUAL.md
 │   ├── NIA-001-norma-prompts.md
 │   ├── GOVERNANCA.md
-│   └── ARQUITETURA.md
+│   ├── ARQUITETURA.md
+│   └── SUPABASE.md     #    Banco de produção (infra externa)
 ├── backend/            # ⚙️ API FastAPI (auth, admin, prompts, observabilidade, integrações)
 │   ├── Dockerfile
 │   └── tests/          #    Testes smoke

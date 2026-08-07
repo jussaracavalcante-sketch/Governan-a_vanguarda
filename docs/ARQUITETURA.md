@@ -50,5 +50,7 @@ consomem/refletem esse acervo. Assim garantimos:
 ## Deploy
 
 - **Backend**: Render (`render.yaml`) ou Docker (`Dockerfile`).
+- **Banco de dados**: SQLite (dev) / **Supabase PostgreSQL** (prod) — provisionado
+  como **infra externa**, conectado via `DATABASE_URL`. Ver [`SUPABASE.md`](SUPABASE.md).
 - **Frontend**: GitHub Pages (workflow `deploy-frontend-pages.yml`) — funciona
   standalone com `localStorage`.
