@@ -1,5 +1,8 @@
 # Arquitetura — VANGUARDIAN
 
+![Arquitetura BPMN](arquitetura-bpmn.svg)
+
+
 Visão técnica de como o repositório de prompts/PI e a plataforma de governança se
 articulam.
 

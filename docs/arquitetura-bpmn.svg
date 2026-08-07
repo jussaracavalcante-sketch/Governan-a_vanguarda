@@ -1,0 +1,189 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 700" font-family="Inter, Segoe UI, system-ui, sans-serif">
+  <defs>
+    <marker id="seq" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L8,3 L0,6 Z" fill="#334155"/>
+    </marker>
+    <marker id="assoc" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L8,3 L0,6" fill="none" stroke="#b80e2b" stroke-width="1"/>
+    </marker>
+  </defs>
+
+  <style>
+    .title{font-size:22px;font-weight:800;fill:#0f172a}
+    .sub{font-size:12px;fill:#64748b}
+    .poolt{font-size:12px;font-weight:800;fill:#b80e2b;letter-spacing:1px}
+    .lanet{font-size:12px;font-weight:800;fill:#b80e2b}
+    .task{fill:#ffffff;stroke:#334155;stroke-width:1.4;rx:9}
+    .tasktxt{font-size:12px;font-weight:600;fill:#0f172a}
+    .code{font-size:10.5px;fill:#64748b}
+    .ev{fill:#ffffff;stroke:#b80e2b;stroke-width:2}
+    .evend{fill:#ffffff;stroke:#b80e2b;stroke-width:4}
+    .evtxt{font-size:10.5px;font-weight:700;fill:#0f172a}
+    .gw{fill:#fff7d6;stroke:#b8860b;stroke-width:1.6}
+    .gwtxt{font-size:10.5px;font-weight:700;fill:#0f172a}
+    .flow{fill:none;stroke:#334155;stroke-width:1.6;marker-end:url(#seq)}
+    .assoc{fill:none;stroke:#b80e2b;stroke-width:1.3;stroke-dasharray:4 4;marker-end:url(#assoc)}
+    .flab{font-size:10px;font-weight:700;fill:#334155}
+    .ds{fill:#fdecef;stroke:#b80e2b;stroke-width:1.4}
+    .note{fill:#f8fafc;stroke:#94a3b8;stroke-width:1;stroke-dasharray:3 3}
+  </style>
+
+  <rect width="1200" height="700" fill="#ffffff"/>
+
+  <!-- header -->
+  <text x="28" y="38" class="title">VANGUARDIAN — Arquitetura (BPMN)</text>
+  <text x="28" y="58" class="sub">Fluxo da operação de governança: autenticação, cadastro, persistência, auditoria e indicadores.</text>
+
+  <!-- POOL -->
+  <rect x="28" y="80" width="1144" height="540" fill="none" stroke="#94a3b8" stroke-width="1.5"/>
+  <rect x="28" y="80" width="26" height="540" fill="#fce7ec" stroke="#94a3b8" stroke-width="1.5"/>
+  <text transform="translate(46,350) rotate(-90)" text-anchor="middle" class="poolt">OPERAÇÃO DE GOVERNANÇA · VANGUARDIAN</text>
+
+  <!-- lanes -->
+  <!-- L1 Usuário  y 80-215 -->
+  <rect x="54" y="80"  width="42" height="135" fill="#f8fafc" stroke="#cbd5e1"/>
+  <text transform="translate(75,147) rotate(-90)" text-anchor="middle" class="lanet">USUÁRIO</text>
+  <rect x="96" y="80" width="1076" height="135" fill="#ffffff" stroke="#e2e8f0"/>
+  <!-- L2 Frontend y 215-350 -->
+  <rect x="54" y="215" width="42" height="135" fill="#f1f5f9" stroke="#cbd5e1"/>
+  <text transform="translate(75,282) rotate(-90)" text-anchor="middle" class="lanet">FRONTEND · PAGES</text>
+  <rect x="96" y="215" width="1076" height="135" fill="#f8fafc" stroke="#e2e8f0"/>
+  <!-- L3 API y 350-485 -->
+  <rect x="54" y="350" width="42" height="135" fill="#f1f5f9" stroke="#cbd5e1"/>
+  <text transform="translate(75,417) rotate(-90)" text-anchor="middle" class="lanet">API · FASTAPI (RENDER)</text>
+  <rect x="96" y="350" width="1076" height="135" fill="#ffffff" stroke="#e2e8f0"/>
+  <!-- L4 Dados y 485-620 -->
+  <rect x="54" y="485" width="42" height="135" fill="#f1f5f9" stroke="#cbd5e1"/>
+  <text transform="translate(75,552) rotate(-90)" text-anchor="middle" class="lanet">DADOS &amp; OBSERVABILIDADE</text>
+  <rect x="96" y="485" width="1076" height="135" fill="#f8fafc" stroke="#e2e8f0"/>
+
+  <!-- ================= FLOWS (draw first, under nodes) ================= -->
+  <!-- A1 start -> user_auth -->
+  <path class="flow" d="M166,147 L234,147"/>
+  <!-- A2 user_auth -> fe_login -->
+  <path class="flow" d="M300,175 L300,254"/>
+  <!-- A3 fe_login -> api_auth -->
+  <path class="flow" d="M300,310 L300,389"/>
+  <!-- A4 api_auth -> gateway -->
+  <path class="flow" d="M366,417 L448,417"/>
+  <!-- A5 gateway 'não' -> denied (up) -->
+  <path class="flow" d="M470,395 L470,306"/>
+  <text x="478" y="360" class="flab">não</text>
+  <!-- A6 gateway 'sim' -> fe_load -->
+  <path class="flow" d="M492,417 L523,417 L523,282 L554,282"/>
+  <text x="500" y="410" class="flab">sim</text>
+  <!-- A7 fe_load -> user_reg (up) -->
+  <path class="flow" d="M620,254 L620,147 L704,147"/>
+  <!-- A8 user_reg -> fe_post -->
+  <path class="flow" d="M770,175 L770,254"/>
+  <!-- A9 fe_post -> api_crud -->
+  <path class="flow" d="M770,310 L770,389"/>
+  <!-- A10 api_crud -> DB (data write) -->
+  <path class="assoc" d="M770,445 L770,505"/>
+  <text x="778" y="478" class="flab" fill="#b80e2b">grava</text>
+  <!-- A11 api_crud -> api_over -->
+  <path class="flow" d="M836,417 L874,417"/>
+  <!-- A12 api_over -> fe_upd (up) -->
+  <path class="flow" d="M940,389 L940,310"/>
+  <!-- A13 api_over -> obs (down, association) -->
+  <path class="assoc" d="M940,445 L940,505"/>
+  <!-- A14 fe_upd -> end -->
+  <path class="flow" d="M1006,282 L1066,282"/>
+  <!-- DB read by overview (assoc) -->
+  <path class="assoc" d="M874,432 L829,505"/>
+  <text x="812" y="470" class="flab" fill="#b80e2b">lê</text>
+
+  <!-- ================= NODES ================= -->
+  <!-- Start -->
+  <circle class="ev" cx="150" cy="147" r="16"/>
+  <text x="150" y="200" text-anchor="middle" class="evtxt">Acessa</text>
+  <text x="150" y="212" text-anchor="middle" class="code">VANGUARDIAN</text>
+
+  <!-- User: autentica -->
+  <rect class="task" x="234" y="119" width="132" height="56" rx="9"/>
+  <text x="300" y="151" text-anchor="middle" class="tasktxt">Autentica-se</text>
+  <text x="300" y="165" text-anchor="middle" class="code">e-mail + senha</text>
+
+  <!-- User: registra -->
+  <rect class="task" x="704" y="119" width="132" height="56" rx="9"/>
+  <text x="770" y="145" text-anchor="middle" class="tasktxt">Registra item</text>
+  <text x="770" y="160" text-anchor="middle" class="code">cliente / prompt /</text>
+  <text x="770" y="171" text-anchor="middle" class="code">skill / ocorrência…</text>
+
+  <!-- Frontend: login -->
+  <rect class="task" x="234" y="254" width="132" height="56" rx="9"/>
+  <text x="300" y="280" text-anchor="middle" class="tasktxt">Tela de login</text>
+  <text x="300" y="295" text-anchor="middle" class="code">POST /auth/login</text>
+
+  <!-- Denied end -->
+  <circle class="evend" cx="470" cy="282" r="16"/>
+  <text x="470" y="252" text-anchor="middle" class="evtxt">Acesso negado</text>
+
+  <!-- Frontend: carrega painéis -->
+  <rect class="task" x="554" y="254" width="132" height="56" rx="9"/>
+  <text x="620" y="280" text-anchor="middle" class="tasktxt">Carrega painéis</text>
+  <text x="620" y="295" text-anchor="middle" class="code">GET /governance/*</text>
+
+  <!-- Frontend: envia POST -->
+  <rect class="task" x="704" y="254" width="132" height="56" rx="9"/>
+  <text x="770" y="280" text-anchor="middle" class="tasktxt">Envia cadastro</text>
+  <text x="770" y="295" text-anchor="middle" class="code">POST /governance/*</text>
+
+  <!-- Frontend: atualiza -->
+  <rect class="task" x="874" y="254" width="132" height="56" rx="9"/>
+  <text x="940" y="276" text-anchor="middle" class="tasktxt">Atualiza painéis</text>
+  <text x="940" y="290" text-anchor="middle" class="code">KPIs · auditoria ·</text>
+  <text x="940" y="301" text-anchor="middle" class="code">observabilidade</text>
+
+  <!-- End -->
+  <circle class="evend" cx="1090" cy="282" r="16"/>
+  <text x="1090" y="252" text-anchor="middle" class="evtxt">Painéis</text>
+  <text x="1090" y="316" text-anchor="middle" class="code">atualizados</text>
+
+  <!-- API: valida -->
+  <rect class="task" x="234" y="389" width="132" height="56" rx="9"/>
+  <text x="300" y="415" text-anchor="middle" class="tasktxt">Valida credenciais</text>
+  <text x="300" y="430" text-anchor="middle" class="code">emite JWT + RBAC</text>
+
+  <!-- Gateway -->
+  <path class="gw" d="M470,395 L492,417 L470,439 L448,417 Z"/>
+  <text x="470" y="414" text-anchor="middle" class="gwtxt">Token</text>
+  <text x="470" y="426" text-anchor="middle" class="gwtxt">válido?</text>
+
+  <!-- API: CRUD + audit -->
+  <rect class="task" x="704" y="389" width="132" height="56" rx="9"/>
+  <text x="770" y="415" text-anchor="middle" class="tasktxt">CRUD + AuditLog</text>
+  <text x="770" y="430" text-anchor="middle" class="code">valida + persiste</text>
+
+  <!-- API: overview -->
+  <rect class="task" x="874" y="389" width="132" height="56" rx="9"/>
+  <text x="940" y="411" text-anchor="middle" class="tasktxt">Recalcula</text>
+  <text x="940" y="425" text-anchor="middle" class="code">/overview ·</text>
+  <text x="940" y="436" text-anchor="middle" class="code">/observability</text>
+
+  <!-- Data store DB -->
+  <g>
+    <path class="ds" d="M715,505 a55,10 0 0 0 110,0 v42 a55,10 0 0 1 -110,0 Z"/>
+    <ellipse class="ds" cx="770" cy="505" rx="55" ry="10"/>
+    <text x="770" y="536" text-anchor="middle" class="tasktxt">SQLite /</text>
+    <text x="770" y="550" text-anchor="middle" class="tasktxt">Supabase</text>
+  </g>
+
+  <!-- Observability note -->
+  <rect class="note" x="874" y="507" width="150" height="52" rx="6"/>
+  <text x="949" y="528" text-anchor="middle" class="code">Health · métricas ·</text>
+  <text x="949" y="541" text-anchor="middle" class="code">trilha de auditoria</text>
+  <text x="949" y="554" text-anchor="middle" class="code">(structlog / Prometheus)</text>
+
+  <!-- ================= LEGEND ================= -->
+  <text x="28" y="648" class="poolt">LEGENDA</text>
+  <circle class="ev" cx="120" cy="644" r="9"/><text x="134" y="648" class="code">Início</text>
+  <circle class="evend" cx="196" cy="644" r="9"/><text x="210" y="648" class="code">Fim</text>
+  <rect class="task" x="252" y="635" width="26" height="18" rx="5"/><text x="284" y="648" class="code">Tarefa</text>
+  <path class="gw" d="M340,635 L353,644 L340,653 L327,644 Z"/><text x="360" y="648" class="code">Gateway (decisão)</text>
+  <ellipse class="ds" cx="500" cy="644" rx="13" ry="6"/><rect class="ds" x="487" y="644" width="26" height="12"/><text x="520" y="648" class="code">Banco de dados</text>
+  <line x1="620" y1="644" x2="656" y2="644" class="flow"/><text x="662" y="648" class="code">Fluxo de sequência</text>
+  <line x1="790" y1="644" x2="826" y2="644" class="assoc"/><text x="832" y="648" class="code">Associação de dados</text>
+
+  <text x="1172" y="648" text-anchor="end" class="sub">Deploy: GitHub Actions → Pages (frontend) · Render (API) — CI valida testes, prompts (NIA-001) e build.</text>
+</svg>
