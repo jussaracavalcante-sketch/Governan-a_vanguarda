@@ -1,0 +1,29 @@
+services:
+  - type: web
+    name: vanguardian-api
+    env: python
+    region: oregon
+    plan: free
+    buildCommand: pip install --upgrade pip && pip install -r backend/requirements.txt
+    startCommand: cd backend && uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.8
+      - key: APP_NAME
+        value: VANGUARDIAN API
+      - key: DEBUG
+        value: "False"
+      - key: VERSION
+        value: "1.0.0"
+      - key: DATABASE_URL
+        value: sqlite:///./vanguardian.db
+      - key: SECRET_KEY
+        generateValue: true
+      - key: LOG_LEVEL
+        value: INFO
+      - key: LOG_FORMAT
+        value: json
+      - key: ADMIN_EMAIL
+        value: admin@vanguardian.local
+      - key: ADMIN_PASSWORD
+        value: admin123

@@ -1,0 +1,50 @@
+# Modelo de Governança — VANGUARDIAN
+
+> Papéis, fluxos e regras que garantem que o repositório de prompts e PI opere
+> com qualidade, segurança e conformidade.
+
+## 1. Papéis (RBAC)
+
+| Papel | Responsabilidade | Permissões no repositório |
+|-------|------------------|---------------------------|
+| **Admin** (Diretoria de IA) | Define normas, aprova exceções | Merge, gestão de acessos |
+| **Manager** (Líderes de área) | Homologa prompts, revisa PRs | Aprovar/mesclar PRs da sua área |
+| **User** (Colaboradores) | Cria e propõe prompts | Abrir PRs, comentar |
+
+O mesmo RBAC é aplicado na API (ver [`../backend/auth/`](../backend/auth/)).
+
+## 2. Fluxo de contribuição de prompt
+
+```
+Autor cria (rascunho) ─▶ PR ─▶ Revisão (Manager) ─▶ Homologação ─▶ Merge ─▶ Índice atualizado
+```
+
+Detalhes operacionais em [`../CONTRIBUTING.md`](../CONTRIBUTING.md).
+
+## 3. Regras inegociáveis
+
+1. Dados confidenciais **somente** em ferramentas homologadas.
+2. Toda entrega externa passa por **revisão humana** registrada.
+3. Todo prompt/automação novo deve ser **registrado** via PR (NIA-001 §4).
+4. Ocorrências e incidentes são reportados **imediatamente**.
+
+## 4. Comitê de IA
+
+O Comitê de IA prioriza a evolução do ecossistema (briefs inteligentes, agentes de
+performance, bases de conhecimento de marca, relatórios automatizados) e revisa a
+stack homologada e as normas periodicamente.
+
+## 5. Auditoria
+
+Todas as operações sensíveis na API são auditadas (quem, quando, o quê, antes/depois)
+— ver [`../backend/audit/`](../backend/audit/) e o modelo `AuditLog`. No repositório,
+o `git log` cumpre o papel de trilha de auditoria dos ativos de PI.
+
+## 6. Métricas de governança
+
+- Adoção por área, ROI por hora investida, conformidade da stack.
+- Cobertura de homologação (prompts homologados / prompts em uso).
+- Incidentes abertos e tempo de resolução.
+
+Ver o painel executivo no [`frontend`](../frontend/index.html) e os endpoints de
+[`../backend/observability/`](../backend/observability/).

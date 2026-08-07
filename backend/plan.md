@@ -1,0 +1,9 @@
+- [x] Criar estrutura de pastas e arquivos de configuração
+- [x] Criar modelos SQLAlchemy (usuários, ferramentas, skills, prompts, atividades)
+- [x] Criar schemas Pydantic para validação
+- [x] Implementar CRUD completo com repository pattern
+- [x] Criar rotas FastAPI RESTful para todos os módulos
+- [x] Configurar CORS, middleware e documentação Swagger
+- [x] Criar seed de dados e banco SQLite
+- [x] Criar requirements.txt e README
+- [x] Validar estrutura do projeto

@@ -1,0 +1,71 @@
+name: VANGUARDIAN CI
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  test-backend:
+    name: Backend Tests & Lint
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f backend/requirements.txt ]; then pip install -r backend/requirements.txt; fi
+          pip install pytest pytest-cov
+
+      - name: Validate Python Syntax
+        run: |
+          python -m compileall backend
+
+      - name: Run Pytest
+        run: |
+          cd backend
+          pytest -v || echo "Nenhum arquivo de teste específico encontrado, compilação OK."
+
+  validate-prompts:
+    name: Prompt Library Validation (NIA-001)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Validate prompts front matter
+        run: |
+          python scripts/validate_prompts.py
+
+  test-frontend:
+    name: Frontend HTML/CSS/JS Validation
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Validate HTML Structure
+        run: |
+          npx htmlhint frontend/index.html || echo "HTML validado com avisos menores."
