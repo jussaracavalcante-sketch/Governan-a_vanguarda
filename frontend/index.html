@@ -147,7 +147,7 @@ function logout(){localStorage.removeItem(TKEY);CURRENT=null;document.getElement
 // ---- tone helpers ----
 const stageTone=c=>{const u=(c.ai_usage||'').toLowerCase();return u.includes('pend')?'red':u.includes('onboarding')?'warn':'ok';};
 const toolTone=s=>s==='Homologada'?'ok':s==='Em análise'?'warn':'red';
-const ctrlTone=c=>c==='Aprovado'?'ok':'warn';
+const ctrlTone=c=>c==='Aprovado'?'ok':c==='Reprovado'?'red':'warn';
 const lvlTone=l=>['Avançado','Especialista'].includes(l)?'ok':l==='Intermediário'?'warn':'red';
 const initTone=s=>s==='Em produção'?'ok':(s||'').toLowerCase().startsWith('risco')?'red':'warn';
 const incTone=s=>s==='Conforme'?'ok':s==='Ação necessária'?'red':'warn';
@@ -163,7 +163,7 @@ function renderStack(list){
   document.getElementById('stackList').innerHTML=list.map(t=>rowItem(t.name,t.description,`<span class="badge ${toolTone(t.status)}">${esc(t.status)}</span>`)).join('');
 }
 function renderPrompts(list){
-  document.getElementById('promptRows').innerHTML=list.map(p=>`<tr><td><b>${esc(p.title)}</b><br><span class="muted">${esc(p.description)}</span></td><td>${esc(p.area)}</td><td><span class="badge ${ctrlTone(p.control)}">${esc(p.control)}</span></td><td>${esc(p.last_review)}</td><td>${p.uses}</td><td><button class="table-action" onclick='copyPrompt(${JSON.stringify(p.content||p.title)})'>Copiar</button></td></tr>`).join('');
+  document.getElementById('promptRows').innerHTML=list.map(p=>{const repo=p.repo_url?`<a class="table-action" href="${esc(p.repo_url)}" target="_blank" rel="noopener" style="text-decoration:none;margin-right:10px">Repo ↗</a>`:'';return `<tr><td><b>${esc(p.title)}</b><br><span class="muted">${esc(p.description)}</span></td><td>${esc(p.area)}</td><td><span class="badge ${ctrlTone(p.control)}">${esc(p.control)}</span></td><td>${esc(p.last_review)}</td><td>${p.uses}</td><td>${repo}<button class="table-action" onclick='copyPrompt(${JSON.stringify(p.content||p.title)})'>Copiar</button></td></tr>`;}).join('');
 }
 function renderSkills(list){
   document.getElementById('skillsList').innerHTML=list.map(s=>rowItem(s.area,s.description,`<span class="badge ${lvlTone(s.level)}">${esc(s.level)}</span>`)).join('');
@@ -222,7 +222,7 @@ const FORMS={
   initiative:{title:'Registrar iniciativa',ep:'/governance/initiatives',fields:[['Iniciativa','text','Ex.: Agente de briefing','name'],['Área responsável','text','Ex.: Atendimento + Criação','area'],['Status','select','Em validação|Em produção|Em homologação|Risco: dados','status'],['Horas economizadas (estimadas)','text','Ex.: 40','hours_saved']]},
   client:{title:'Novo cliente',ep:'/governance/clients',fields:[['Cliente','text','Nome da conta','name'],['Segmento','text','Ex.: Performance & conteúdo','segment'],['Squad responsável','text','Ex.: Growth','squad'],['Uso de IA','text','Ex.: Em onboarding','ai_usage'],['Brand safety / nível de dados','select','Uso interno|Confidencial|Restrito|Revisão obrigatória|Validação de imagem','brand_safety'],['Responsável','text','Ex.: Account Lead','responsible'],['Estágio','select','active|onboarding|at-risk','stage']]},
   tool:{title:'Solicitar ferramenta',ep:'/governance/stack',fields:[['Ferramenta','text','Nome da solução','name'],['Descrição / caso de uso','text','Objetivo operacional','description'],['Status','select','Em análise|Homologada|Restrita|Reprovada','status']]},
-  prompt:{title:'Novo prompt institucional',ep:'/governance/prompts',fields:[['Título','text','Ex.: Diagnóstico de campanha','title'],['Descrição','text','Resumo do objetivo','description'],['Área','select','Criação|Atendimento|Planejamento|Mídia|Social|Comercial','area'],['Conteúdo','textarea','Escreva o prompt com variáveis e critérios de revisão','content'],['Controle','select','Revisão pendente|Aprovado','control']]},
+  prompt:{title:'Novo prompt institucional',ep:'/governance/prompts',fields:[['Título','text','Ex.: Diagnóstico de campanha','title'],['Descrição','text','Resumo do objetivo','description'],['Área','select','Criação|Atendimento|Planejamento|Mídia|Social|Comercial','area'],['Conteúdo','textarea','Escreva o prompt com variáveis e critérios de revisão','content'],['Repositório hospedado','text','https://github.com/org/repo (opcional)','repo_url'],['Controle','select','Revisão pendente|Aprovado|Reprovado','control']]},
   skill:{title:'Mapear competência',ep:'/governance/skills',fields:[['Time / área','text','Ex.: Social Media','area'],['Competência','text','Ex.: análise de tendências','description'],['Nível','select','Iniciante|Intermediário|Avançado|Especialista|Prioridade','level'],['Responsável pela avaliação','text','Nome do líder','reviewer']]},
   incident:{title:'Registrar ocorrência',ep:'/governance/incidents',fields:[['Tipo / título','text','Ex.: Uso de dados fora do fluxo','title'],['Área','text','Ex.: Conta Nexo','area'],['Criticidade','select','Baixa|Média|Alta|Crítica','criticality'],['Status','select','Em análise|Conforme|Ação necessária','status'],['Descrição','textarea','Contexto, impacto e ação imediata','description']]},
 };

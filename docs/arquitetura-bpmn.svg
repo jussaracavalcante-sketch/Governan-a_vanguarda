@@ -12,7 +12,7 @@
     .title{font-size:22px;font-weight:800;fill:#0f172a}
     .sub{font-size:12px;fill:#64748b}
     .poolt{font-size:12px;font-weight:800;fill:#b80e2b;letter-spacing:1px}
-    .lanet{font-size:12px;font-weight:800;fill:#b80e2b}
+    .lanet{font-size:11px;font-weight:800;fill:#b80e2b}
     .task{fill:#ffffff;stroke:#334155;stroke-width:1.4;rx:9}
     .tasktxt{font-size:12px;font-weight:600;fill:#0f172a}
     .code{font-size:10.5px;fill:#64748b}
@@ -50,11 +50,11 @@
   <rect x="96" y="215" width="1076" height="135" fill="#f8fafc" stroke="#e2e8f0"/>
   <!-- L3 API y 350-485 -->
   <rect x="54" y="350" width="42" height="135" fill="#f1f5f9" stroke="#cbd5e1"/>
-  <text transform="translate(75,417) rotate(-90)" text-anchor="middle" class="lanet">API · FASTAPI (RENDER)</text>
+  <text transform="translate(75,417) rotate(-90)" text-anchor="middle" class="lanet">API · FASTAPI</text>
   <rect x="96" y="350" width="1076" height="135" fill="#ffffff" stroke="#e2e8f0"/>
   <!-- L4 Dados y 485-620 -->
   <rect x="54" y="485" width="42" height="135" fill="#f1f5f9" stroke="#cbd5e1"/>
-  <text transform="translate(75,552) rotate(-90)" text-anchor="middle" class="lanet">DADOS &amp; OBSERVABILIDADE</text>
+  <text transform="translate(75,552) rotate(-90)" text-anchor="middle" class="lanet">DADOS · OBSERV.</text>
   <rect x="96" y="485" width="1076" height="135" fill="#f8fafc" stroke="#e2e8f0"/>
 
   <!-- ================= FLOWS (draw first, under nodes) ================= -->

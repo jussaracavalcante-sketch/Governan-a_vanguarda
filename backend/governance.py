@@ -50,8 +50,9 @@ class PromptItem(Base):
     title = Column(String(200), nullable=False)
     description = Column(String(400), default="")
     area = Column(String(60), default="")
-    control = Column(String(30), default="Revisão pendente")  # Aprovado | Revisão pendente
+    control = Column(String(30), default="Revisão pendente")  # Aprovado | Revisão pendente | Reprovado
     content = Column(Text, default="")
+    repo_url = Column(String(300), default="")
     last_review = Column(String(30), default="")
     uses = Column(Integer, default=0)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
@@ -134,6 +135,7 @@ class PromptItemIn(BaseModel):
     area: str = ""
     control: str = "Revisão pendente"
     content: str = ""
+    repo_url: str = ""
     last_review: str = ""
     uses: int = 0
 
