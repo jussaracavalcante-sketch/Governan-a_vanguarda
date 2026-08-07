@@ -44,7 +44,7 @@ Governan-a_vanguarda/
 ├── backend/            # ⚙️ API FastAPI (auth, admin, prompts, observabilidade, integrações)
 │   ├── Dockerfile
 │   └── tests/          #    Testes smoke
-├── frontend/           # 🖥️ SPA de governança (React + TypeScript + Vite)
+├── frontend/           # 🖥️ Protótipo de governança (HTML estático, autocontido)
 ├── scripts/
 │   └── validate_prompts.py   # Linter da biblioteca (rodado no CI)
 ├── .github/            # CI/CD, CODEOWNERS, templates de issue/PR
@@ -92,18 +92,16 @@ uvicorn main:app --reload
 
 - API: <http://localhost:8000> · Swagger: <http://localhost:8000/docs> · Health: <http://localhost:8000/health/live>
 
-### Frontend (React + Vite)
+### Frontend (protótipo estático)
+
+O frontend é o protótipo VANGUARDIAN — um `index.html` **autocontido** (CSS/JS inline,
+sem dependências, sem build). Abra direto no navegador ou sirva estaticamente:
 
 ```bash
-cd frontend
-npm install
-npm run dev        # http://localhost:5173 (proxy /api → backend em :8000)
-# build de produção:
-npm run build      # gera frontend/dist
+cd frontend && python -m http.server 8080   # http://localhost:8080
 ```
 
-Configure a URL da API em `frontend/.env` (`VITE_API_BASE_URL`) — ver
-[`frontend/README.md`](frontend/README.md). Em dev, deixe vazio para usar o proxy.
+É publicado no GitHub Pages pelo workflow `deploy-frontend-pages.yml` (sem etapa de build).
 
 ### Docker (API + frontend)
 
@@ -152,7 +150,7 @@ docker compose up --build
 | Camada | Tecnologia |
 |--------|------------|
 | Prompts/PI | Markdown + front matter YAML, versionado por `git`, validado no CI |
-| Frontend | React 18, TypeScript, Vite, React Router |
+| Frontend | HTML5 + CSS3 + JS (protótipo autocontido, sem build) |
 | Backend | FastAPI, SQLAlchemy 2.0, Pydantic 2, Python 3.11+ |
 | Auth | python-jose (JWT), passlib/bcrypt |
 | DB | SQLite (dev) / PostgreSQL (prod) |

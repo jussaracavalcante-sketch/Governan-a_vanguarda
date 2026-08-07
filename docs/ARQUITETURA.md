@@ -10,7 +10,7 @@ articulam.
 │                        VANGUARDIAN                           │
 ├──────────────┬───────────────────────┬─────────────────────┤
 │  prompts/    │      frontend/        │      backend/        │
-│  (fonte da   │  SPA React + Vite     │  API FastAPI         │
+│  (fonte da   │  Protótipo estático   │  API FastAPI         │
 │   verdade    │  (dashboard, módulos, │  (auth, admin,       │
 │   de PI —    │   biblioteca, login)  │   prompts, skills,   │
 │   arquivos)  │                       │   tools, integrações)│
@@ -52,5 +52,5 @@ consomem/refletem esse acervo. Assim garantimos:
 - **Backend**: Render (`render.yaml`) ou Docker (`Dockerfile`).
 - **Banco de dados**: SQLite (dev) / **Supabase PostgreSQL** (prod) — provisionado
   como **infra externa**, conectado via `DATABASE_URL`. Ver [`SUPABASE.md`](SUPABASE.md).
-- **Frontend**: React + Vite; build estático publicado no GitHub Pages (workflow
-  `deploy-frontend-pages.yml`). Consome a API via JWT (`VITE_API_BASE_URL`).
+- **Frontend**: protótipo HTML estático autocontido, publicado no GitHub Pages
+  (workflow `deploy-frontend-pages.yml`, sem etapa de build).

@@ -53,26 +53,16 @@ jobs:
         run: |
           python scripts/validate_prompts.py
 
-  build-frontend:
-    name: Frontend Typecheck & Build
+  check-frontend:
+    name: Frontend Static Check
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: frontend
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
-          cache-dependency-path: frontend/package-lock.json
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Typecheck & Build
-        run: npm run build
+      - name: Validate static site
+        run: |
+          test -f frontend/index.html || { echo "frontend/index.html ausente"; exit 1; }
+          grep -q "VANGUARDIAN" frontend/index.html || { echo "Marcador VANGUARDIAN não encontrado"; exit 1; }
+          echo "Site estático OK."
