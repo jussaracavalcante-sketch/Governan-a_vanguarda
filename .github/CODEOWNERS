@@ -1,0 +1,22 @@
+# CODEOWNERS — VANGUARDIAN
+# Revisão obrigatória por responsáveis de cada área.
+# Ajuste os handles para os usuários/times reais do GitHub.
+
+# Padrão: Diretoria de IA revisa tudo
+*                       @jussaracavalcante-sketch
+
+# Governança de PI e normas
+/docs/                  @jussaracavalcante-sketch
+/LICENSE                @jussaracavalcante-sketch
+
+# Biblioteca de prompts (homologação por área)
+/prompts/               @jussaracavalcante-sketch
+/prompts/criacao/       @jussaracavalcante-sketch
+/prompts/atendimento/   @jussaracavalcante-sketch
+/prompts/midia/         @jussaracavalcante-sketch
+/prompts/comercial/     @jussaracavalcante-sketch
+/prompts/dados-bi/      @jussaracavalcante-sketch
+/prompts/governanca/    @jussaracavalcante-sketch
+
+# Backend / API
+/backend/               @jussaracavalcante-sketch
