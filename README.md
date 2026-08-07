@@ -44,7 +44,7 @@ Governan-a_vanguarda/
 ├── backend/            # ⚙️ API FastAPI (auth, admin, prompts, observabilidade, integrações)
 │   ├── Dockerfile
 │   └── tests/          #    Testes smoke
-├── frontend/           # 🖥️ SPA de governança (index.html, standalone)
+├── frontend/           # 🖥️ SPA de governança (React + TypeScript + Vite)
 ├── scripts/
 │   └── validate_prompts.py   # Linter da biblioteca (rodado no CI)
 ├── .github/            # CI/CD, CODEOWNERS, templates de issue/PR
@@ -92,13 +92,18 @@ uvicorn main:app --reload
 
 - API: <http://localhost:8000> · Swagger: <http://localhost:8000/docs> · Health: <http://localhost:8000/health/live>
 
-### Frontend (standalone)
-
-Abra `frontend/index.html` no navegador (funciona offline com `localStorage`) ou:
+### Frontend (React + Vite)
 
 ```bash
-cd frontend && python -m http.server 8080
+cd frontend
+npm install
+npm run dev        # http://localhost:5173 (proxy /api → backend em :8000)
+# build de produção:
+npm run build      # gera frontend/dist
 ```
+
+Configure a URL da API em `frontend/.env` (`VITE_API_BASE_URL`) — ver
+[`frontend/README.md`](frontend/README.md). Em dev, deixe vazio para usar o proxy.
 
 ### Docker (API + frontend)
 
@@ -121,12 +126,11 @@ docker compose up --build
 | Módulo | Frontend | Backend | Descrição |
 |--------|:--------:|:-------:|-----------|
 | **Dashboard** | ✅ | ✅ | KPIs executivos, adoção por área, atividades |
-| **Biblioteca de Prompts** | ✅ | ✅ | Prompts por área, versionamento, aprovação, cópia rápida |
-| **Portfólio de Clientes** | ✅ | 🔄 | Squads, playbooks, brand safety, classificação de dados |
-| **Stack & Homologação** | ✅ | ✅ | Ferramentas aprovadas, checklist de homologação |
-| **Pessoas & Skills** | ✅ | ✅ | Matriz de maturidade, trilhas, embaixadores |
-| **Compliance & Auditoria** | ✅ | ✅ | Regras inegociáveis, ocorrências, auditorias |
-| **Administração** | ✅ | ✅ | Usuários, roles, logs de auditoria |
+| **Biblioteca de Prompts** | ✅ | ✅ | Busca, filtro, favoritos, cópia rápida e CRUD |
+| **Stack & Ferramentas** | ✅ | ✅ | Ferramentas por time/status, CRUD |
+| **Pessoas & Skills** | ✅ | ✅ | Matriz de maturidade por time e competência |
+| **Controle de Acessos** | ✅ | ✅ | Usuários, perfis (RBAC) e status |
+| **Administração** | ✅ | ✅ | Painel, logs de auditoria, integrações |
 | **Integrações** | 🔄 | ✅ | RD Station, ICLIPS, VJOB |
 
 > 🔄 = UI preparada, backend em evolução
@@ -148,7 +152,7 @@ docker compose up --build
 | Camada | Tecnologia |
 |--------|------------|
 | Prompts/PI | Markdown + front matter YAML, versionado por `git`, validado no CI |
-| Frontend | HTML5, CSS3, Vanilla JS (ES6+) |
+| Frontend | React 18, TypeScript, Vite, React Router |
 | Backend | FastAPI, SQLAlchemy 2.0, Pydantic 2, Python 3.11+ |
 | Auth | python-jose (JWT), passlib/bcrypt |
 | DB | SQLite (dev) / PostgreSQL (prod) |

@@ -10,14 +10,14 @@ articulam.
 │                        VANGUARDIAN                           │
 ├──────────────┬───────────────────────┬─────────────────────┤
 │  prompts/    │      frontend/        │      backend/        │
-│  (fonte da   │  SPA de governança    │  API FastAPI         │
+│  (fonte da   │  SPA React + Vite     │  API FastAPI         │
 │   verdade    │  (dashboard, módulos, │  (auth, admin,       │
 │   de PI —    │   biblioteca, login)  │   prompts, skills,   │
 │   arquivos)  │                       │   tools, integrações)│
 └──────────────┴───────────────────────┴─────────────────────┘
         │                 │                        │
-   git = trilha      localStorage /          SQLite (dev) /
-   de auditoria      API REST                PostgreSQL (prod)
+   git = trilha      JWT + API REST          SQLite (dev) /
+   de auditoria      (Authorization)         PostgreSQL (prod)
 ```
 
 ## Fonte da verdade dos prompts
@@ -52,5 +52,5 @@ consomem/refletem esse acervo. Assim garantimos:
 - **Backend**: Render (`render.yaml`) ou Docker (`Dockerfile`).
 - **Banco de dados**: SQLite (dev) / **Supabase PostgreSQL** (prod) — provisionado
   como **infra externa**, conectado via `DATABASE_URL`. Ver [`SUPABASE.md`](SUPABASE.md).
-- **Frontend**: GitHub Pages (workflow `deploy-frontend-pages.yml`) — funciona
-  standalone com `localStorage`.
+- **Frontend**: React + Vite; build estático publicado no GitHub Pages (workflow
+  `deploy-frontend-pages.yml`). Consome a API via JWT (`VITE_API_BASE_URL`).
