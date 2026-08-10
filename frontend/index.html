@@ -65,7 +65,7 @@
 
     <section id="tools" class="page"><header class="top"><div><div class="eyebrow">Stack oficial</div><h1>Ferramentas, licenças e homologação</h1><p>Somente soluções aprovadas pelo Comitê de IA podem operar com dados internos ou de clientes.</p></div><button class="btn ctrl-only" onclick="openModal('tool')">+ Solicitar ferramenta</button></header><div class="two-col"><div class="card"><h3 class="section-title">Inventário homologado</h3><div class="list" id="stackList"></div></div><div class="card"><h3 class="section-title">Checklist de homologação</h3><div class="notice">Toda nova ferramenta passa por avaliação de segurança, LGPD, propriedade intelectual, custo, integração e plano de contingência.</div><div class="timeline" style="margin-top:18px"><div class="event"><b>1. Solicitação pela área</b><span>Caso de uso, dados e responsável</span></div><div class="event"><b>2. Avaliação técnica e de risco</b><span>CIO de IA + Segurança + Jurídico quando aplicável</span></div><div class="event"><b>3. Piloto controlado</b><span>Métricas de eficiência, qualidade e segurança</span></div><div class="event"><b>4. Deliberação do Comitê</b><span>Homologação, restrição ou reprovação</span></div></div></div></div></section>
 
-    <section id="prompts" class="page"><header class="top"><div><div class="eyebrow">Conhecimento que escala</div><h1>Biblioteca institucional de prompts</h1><p>Prompts reutilizáveis, versionados e alinhados à identidade da Vanguarda Martech e aos critérios de cada cliente.</p></div><button class="btn" onclick="openModal('prompt')">+ Novo prompt</button></header><div class="toolbar"><input placeholder="Buscar por objetivo, área ou cliente" oninput="filterRows(this.value,'promptRows')"><select onchange="void 0"><option>Todas as áreas</option><option>Criação</option><option>Atendimento</option><option>Planejamento</option><option>Mídia</option></select></div><div class="card"><table><thead><tr><th>Prompt / playbook</th><th>Área</th><th>Controle</th><th>Última revisão</th><th>Uso</th><th></th></tr></thead><tbody id="promptRows"></tbody></table></div></section>
+    <section id="prompts" class="page"><header class="top"><div><div class="eyebrow">Conhecimento que escala</div><h1>Biblioteca institucional de prompts</h1><p>Prompts reutilizáveis, versionados e alinhados à identidade da Vanguarda Martech e aos critérios de cada cliente.</p></div><div class="actions"><span id="costNote" class="sub"></span><button class="btn alt ctrl-only" onclick="openCostPolicy()">Teto de custo</button><button class="btn" onclick="openModal('prompt')">+ Novo prompt</button></div></header><div class="toolbar"><input placeholder="Buscar por objetivo, área ou cliente" oninput="filterRows(this.value,'promptRows')"><select onchange="void 0"><option>Todas as áreas</option><option>Criação</option><option>Atendimento</option><option>Planejamento</option><option>Mídia</option></select></div><div class="card"><table><thead><tr><th>Prompt / playbook</th><th>Área</th><th>Controle</th><th>Última revisão</th><th>Uso</th><th>Custo/chamada</th><th></th></tr></thead><tbody id="promptRows"></tbody></table></div></section>
 
     <section id="people" class="page"><header class="top"><div><div class="eyebrow">Cultura IA</div><h1>Pessoas, times e competências</h1><p>Mapeie capacidade por área, trilhas de capacitação e embaixadores que sustentam a adoção responsável.</p></div><button class="btn ctrl-only" onclick="openModal('skill')">+ Mapear competência</button></header><div class="two-col"><div class="card"><h3 class="section-title">Matriz de maturidade</h3><div class="list" id="skillsList"></div></div><div class="card"><h3 class="section-title">Trilhas obrigatórias</h3><div id="trainingList"></div></div></div></section>
 
@@ -109,6 +109,7 @@
 const API = "https://vanguardian-api-omg6.onrender.com";
 const TKEY = "vanguardian.token";
 let CURRENT = null;
+let COST_POLICY={max_cost_per_call:0,currency:"BRL"};
 
 // ---- infra ----
 function toast(msg, ok=true){const t=document.getElementById('toast');t.textContent=msg;t.style.borderLeftColor=ok?'var(--green)':'var(--red)';t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2600);}
@@ -178,8 +179,15 @@ function renderPrompts(list){
   document.getElementById('promptRows').innerHTML=list.map(p=>{
     const repo=p.repo_url?`<a class="table-action" href="${esc(p.repo_url)}" target="_blank" rel="noopener" style="text-decoration:none;margin-right:10px">Repo ↗</a>`:'';
     const homolog=ctrl?`<button class="table-action" style="color:var(--green);margin-right:10px" onclick="homologar(${p.id},'Aprovado')">Aprovar</button><button class="table-action" style="color:#ff8aa0;margin-right:10px" onclick="homologar(${p.id},'Reprovado')">Reprovar</button>`:'';
-    return `<tr><td><b>${esc(p.title)}</b><br><span class="muted">${esc(p.description)}</span></td><td>${esc(p.area)}</td><td><span class="badge ${ctrlTone(p.control)}">${esc(p.control)}</span></td><td>${esc(p.last_review)}</td><td>${p.uses}</td><td>${homolog}${repo}<button class="table-action" onclick='copyPrompt(${JSON.stringify(p.content||p.title)})'>Copiar</button></td></tr>`;
+    const teto=COST_POLICY.max_cost_per_call||0; const cc=Number(p.cost_per_call||0);
+    const cur=(COST_POLICY.currency==='USD')?'US$':'R$';
+    const over=teto>0 && cc>teto;
+    const costCell=`<td>${cc>0?cur+' '+cc.toFixed(2):'—'}${over?' <span class="badge red">acima do teto</span>':''}</td>`;
+    return `<tr><td><b>${esc(p.title)}</b><br><span class="muted">${esc(p.description)}</span></td><td>${esc(p.area)}</td><td><span class="badge ${ctrlTone(p.control)}">${esc(p.control)}</span></td><td>${esc(p.last_review)}</td><td>${p.uses}</td>${costCell}<td>${homolog}${repo}<button class="table-action" onclick='copyPrompt(${JSON.stringify(p.content||p.title)})'>Copiar</button></td></tr>`;
   }).join('');
+  const teto=COST_POLICY.max_cost_per_call||0, cur=(COST_POLICY.currency==='USD')?'US$':'R$';
+  const acima=(list||[]).filter(p=>teto>0 && Number(p.cost_per_call||0)>teto).length;
+  const note=document.getElementById('costNote'); if(note) note.textContent = teto>0?`Teto: ${cur} ${teto.toFixed(2)}/chamada · ${acima} acima`:'Teto de custo não definido';
 }
 function renderSkills(list){
   document.getElementById('skillsList').innerHTML=list.map(s=>rowItem(s.area,s.description,`<span class="badge ${lvlTone(s.level)}">${esc(s.level)}</span>`)).join('');
@@ -224,16 +232,18 @@ async function boot(){
     document.getElementById('whoami').textContent=((CURRENT&&CURRENT.name)||'—')+' · '+((CURRENT&&CURRENT.role)||'');
     applyRbac();
     if(isController()){
-      const [ov,stack,prompts,skills,training,inits,adoption,incidents,audit,obs]=await Promise.all([
+      const [ov,stack,prompts,skills,training,inits,adoption,incidents,audit,obs,cp]=await Promise.all([
         api('/governance/overview'),api('/governance/stack'),api('/governance/prompts'),
         api('/governance/skills'),api('/governance/training'),api('/governance/initiatives'),api('/governance/adoption'),
-        api('/governance/incidents'),api('/governance/audit'),api('/governance/observability')
+        api('/governance/incidents'),api('/governance/audit'),api('/governance/observability'),api('/governance/cost-policy')
       ]);
+      COST_POLICY=cp||COST_POLICY;
       setKpis(ov);renderStack(stack);renderPrompts(prompts);renderSkills(skills);
       renderTraining(training);renderInitiatives(inits);renderAdoption(adoption);renderIncidents(incidents);
       renderAudit(audit);renderObs(obs);
     } else {
       // Usuário comum: somente Biblioteca de prompts (leitura)
+      COST_POLICY=await api('/governance/cost-policy');
       renderPrompts(await api('/governance/prompts'));
       document.getElementById('obsDot').className='dot on';
       document.getElementById('obsText').textContent='Acesso: leitura · Biblioteca de prompts';
@@ -245,7 +255,8 @@ async function boot(){
 const FORMS={
   initiative:{title:'Registrar iniciativa',ep:'/governance/initiatives',fields:[['Iniciativa','text','Ex.: Agente de briefing','name'],['Área responsável','text','Ex.: Atendimento + Criação','area'],['Status','select','Em validação|Em produção|Em homologação|Risco: dados','status'],['Horas economizadas (estimadas)','text','Ex.: 40','hours_saved']]},
   tool:{title:'Solicitar ferramenta',ep:'/governance/stack',fields:[['Ferramenta','text','Nome da solução','name'],['Descrição / caso de uso','text','Objetivo operacional','description'],['Status','select','Em análise|Homologada|Restrita|Reprovada','status']]},
-  prompt:{title:'Novo prompt institucional',ep:'/governance/prompts',fields:[['Título','text','Ex.: Diagnóstico de campanha','title'],['Descrição','text','Resumo do objetivo','description'],['Área','select','Criação|Atendimento|Planejamento|Mídia|Social|Comercial','area'],['Conteúdo','textarea','Escreva o prompt com variáveis e critérios de revisão','content'],['Repositório hospedado','text','https://github.com/org/repo (opcional)','repo_url'],['Controle','select','Revisão pendente|Aprovado|Reprovado','control']]},
+  prompt:{title:'Novo prompt institucional',ep:'/governance/prompts',fields:[['Título','text','Ex.: Diagnóstico de campanha','title'],['Descrição','text','Resumo do objetivo','description'],['Área','select','Criação|Atendimento|Planejamento|Mídia|Social|Comercial','area'],['Conteúdo','textarea','Escreva o prompt com variáveis e critérios de revisão','content'],['Repositório hospedado','text','https://github.com/org/repo (opcional)','repo_url'],['Custo por chamada (R$)','text','Ex.: 0.35','cost_per_call'],['Controle','select','Revisão pendente|Aprovado|Reprovado','control']]},
+  costpolicy:{title:'Teto de custo por chamada',ep:'/governance/cost-policy',method:'PUT',fields:[['Teto por chamada','text','Ex.: 0.50','max_cost_per_call'],['Moeda','select','BRL|USD','currency']]},
   skill:{title:'Mapear competência',ep:'/governance/skills',fields:[['Time / área','text','Ex.: Social Media','area'],['Competência','text','Ex.: análise de tendências','description'],['Nível','select','Iniciante|Intermediário|Avançado|Especialista|Prioridade','level'],['Responsável pela avaliação','text','Nome do líder','reviewer']]},
   incident:{title:'Registrar ocorrência',ep:'/governance/incidents',fields:[['Tipo / título','text','Ex.: Uso de dados fora do fluxo','title'],['Área','text','Ex.: Conta Nexo','area'],['Criticidade','select','Baixa|Média|Alta|Crítica','criticality'],['Status','select','Em análise|Conforme|Ação necessária','status'],['Descrição','textarea','Contexto, impacto e ação imediata','description']]},
 };
@@ -259,8 +270,10 @@ function openModal(type){
   title.textContent=userSubmit?'Novo prompt (envio para validação)':cfg.title;
   const note=userSubmit?'<div class="notice" style="margin:0 0 4px">Seu prompt será enviado com status <b>Revisão pendente</b> para validação/homologação do administrador.</div>':'';
   form.innerHTML=note+fields.map(([label,kind,ph,key])=>`<label>${label}${kind==='textarea'?`<textarea data-k="${key}" placeholder="${ph}"></textarea>`:kind==='select'?`<select data-k="${key}">${ph.split('|').map(o=>`<option>${o}</option>`).join('')}</select>`:`<input data-k="${key}" type="text" placeholder="${ph}">`}</label>`).join('');
+  if(type==='costpolicy'){const mx=form.querySelector('[data-k="max_cost_per_call"]');if(mx)mx.value=COST_POLICY.max_cost_per_call;const cur=form.querySelector('[data-k="currency"]');if(cur)cur.value=COST_POLICY.currency||'BRL';}
   modal.classList.add('open');
 }
+function openCostPolicy(){openModal('costpolicy');}
 function closeModal(){modal.classList.remove('open');}
 async function saveItem(){
   if(!CURRENT_FORM)return;
@@ -268,9 +281,11 @@ async function saveItem(){
   if('hours_saved' in payload)payload.hours_saved=parseInt(payload.hours_saved,10)||0;
   if('playbook_active' in payload)payload.playbook_active=!!payload.playbook_active;
   if(CURRENT_FORM.ep==='/governance/prompts' && !isController())payload.control='Revisão pendente';
+  if('cost_per_call' in payload)payload.cost_per_call=parseFloat(String(payload.cost_per_call).replace(',','.'))||0;
+  if('max_cost_per_call' in payload)payload.max_cost_per_call=parseFloat(String(payload.max_cost_per_call).replace(',','.'))||0;
   const btn=document.getElementById('saveBtn');btn.disabled=true;btn.textContent='Salvando…';
   try{
-    await api(CURRENT_FORM.ep,{method:'POST',body:JSON.stringify(payload)});
+    await api(CURRENT_FORM.ep,{method:CURRENT_FORM.method||'POST',body:JSON.stringify(payload)});
     closeModal();toast('Registro salvo. Incluído na trilha de auditoria.');
     boot();
   }catch(ex){toast('Erro ao salvar: '+ex.message,false);}

@@ -10,7 +10,7 @@ import json
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, ConfigDict
-from sqlalchemy import Column, Integer, String, Boolean, Text, DateTime, func
+from sqlalchemy import Column, Integer, String, Boolean, Text, DateTime, Float, func
 from sqlalchemy.orm import Session
 
 from database import Base, get_db
@@ -53,6 +53,7 @@ class PromptItem(Base):
     control = Column(String(30), default="Revisão pendente")  # Aprovado | Revisão pendente | Reprovado
     content = Column(Text, default="")
     repo_url = Column(String(300), default="")
+    cost_per_call = Column(Float, default=0.0)
     last_review = Column(String(30), default="")
     uses = Column(Integer, default=0)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
@@ -92,6 +93,15 @@ class AdoptionArea(Base):
     area = Column(String(120), nullable=False)
     percent = Column(Integer, default=0)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+
+class CostPolicy(Base):
+    __tablename__ = "gov_cost_policy"
+    id = Column(Integer, primary_key=True, index=True)
+    max_cost_per_call = Column(Float, default=0.50)   # teto de custo por chamada
+    currency = Column(String(8), default="BRL")
+    updated_by = Column(String(120), default="")
+    updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
 
 
 class Incident(Base):
@@ -136,6 +146,7 @@ class PromptItemIn(BaseModel):
     control: str = "Revisão pendente"
     content: str = ""
     repo_url: str = ""
+    cost_per_call: float = 0.0
     last_review: str = ""
     uses: int = 0
 
@@ -164,6 +175,19 @@ class IncidentIn(BaseModel):
 
 class HomologacaoIn(BaseModel):
     decision: str  # "Aprovado" | "Reprovado"
+
+
+class CostPolicyIn(BaseModel):
+    max_cost_per_call: float
+    currency: str = "BRL"
+
+
+def get_or_create_policy(db: Session) -> CostPolicy:
+    pol = db.query(CostPolicy).first()
+    if not pol:
+        pol = CostPolicy(max_cost_per_call=0.50, currency="BRL")
+        db.add(pol); db.commit(); db.refresh(pol)
+    return pol
 
 
 _MESES = ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"]
@@ -263,6 +287,24 @@ def homologar_prompt(pid: int, item: HomologacaoIn, db: Session = Depends(get_db
     return _serialize(obj)
 
 
+# ---- Política de custo (teto por chamada, controlado pelo PrMO) ----
+@router.get("/cost-policy")
+def get_cost_policy(db: Session = Depends(get_db), u: User = Depends(get_current_user)):
+    return _serialize(get_or_create_policy(db))
+
+
+@router.put("/cost-policy")
+def update_cost_policy(item: CostPolicyIn, db: Session = Depends(get_db), u: User = Depends(get_current_manager_user)):
+    pol = get_or_create_policy(db)
+    pol.max_cost_per_call = item.max_cost_per_call
+    pol.currency = item.currency
+    pol.updated_by = u.email
+    db.commit(); db.refresh(pol)
+    _audit(db, u, "UPDATE", "cost_policy", pol.id,
+           {"max_cost_per_call": pol.max_cost_per_call, "currency": pol.currency})
+    return _serialize(pol)
+
+
 # ---- Pessoas & skills ----
 @router.get("/skills")
 def list_skills(db: Session = Depends(get_db), u: User = Depends(get_current_user)):
@@ -326,7 +368,16 @@ def overview(db: Session = Depends(get_db), u: User = Depends(get_current_user))
     since = datetime.now(timezone.utc) - timedelta(days=30)
     audits_month = db.query(AuditLog).filter(AuditLog.timestamp >= since).count()
     pendencias = [i for i in incidents if i.status != "Conforme"]
+    pol = get_or_create_policy(db)
+    prompts = db.query(PromptItem).all()
+    acima = [p for p in prompts if (p.cost_per_call or 0) > pol.max_cost_per_call] if pol.max_cost_per_call else []
     return {
+        "custo": {
+            "teto_por_chamada": pol.max_cost_per_call,
+            "moeda": pol.currency,
+            "prompts_acima_do_teto": len(acima),
+            "prompts_avaliados": len(prompts),
+        },
         "dashboard": {
             "clientes_governados": len(clients),
             "playbooks_ativos": len([c for c in clients if c.playbook_active]),
@@ -403,13 +454,14 @@ def seed_governance(db: Session):
         StackTool(name="Make / APIs", description="Integrações e automações operacionais", status="Homologada"),
         StackTool(name="Ferramenta externa de vídeo", description="Solicitação #VG-204", status="Em análise", request_code="VG-204"),
     ])
+    db.add(CostPolicy(max_cost_per_call=0.50, currency="BRL"))
     db.add_all([
         PromptItem(title="Briefing estratégico 360°", description="Transforma demanda em contexto, objetivos e critérios de entrega.",
-                   area="Planejamento", control="Aprovado", last_review="04 ago 2026", uses=86),
+                   area="Planejamento", control="Aprovado", last_review="04 ago 2026", uses=86, cost_per_call=0.30),
         PromptItem(title="Legendas com voz de marca", description="Gera variações com tom, persona e restrições do cliente.",
-                   area="Social", control="Aprovado", last_review="02 ago 2026", uses=143),
+                   area="Social", control="Aprovado", last_review="02 ago 2026", uses=143, cost_per_call=0.18),
         PromptItem(title="Insight de performance semanal", description="Converte dados de mídia em decisões acionáveis.",
-                   area="Mídia", control="Revisão pendente", last_review="28 jul 2026", uses=48),
+                   area="Mídia", control="Revisão pendente", last_review="28 jul 2026", uses=48, cost_per_call=0.82),
     ])
     db.add_all([
         SkillItem(area="Criação", description="Ideação, imagem, vídeo e revisão criativa", level="Avançado"),
