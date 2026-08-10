@@ -4,6 +4,27 @@ Registro cronológico do trabalho por sessão. Entrada mais recente no topo.
 
 ---
 
+## 2026-08-10 (sessão 3) — Homologação in-app e teto de custo por chamada
+
+### 🎯 Objetivo
+Fechar o fluxo de homologação e introduzir o controle de custo por chamada sob governança do PrMO.
+
+### ✅ Entregas
+- **Homologação in-app**: Admin/Manager aprovam/reprovam prompts direto na Biblioteca (`POST /governance/prompts/{id}/homologar`), atualizando controle + última revisão e gravando `APPROVE`/`REJECT` na trilha de auditoria. User → 403.
+- **Teto de custo por chamada (política global do PrMO)**: modelo `CostPolicy` (teto + moeda) editável só por Manager/Admin (`GET/PUT /governance/cost-policy`, PUT auditado); teto inicial **R$ 0,50**.
+- **Custo por prompt + alerta**: campo `cost_per_call` no cadastro; coluna **Custo/chamada** na lista com badge **"acima do teto"**; indicador do teto e botão **"Teto de custo"** (admin). `/overview` expõe `custo` (teto, moeda, prompts acima/avaliados).
+- **Limpeza**: nomes internos "VANGUARDIAN" → "PrMO" no backend. `render.yaml` com `name: prmo-api` (efetivo só em nova sync de blueprint).
+
+### 🧪 Validações ao vivo
+- Homologação: Manager aprova prompt → `control=Aprovado`, `last_review` atualizada, auditoria `APPROVE`.
+- Custo: `GET /cost-policy` = R$ 0,50; `overview.custo` = 1 acima de 3; User cria com custo mas não altera o teto (403); Manager altera o teto (200).
+- Frontend publicado com coluna Custo/chamada, indicador e editor do teto.
+
+### ⏳ Pendências (mantidas)
+- Render `prmo-api` (Manual sync + repointar frontend), Supabase (billing "VTech"), branch padrão → `main`, integração VanguardIA, enforcement real de custo (depende da execução de IA), migração de schema quando o banco for persistente.
+
+---
+
 ## 2026-08-10 (sessão 2) — RBAC do usuário comum e rebrand para PrMO
 
 ### 🎯 Objetivo
