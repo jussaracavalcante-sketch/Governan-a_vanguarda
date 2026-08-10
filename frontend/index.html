@@ -33,11 +33,11 @@
     <div class="brand"><b>VANGUARDA.IA</b><small>VANGUARDIAN · GOVERNANÇA</small></div>
     <div class="nav-title">OPERAÇÃO</div>
     <nav class="nav">
-      <button class="active" data-page="dashboard">◈ &nbsp; Visão executiva</button>
-      <button data-page="tools">◉ &nbsp; Stack & homologação</button>
+      <button class="active ctrl-only" data-page="dashboard">◈ &nbsp; Visão executiva</button>
+      <button class="ctrl-only" data-page="tools">◉ &nbsp; Stack & homologação</button>
       <button data-page="prompts">✦ &nbsp; Biblioteca de prompts</button>
-      <button data-page="people">◌ &nbsp; Pessoas & skills</button>
-      <button data-page="compliance">◫ &nbsp; Compliance & auditoria</button>
+      <button class="ctrl-only" data-page="people">◌ &nbsp; Pessoas & skills</button>
+      <button class="ctrl-only" data-page="compliance">◫ &nbsp; Compliance & auditoria</button>
     </nav>
     <div class="footer">
       <div><span class="dot" id="obsDot"></span><span id="obsText">Observabilidade…</span></div>
@@ -47,7 +47,7 @@
   </aside>
   <main class="main">
     <section id="dashboard" class="page active">
-      <header class="top"><div><div class="eyebrow">Vanguarda Martech · IA operacional</div><h1>Governança que dá escala à criatividade.</h1><p>Centralize ferramentas, conhecimento, padrões de marca, dados e automações para transformar cada entrega em resultado mensurável.</p></div><div class="actions"><button class="btn alt" onclick="exportView()">Exportar visão</button><button class="btn" onclick="openModal('initiative')">+ Registrar iniciativa</button></div></header>
+      <header class="top"><div><div class="eyebrow">Vanguarda Martech · IA operacional</div><h1>Governança que dá escala à criatividade.</h1><p>Centralize ferramentas, conhecimento, padrões de marca, dados e automações para transformar cada entrega em resultado mensurável.</p></div><div class="actions"><button class="btn alt ctrl-only" onclick="exportView()">Exportar visão</button><button class="btn ctrl-only" onclick="openModal('initiative')">+ Registrar iniciativa</button></div></header>
       <div class="hero"><div><div class="eyebrow">Programa VKB 2026–2027</div><h2>Uma agência inteira, potencializada por IA.</h2><p>Foco da semana: homologar o fluxo de <strong>briefing → criação → revisão → publicação</strong> para reduzir retrabalho e preservar a voz de cada marca.</p></div><div><span class="badge ok">● <span id="kAdocao">—</span>% de adoção ativa</span><div class="sub" style="margin-top:8px">Meta corporativa: 80%</div></div></div>
       <div class="kpis">
         <div class="card"><div class="label">Clientes governados</div><div class="value" id="kClientes">—</div><div class="sub"><span id="kPlaybooks">—</span> com playbook IA ativo</div></div>
@@ -63,13 +63,13 @@
     </section>
 
 
-    <section id="tools" class="page"><header class="top"><div><div class="eyebrow">Stack oficial</div><h1>Ferramentas, licenças e homologação</h1><p>Somente soluções aprovadas pelo Comitê de IA podem operar com dados internos ou de clientes.</p></div><button class="btn" onclick="openModal('tool')">+ Solicitar ferramenta</button></header><div class="two-col"><div class="card"><h3 class="section-title">Inventário homologado</h3><div class="list" id="stackList"></div></div><div class="card"><h3 class="section-title">Checklist de homologação</h3><div class="notice">Toda nova ferramenta passa por avaliação de segurança, LGPD, propriedade intelectual, custo, integração e plano de contingência.</div><div class="timeline" style="margin-top:18px"><div class="event"><b>1. Solicitação pela área</b><span>Caso de uso, dados e responsável</span></div><div class="event"><b>2. Avaliação técnica e de risco</b><span>CIO de IA + Segurança + Jurídico quando aplicável</span></div><div class="event"><b>3. Piloto controlado</b><span>Métricas de eficiência, qualidade e segurança</span></div><div class="event"><b>4. Deliberação do Comitê</b><span>Homologação, restrição ou reprovação</span></div></div></div></div></section>
+    <section id="tools" class="page"><header class="top"><div><div class="eyebrow">Stack oficial</div><h1>Ferramentas, licenças e homologação</h1><p>Somente soluções aprovadas pelo Comitê de IA podem operar com dados internos ou de clientes.</p></div><button class="btn ctrl-only" onclick="openModal('tool')">+ Solicitar ferramenta</button></header><div class="two-col"><div class="card"><h3 class="section-title">Inventário homologado</h3><div class="list" id="stackList"></div></div><div class="card"><h3 class="section-title">Checklist de homologação</h3><div class="notice">Toda nova ferramenta passa por avaliação de segurança, LGPD, propriedade intelectual, custo, integração e plano de contingência.</div><div class="timeline" style="margin-top:18px"><div class="event"><b>1. Solicitação pela área</b><span>Caso de uso, dados e responsável</span></div><div class="event"><b>2. Avaliação técnica e de risco</b><span>CIO de IA + Segurança + Jurídico quando aplicável</span></div><div class="event"><b>3. Piloto controlado</b><span>Métricas de eficiência, qualidade e segurança</span></div><div class="event"><b>4. Deliberação do Comitê</b><span>Homologação, restrição ou reprovação</span></div></div></div></div></section>
 
-    <section id="prompts" class="page"><header class="top"><div><div class="eyebrow">Conhecimento que escala</div><h1>Biblioteca institucional de prompts</h1><p>Prompts reutilizáveis, versionados e alinhados à identidade da Vanguarda Martech e aos critérios de cada cliente.</p></div><button class="btn" onclick="openModal('prompt')">+ Novo prompt</button></header><div class="toolbar"><input placeholder="Buscar por objetivo, área ou cliente" oninput="filterRows(this.value,'promptRows')"><select onchange="void 0"><option>Todas as áreas</option><option>Criação</option><option>Atendimento</option><option>Planejamento</option><option>Mídia</option></select></div><div class="card"><table><thead><tr><th>Prompt / playbook</th><th>Área</th><th>Controle</th><th>Última revisão</th><th>Uso</th><th></th></tr></thead><tbody id="promptRows"></tbody></table></div></section>
+    <section id="prompts" class="page"><header class="top"><div><div class="eyebrow">Conhecimento que escala</div><h1>Biblioteca institucional de prompts</h1><p>Prompts reutilizáveis, versionados e alinhados à identidade da Vanguarda Martech e aos critérios de cada cliente.</p></div><button class="btn ctrl-only" onclick="openModal('prompt')">+ Novo prompt</button></header><div class="toolbar"><input placeholder="Buscar por objetivo, área ou cliente" oninput="filterRows(this.value,'promptRows')"><select onchange="void 0"><option>Todas as áreas</option><option>Criação</option><option>Atendimento</option><option>Planejamento</option><option>Mídia</option></select></div><div class="card"><table><thead><tr><th>Prompt / playbook</th><th>Área</th><th>Controle</th><th>Última revisão</th><th>Uso</th><th></th></tr></thead><tbody id="promptRows"></tbody></table></div></section>
 
-    <section id="people" class="page"><header class="top"><div><div class="eyebrow">Cultura IA</div><h1>Pessoas, times e competências</h1><p>Mapeie capacidade por área, trilhas de capacitação e embaixadores que sustentam a adoção responsável.</p></div><button class="btn" onclick="openModal('skill')">+ Mapear competência</button></header><div class="two-col"><div class="card"><h3 class="section-title">Matriz de maturidade</h3><div class="list" id="skillsList"></div></div><div class="card"><h3 class="section-title">Trilhas obrigatórias</h3><div id="trainingList"></div></div></div></section>
+    <section id="people" class="page"><header class="top"><div><div class="eyebrow">Cultura IA</div><h1>Pessoas, times e competências</h1><p>Mapeie capacidade por área, trilhas de capacitação e embaixadores que sustentam a adoção responsável.</p></div><button class="btn ctrl-only" onclick="openModal('skill')">+ Mapear competência</button></header><div class="two-col"><div class="card"><h3 class="section-title">Matriz de maturidade</h3><div class="list" id="skillsList"></div></div><div class="card"><h3 class="section-title">Trilhas obrigatórias</h3><div id="trainingList"></div></div></div></section>
 
-    <section id="compliance" class="page"><header class="top"><div><div class="eyebrow">Confiança por design</div><h1>Compliance, riscos e auditoria</h1><p>Monitore o cumprimento da Política Corporativa de IA, da LGPD e dos padrões de qualidade das entregas.</p></div><button class="btn" onclick="openModal('incident')">+ Registrar ocorrência</button></header>
+    <section id="compliance" class="page"><header class="top"><div><div class="eyebrow">Confiança por design</div><h1>Compliance, riscos e auditoria</h1><p>Monitore o cumprimento da Política Corporativa de IA, da LGPD e dos padrões de qualidade das entregas.</p></div><button class="btn ctrl-only" onclick="openModal('incident')">+ Registrar ocorrência</button></header>
       <div class="kpis" style="grid-template-columns:repeat(4,1fr)">
         <div class="card"><div class="label">Auditorias no mês</div><div class="value" id="cAudit">—</div><div class="sub">eventos na trilha (30d)</div></div>
         <div class="card"><div class="label">Pendências abertas</div><div class="value" id="cPend">—</div><div class="sub"><span id="cPendBaixa">—</span> de baixa criticidade</div></div>
@@ -142,6 +142,19 @@ async function doLogin(e){
 }
 function logout(){localStorage.removeItem(TKEY);CURRENT=null;document.getElementById('login').style.display='grid';}
 
+// ---- RBAC: User comum só vê/acessa a Biblioteca de prompts; Admin/Manager (controlador) vê tudo ----
+function isController(){return !!(CURRENT && (CURRENT.role==='Admin'||CURRENT.role==='Manager'));}
+function applyRbac(){
+  const ctrl=isController();
+  document.querySelectorAll('.ctrl-only').forEach(el=>{el.style.display=ctrl?'':'none';});
+  if(!ctrl){
+    document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));
+    document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+    const pb=document.querySelector('.nav button[data-page="prompts"]'); if(pb) pb.classList.add('active');
+    const pg=document.getElementById('prompts'); if(pg) pg.classList.add('active');
+  }
+}
+
 // ---- tone helpers ----
 const stageTone=c=>{const u=(c.ai_usage||'').toLowerCase();return u.includes('pend')?'red':u.includes('onboarding')?'warn':'ok';};
 const toolTone=s=>s==='Homologada'?'ok':s==='Em análise'?'warn':'red';
@@ -203,15 +216,23 @@ function setKpis(ov){
 async function boot(){
   try{
     if(!CURRENT){try{CURRENT=await api('/auth/me');}catch(e){logout();return;}}
-    document.getElementById('whoami').textContent=(CURRENT&&CURRENT.name)||'—';
-    const [ov,stack,prompts,skills,training,inits,adoption,incidents,audit,obs]=await Promise.all([
-      api('/governance/overview'),api('/governance/stack'),api('/governance/prompts'),
-      api('/governance/skills'),api('/governance/training'),api('/governance/initiatives'),api('/governance/adoption'),
-      api('/governance/incidents'),api('/governance/audit'),api('/governance/observability')
-    ]);
-    setKpis(ov);renderStack(stack);renderPrompts(prompts);renderSkills(skills);
-    renderTraining(training);renderInitiatives(inits);renderAdoption(adoption);renderIncidents(incidents);
-    renderAudit(audit);renderObs(obs);
+    document.getElementById('whoami').textContent=((CURRENT&&CURRENT.name)||'—')+' · '+((CURRENT&&CURRENT.role)||'');
+    applyRbac();
+    if(isController()){
+      const [ov,stack,prompts,skills,training,inits,adoption,incidents,audit,obs]=await Promise.all([
+        api('/governance/overview'),api('/governance/stack'),api('/governance/prompts'),
+        api('/governance/skills'),api('/governance/training'),api('/governance/initiatives'),api('/governance/adoption'),
+        api('/governance/incidents'),api('/governance/audit'),api('/governance/observability')
+      ]);
+      setKpis(ov);renderStack(stack);renderPrompts(prompts);renderSkills(skills);
+      renderTraining(training);renderInitiatives(inits);renderAdoption(adoption);renderIncidents(incidents);
+      renderAudit(audit);renderObs(obs);
+    } else {
+      // Usuário comum: somente Biblioteca de prompts (leitura)
+      renderPrompts(await api('/governance/prompts'));
+      document.getElementById('obsDot').className='dot on';
+      document.getElementById('obsText').textContent='Acesso: leitura · Biblioteca de prompts';
+    }
   }catch(ex){if(ex.message!=='401')toast('Falha ao carregar: '+ex.message,false);}
 }
 

@@ -14,7 +14,7 @@ from sqlalchemy import Column, Integer, String, Boolean, Text, DateTime, func
 from sqlalchemy.orm import Session
 
 from database import Base, get_db
-from auth.dependencies import get_current_user
+from auth.dependencies import get_current_user, get_current_manager_user
 from models import User, AuditLog
 
 
@@ -195,7 +195,7 @@ def list_clients(db: Session = Depends(get_db), u: User = Depends(get_current_us
 
 
 @router.post("/clients", status_code=201)
-def create_client(item: ClientIn, db: Session = Depends(get_db), u: User = Depends(get_current_user)):
+def create_client(item: ClientIn, db: Session = Depends(get_db), u: User = Depends(get_current_manager_user)):
     obj = Client(**item.model_dump())
     db.add(obj); db.commit(); db.refresh(obj)
     _audit(db, u, "CREATE", "client", obj.id, {"name": obj.name})
@@ -209,7 +209,7 @@ def list_stack(db: Session = Depends(get_db), u: User = Depends(get_current_user
 
 
 @router.post("/stack", status_code=201)
-def create_stack(item: StackToolIn, db: Session = Depends(get_db), u: User = Depends(get_current_user)):
+def create_stack(item: StackToolIn, db: Session = Depends(get_db), u: User = Depends(get_current_manager_user)):
     obj = StackTool(**item.model_dump())
     db.add(obj); db.commit(); db.refresh(obj)
     _audit(db, u, "CREATE", "tool", obj.id, {"name": obj.name})
@@ -223,7 +223,7 @@ def list_prompts(db: Session = Depends(get_db), u: User = Depends(get_current_us
 
 
 @router.post("/prompts", status_code=201)
-def create_prompt(item: PromptItemIn, db: Session = Depends(get_db), u: User = Depends(get_current_user)):
+def create_prompt(item: PromptItemIn, db: Session = Depends(get_db), u: User = Depends(get_current_manager_user)):
     obj = PromptItem(**item.model_dump())
     db.add(obj); db.commit(); db.refresh(obj)
     _audit(db, u, "CREATE", "prompt", obj.id, {"title": obj.title})
@@ -237,7 +237,7 @@ def list_skills(db: Session = Depends(get_db), u: User = Depends(get_current_use
 
 
 @router.post("/skills", status_code=201)
-def create_skill(item: SkillItemIn, db: Session = Depends(get_db), u: User = Depends(get_current_user)):
+def create_skill(item: SkillItemIn, db: Session = Depends(get_db), u: User = Depends(get_current_manager_user)):
     obj = SkillItem(**item.model_dump())
     db.add(obj); db.commit(); db.refresh(obj)
     _audit(db, u, "CREATE", "skill", obj.id, {"area": obj.area})
@@ -256,7 +256,7 @@ def list_initiatives(db: Session = Depends(get_db), u: User = Depends(get_curren
 
 
 @router.post("/initiatives", status_code=201)
-def create_initiative(item: InitiativeIn, db: Session = Depends(get_db), u: User = Depends(get_current_user)):
+def create_initiative(item: InitiativeIn, db: Session = Depends(get_db), u: User = Depends(get_current_manager_user)):
     obj = Initiative(**item.model_dump())
     db.add(obj); db.commit(); db.refresh(obj)
     _audit(db, u, "CREATE", "initiative", obj.id, {"name": obj.name})
@@ -275,7 +275,7 @@ def list_incidents(db: Session = Depends(get_db), u: User = Depends(get_current_
 
 
 @router.post("/incidents", status_code=201)
-def create_incident(item: IncidentIn, db: Session = Depends(get_db), u: User = Depends(get_current_user)):
+def create_incident(item: IncidentIn, db: Session = Depends(get_db), u: User = Depends(get_current_manager_user)):
     obj = Incident(**item.model_dump())
     db.add(obj); db.commit(); db.refresh(obj)
     _audit(db, u, "CREATE", "incident", obj.id, {"title": obj.title, "criticality": obj.criticality})

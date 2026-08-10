@@ -13,6 +13,17 @@
 
 O mesmo RBAC é aplicado na API (ver [`../backend/auth/`](../backend/auth/)).
 
+### Regra de acesso na plataforma (app)
+
+| Perfil | Menus visíveis | Ações |
+|--------|----------------|-------|
+| **User** (comum) | Somente **Biblioteca de prompts** | Apenas **visualizar** e copiar (sem cadastro) |
+| **Manager / Admin** (controlador) | **Todos** os menus | Visualizar e **cadastrar** em todos os módulos |
+
+No frontend, os menus e botões de cadastro são ocultados para o perfil User; no
+backend, os endpoints de criação (`POST /governance/*`) exigem Manager/Admin
+(HTTP 403 para User), garantindo a regra também no servidor.
+
 ## 2. Fluxo de contribuição de prompt
 
 ```
