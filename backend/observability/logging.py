@@ -1,5 +1,5 @@
 """
-VANGUARDIAN - Observability Logging
+PrMO - Observability Logging
 Structured logging configuration using structlog.
 """
 import sys

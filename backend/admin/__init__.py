@@ -1,1 +1,1 @@
-# VANGUARDIAN - Admin Module
+# PrMO - Admin Module

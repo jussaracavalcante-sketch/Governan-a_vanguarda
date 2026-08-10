@@ -1,5 +1,5 @@
 """
-VANGUARDIAN - Main Application
+PrMO - Main Application
 FastAPI entrypoint with auth, admin, observability and core routers.
 """
 from contextlib import asynccontextmanager

@@ -1,1 +1,1 @@
-"""VANGUARDIAN Auth package."""
+"""PrMO Auth package."""

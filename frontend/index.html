@@ -174,7 +174,12 @@ function renderStack(list){
   document.getElementById('stackList').innerHTML=list.map(t=>rowItem(t.name,t.description,`<span class="badge ${toolTone(t.status)}">${esc(t.status)}</span>`)).join('');
 }
 function renderPrompts(list){
-  document.getElementById('promptRows').innerHTML=list.map(p=>{const repo=p.repo_url?`<a class="table-action" href="${esc(p.repo_url)}" target="_blank" rel="noopener" style="text-decoration:none;margin-right:10px">Repo ↗</a>`:'';return `<tr><td><b>${esc(p.title)}</b><br><span class="muted">${esc(p.description)}</span></td><td>${esc(p.area)}</td><td><span class="badge ${ctrlTone(p.control)}">${esc(p.control)}</span></td><td>${esc(p.last_review)}</td><td>${p.uses}</td><td>${repo}<button class="table-action" onclick='copyPrompt(${JSON.stringify(p.content||p.title)})'>Copiar</button></td></tr>`;}).join('');
+  const ctrl=isController();
+  document.getElementById('promptRows').innerHTML=list.map(p=>{
+    const repo=p.repo_url?`<a class="table-action" href="${esc(p.repo_url)}" target="_blank" rel="noopener" style="text-decoration:none;margin-right:10px">Repo ↗</a>`:'';
+    const homolog=ctrl?`<button class="table-action" style="color:var(--green);margin-right:10px" onclick="homologar(${p.id},'Aprovado')">Aprovar</button><button class="table-action" style="color:#ff8aa0;margin-right:10px" onclick="homologar(${p.id},'Reprovado')">Reprovar</button>`:'';
+    return `<tr><td><b>${esc(p.title)}</b><br><span class="muted">${esc(p.description)}</span></td><td>${esc(p.area)}</td><td><span class="badge ${ctrlTone(p.control)}">${esc(p.control)}</span></td><td>${esc(p.last_review)}</td><td>${p.uses}</td><td>${homolog}${repo}<button class="table-action" onclick='copyPrompt(${JSON.stringify(p.content||p.title)})'>Copiar</button></td></tr>`;
+  }).join('');
 }
 function renderSkills(list){
   document.getElementById('skillsList').innerHTML=list.map(s=>rowItem(s.area,s.description,`<span class="badge ${lvlTone(s.level)}">${esc(s.level)}</span>`)).join('');
@@ -273,6 +278,12 @@ async function saveItem(){
 }
 function filterRows(q,id){q=q.toLowerCase();document.querySelectorAll('#'+id+' tr').forEach(r=>r.style.display=r.innerText.toLowerCase().includes(q)?'':'none');}
 function copyPrompt(text){navigator.clipboard?.writeText(text);toast('Prompt copiado para a área de transferência.');}
+async function homologar(id,decision){
+  try{ await api('/governance/prompts/'+id+'/homologar',{method:'POST',body:JSON.stringify({decision})});
+    toast('Prompt '+(decision==='Aprovado'?'aprovado':'reprovado')+'. Registrado na trilha de auditoria.');
+    boot();
+  }catch(ex){ toast('Erro ao homologar: '+ex.message,false); }
+}
 function exportView(){toast('Relatório executivo gerado para download.');}
 
 // ---- start ----

@@ -1,5 +1,5 @@
 """
-VANGUARDIAN - Integrations Router
+PrMO - Integrations Router
 Endpoints for managing and triggering external integrations.
 """
 from typing import List, Optional

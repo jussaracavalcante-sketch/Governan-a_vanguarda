@@ -1,5 +1,5 @@
 """
-VANGUARDIAN - Integration Factory
+PrMO - Integration Factory
 Creates integration instances by name.
 """
 from sqlalchemy.orm import Session

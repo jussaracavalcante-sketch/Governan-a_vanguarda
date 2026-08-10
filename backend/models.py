@@ -1,5 +1,5 @@
 """
-VANGUARDIAN - SQLAlchemy Models
+PrMO - SQLAlchemy Models
 Database models for users, tools, skills, prompts, activities, and audit logs.
 """
 from sqlalchemy import Column, Integer, String, DateTime, Boolean, Text, func, Enum as SQLEnum, ForeignKey, Index

@@ -1,5 +1,5 @@
 """
-VANGUARDIAN - Admin Router
+PrMO - Admin Router
 Admin panel endpoints for user management, audit logs, integrations, and system metrics.
 """
 from typing import List, Optional

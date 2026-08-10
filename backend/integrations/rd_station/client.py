@@ -1,5 +1,5 @@
 """
-VANGUARDIAN - RD Station Integration Client
+PrMO - RD Station Integration Client
 Marketing automation CRM integration.
 """
 from typing import Optional

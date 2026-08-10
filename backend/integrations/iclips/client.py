@@ -1,5 +1,5 @@
 """
-VANGUARDIAN - ICLIPS Integration Client
+PrMO - ICLIPS Integration Client
 Healthcare management system integration.
 """
 from sqlalchemy.orm import Session

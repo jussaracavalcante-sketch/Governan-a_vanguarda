@@ -1,5 +1,5 @@
 """
-VANGUARDIAN - Database Seed
+PrMO - Database Seed
 """
 from database import engine, Base, SessionLocal
 from crud import seed_initial_data

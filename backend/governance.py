@@ -1,5 +1,5 @@
 """
-VANGUARDIAN - Governance module
+PrMO - Governance module
 Modelos, schemas, CRUD e rotas que espelham as telas do protótipo:
 Portfólio de clientes, Stack & homologação, Biblioteca de prompts,
 Pessoas & skills, Visão executiva (iniciativas/indicadores) e
@@ -8,7 +8,7 @@ Compliance & auditoria (ocorrências, trilha de auditoria, observabilidade).
 from datetime import datetime, timedelta, timezone
 import json
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, ConfigDict
 from sqlalchemy import Column, Integer, String, Boolean, Text, DateTime, func
 from sqlalchemy.orm import Session
@@ -162,6 +162,18 @@ class IncidentIn(BaseModel):
     description: str = ""
 
 
+class HomologacaoIn(BaseModel):
+    decision: str  # "Aprovado" | "Reprovado"
+
+
+_MESES = ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", "nov", "dez"]
+
+
+def _hoje_pt() -> str:
+    d = datetime.now(timezone.utc)
+    return f"{d.day:02d} {_MESES[d.month - 1]} {d.year}"
+
+
 # ─────────────────────────── ROUTER ───────────────────────────
 router = APIRouter(prefix="/governance", tags=["Governança"])
 
@@ -233,6 +245,21 @@ def create_prompt(item: PromptItemIn, db: Session = Depends(get_db), u: User = D
     obj = PromptItem(**data)
     db.add(obj); db.commit(); db.refresh(obj)
     _audit(db, u, "CREATE", "prompt", obj.id, {"title": obj.title, "control": obj.control, "by_role": role})
+    return _serialize(obj)
+
+
+@router.post("/prompts/{pid}/homologar")
+def homologar_prompt(pid: int, item: HomologacaoIn, db: Session = Depends(get_db), u: User = Depends(get_current_manager_user)):
+    if item.decision not in ("Aprovado", "Reprovado"):
+        raise HTTPException(status_code=422, detail="decision deve ser 'Aprovado' ou 'Reprovado'")
+    obj = db.query(PromptItem).filter(PromptItem.id == pid).first()
+    if not obj:
+        raise HTTPException(status_code=404, detail="Prompt não encontrado")
+    obj.control = item.decision
+    obj.last_review = _hoje_pt()
+    db.commit(); db.refresh(obj)
+    _audit(db, u, "APPROVE" if item.decision == "Aprovado" else "REJECT", "prompt", obj.id,
+           {"title": obj.title, "control": obj.control})
     return _serialize(obj)
 
 

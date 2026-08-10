@@ -1,4 +1,4 @@
-"""Testes smoke da API VANGUARDIAN."""
+"""Testes smoke da API PrMO."""
 from fastapi.testclient import TestClient
 
 from main import app

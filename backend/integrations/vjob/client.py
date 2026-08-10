@@ -1,5 +1,5 @@
 """
-VANGUARDIAN - VJOB Integration Client
+PrMO - VJOB Integration Client
 Recruitment / HR platform integration.
 """
 from sqlalchemy.orm import Session
@@ -86,7 +86,7 @@ class VJobIntegration(BaseIntegration):
                 processed += 1
                 try:
                     if c.get("email") or c.get("id"):
-                        # Could map skills into VANGUARDIAN skills matrix
+                        # Could map skills into PrMO skills matrix
                         skills = c.get("skills") or []
                         if skills:
                             updated += 1

@@ -1,5 +1,5 @@
 """
-VANGUARDIAN - Admin Schemas
+PrMO - Admin Schemas
 Schemas for admin panel operations.
 """
 from datetime import datetime

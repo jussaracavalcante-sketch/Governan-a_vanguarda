@@ -1,2 +1,2 @@
-# VANGUARDIAN - Integrations Module
+# PrMO - Integrations Module
 from integrations.factory import get_integration

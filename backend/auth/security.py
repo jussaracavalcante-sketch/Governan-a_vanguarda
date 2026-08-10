@@ -1,5 +1,5 @@
 """
-VANGUARDIAN - Authentication Security Module
+PrMO - Authentication Security Module
 JWT token handling, password hashing, and security utilities.
 """
 from datetime import datetime, timedelta

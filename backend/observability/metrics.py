@@ -1,5 +1,5 @@
 """
-VANGUARDIAN - Observability Metrics
+PrMO - Observability Metrics
 Prometheus metrics collection and exposition.
 """
 from prometheus_client import Counter, Histogram, Gauge, Info, generate_latest, CONTENT_TYPE_LATEST
@@ -9,8 +9,8 @@ from config import get_settings
 settings = get_settings()
 
 # Application info
-app_info = Info("vanguardian_app", "VANGUARDIAN Application Information")
-app_info.info({"version": "1.0.0", "name": "VANGUARDIAN API"})
+app_info = Info("vanguardian_app", "PrMO Application Information")
+app_info.info({"version": "1.0.0", "name": "PrMO API"})
 
 # HTTP Metrics
 http_requests_total = Counter(

@@ -1,5 +1,5 @@
 """
-VANGUARDIAN - Observability Middleware
+PrMO - Observability Middleware
 Request/response logging and metrics middleware.
 """
 import time

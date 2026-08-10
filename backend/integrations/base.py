@@ -1,5 +1,5 @@
 """
-VANGUARDIAN - Base Integration Class
+PrMO - Base Integration Class
 Abstract base class for all external integrations.
 """
 from abc import ABC, abstractmethod

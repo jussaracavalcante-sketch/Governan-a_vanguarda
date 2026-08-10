@@ -1,5 +1,5 @@
 """
-VANGUARDIAN - Observability Health Checks
+PrMO - Observability Health Checks
 Liveness and readiness probes for Kubernetes/container orchestration.
 """
 import time

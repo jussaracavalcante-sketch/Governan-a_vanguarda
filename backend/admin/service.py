@@ -1,5 +1,5 @@
 """
-VANGUARDIAN - Admin Service
+PrMO - Admin Service
 """
 from datetime import datetime, timedelta
 from typing import List, Optional, Dict, Any

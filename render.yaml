@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: vanguardian-api
+    name: prmo-api
     env: python
     region: oregon
     plan: free

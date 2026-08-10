@@ -1,5 +1,5 @@
 """
-VANGUARDIAN - Configuration Settings
+PrMO - Configuration Settings
 Centralized configuration management using Pydantic Settings.
 """
 from typing import List

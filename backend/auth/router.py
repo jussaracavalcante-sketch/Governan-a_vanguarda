@@ -1,5 +1,5 @@
 """
-VANGUARDIAN - Authentication Router
+PrMO - Authentication Router
 Login, register, token refresh, and password reset endpoints.
 """
 from datetime import timedelta

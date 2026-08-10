@@ -1,5 +1,5 @@
 """
-VANGUARDIAN - Pydantic Schemas
+PrMO - Pydantic Schemas
 Request/response validation schemas for all modules.
 """
 from datetime import datetime
