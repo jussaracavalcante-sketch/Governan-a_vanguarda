@@ -49,36 +49,36 @@
   <main class="main">
     <section id="dashboard" class="page active">
       <header class="top"><div><div class="eyebrow">Vanguarda Martech · IA operacional</div><h1>Governança que dá escala à criatividade.</h1><p>Centralize ferramentas, conhecimento, padrões de marca, dados e automações para transformar cada entrega em resultado mensurável.</p></div><div class="actions"><button class="btn alt ctrl-only" onclick="exportView()">Exportar visão</button><button class="btn ctrl-only" onclick="openModal('initiative')">+ Registrar iniciativa</button></div></header>
-      <div class="hero"><div><div class="eyebrow">Programa VKB 2026–2027</div><h2>Uma agência inteira, potencializada por IA.</h2><p>Foco da semana: homologar o fluxo de <strong>briefing → criação → revisão → publicação</strong> para reduzir retrabalho e preservar a voz de cada marca.</p></div><div><span class="badge ok">● <span id="kAdocao">—</span>% de adoção ativa</span><div class="sub" style="margin-top:8px">Meta corporativa: 80%</div></div></div>
+      <div class="hero"><div><div class="eyebrow">Programa VKB 2026–2027</div><h2>Uma agência inteira, potencializada por IA.</h2><p>Foco da semana: homologar o fluxo de <strong>briefing → criação → revisão → publicação</strong> para reduzir retrabalho e preservar a voz de cada marca.</p></div><div><span class="badge ok">● <span id="kMedia">—</span> ferramentas/colaborador</span><div class="sub" style="margin-top:8px"><span id="kMencoes">—</span> menções de IA declaradas</div></div></div>
       <div class="kpis">
-        <div class="card"><div class="label">Clientes governados</div><div class="value" id="kClientes">—</div><div class="sub"><span id="kPlaybooks">—</span> com playbook IA ativo</div></div>
-        <div class="card"><div class="label">Horas economizadas</div><div class="value" id="kHoras">—</div><div class="sub">no ciclo atual</div></div>
-        <div class="card"><div class="label">Fluxos automatizados</div><div class="value" id="kFluxos">—</div><div class="sub">+ <span id="kFluxosHom">—</span> em homologação</div></div>
-        <div class="card"><div class="label">Conformidade IA</div><div class="value" id="kConf">—</div><div class="sub">uso de stack homologada</div></div>
-        <div class="card"><div class="label">ROI estimado</div><div class="value" id="kRoi">—</div><div class="sub">ganho por hora investida</div></div>
+        <div class="card"><div class="label">Colaboradores mapeados</div><div class="value" id="kColab">—</div><div class="sub"><span id="kSens">—</span> usam dado sensível</div></div>
+        <div class="card"><div class="label">Ativos de conhecimento</div><div class="value" id="kAtivos">—</div><div class="sub"><span id="kPromptsK">—</span> prompts próprios</div></div>
+        <div class="card"><div class="label">Riscos abertos</div><div class="value" id="kRiscos">—</div><div class="sub"><span id="kCrit">—</span> críticos · <span id="kAltos">—</span> altos</div></div>
+        <div class="card"><div class="label">Gaps de licença</div><div class="value" id="kGaps">—</div><div class="sub"><span id="kColGap">—</span> colaboradores</div></div>
+        <div class="card"><div class="label">Oportunidades</div><div class="value" id="kOpp">—</div><div class="sub"><span id="kOppP1">—</span> prioridade P1</div></div>
       </div>
       <div class="grid">
-        <div class="card"><h3 class="section-title">Prioridades do Comitê de IA</h3><div class="list" id="initiativesList"></div></div>
+        <div class="card"><h3 class="section-title">Backlog de oportunidades (prioridades)</h3><div class="list" id="initiativesList"></div></div>
         <div class="card"><h3 class="section-title">Adoção por área</h3><div id="adoptionList"></div></div>
       </div>
     </section>
 
 
-    <section id="tools" class="page"><header class="top"><div><div class="eyebrow">Stack oficial</div><h1>Ferramentas, licenças e homologação</h1><p>Somente soluções aprovadas pelo Comitê de IA podem operar com dados internos ou de clientes.</p></div><button class="btn ctrl-only" onclick="openModal('tool')">+ Solicitar ferramenta</button></header><div class="two-col"><div class="card"><h3 class="section-title">Inventário homologado</h3><div class="list" id="stackList"></div></div><div class="card"><h3 class="section-title">Checklist de homologação</h3><div class="notice">Toda nova ferramenta passa por avaliação de segurança, LGPD, propriedade intelectual, custo, integração e plano de contingência.</div><div class="timeline" style="margin-top:18px"><div class="event"><b>1. Solicitação pela área</b><span>Caso de uso, dados e responsável</span></div><div class="event"><b>2. Avaliação técnica e de risco</b><span>CIO de IA + Segurança + Jurídico quando aplicável</span></div><div class="event"><b>3. Piloto controlado</b><span>Métricas de eficiência, qualidade e segurança</span></div><div class="event"><b>4. Deliberação do Comitê</b><span>Homologação, restrição ou reprovação</span></div></div></div></div></section>
+    <section id="tools" class="page"><header class="top"><div><div class="eyebrow">Stack oficial</div><h1>Ferramentas, licenças e homologação</h1><p>Somente soluções aprovadas pelo Comitê de IA podem operar com dados internos ou de clientes.</p></div><button class="btn ctrl-only" onclick="openModal('tool')">+ Solicitar ferramenta</button></header><div class="two-col"><div class="card"><h3 class="section-title">Ferramentas mais usadas (base)</h3><div class="list" id="stackList"></div></div><div class="card"><h3 class="section-title">Checklist de homologação</h3><div class="notice">Toda nova ferramenta passa por avaliação de segurança, LGPD, propriedade intelectual, custo, integração e plano de contingência.</div><div class="timeline" style="margin-top:18px"><div class="event"><b>1. Solicitação pela área</b><span>Caso de uso, dados e responsável</span></div><div class="event"><b>2. Avaliação técnica e de risco</b><span>CIO de IA + Segurança + Jurídico quando aplicável</span></div><div class="event"><b>3. Piloto controlado</b><span>Métricas de eficiência, qualidade e segurança</span></div><div class="event"><b>4. Deliberação do Comitê</b><span>Homologação, restrição ou reprovação</span></div></div></div></div></section>
 
     <section id="prompts" class="page"><header class="top"><div><div class="eyebrow">Conhecimento que escala</div><h1>Biblioteca institucional de prompts</h1><p>Prompts reutilizáveis, versionados e alinhados à identidade da Vanguarda Martech e aos critérios de cada cliente.</p></div><div class="actions"><span id="costNote" class="sub"></span><button class="btn alt ctrl-only" onclick="openCostPolicy()">Teto de custo</button><button class="btn" onclick="openModal('prompt')">+ Novo prompt</button></div></header><div class="toolbar"><input placeholder="Buscar por objetivo, área ou cliente" oninput="filterRows(this.value,'promptRows')"><select onchange="void 0"><option>Todas as áreas</option><option>Criação</option><option>Atendimento</option><option>Planejamento</option><option>Mídia</option></select></div><div class="card"><table><thead><tr><th>Prompt / playbook</th><th>Área</th><th>Controle</th><th>Última revisão</th><th>Uso</th><th>Custo/chamada</th><th></th></tr></thead><tbody id="promptRows"></tbody></table></div></section>
 
-    <section id="people" class="page"><header class="top"><div><div class="eyebrow">Cultura IA</div><h1>Pessoas, times e competências</h1><p>Mapeie capacidade por área, trilhas de capacitação e embaixadores que sustentam a adoção responsável.</p></div><button class="btn ctrl-only" onclick="openModal('skill')">+ Mapear competência</button></header><div class="two-col"><div class="card"><h3 class="section-title">Matriz de maturidade</h3><div class="list" id="skillsList"></div></div><div class="card"><h3 class="section-title">Trilhas obrigatórias</h3><div id="trainingList"></div></div></div></section>
+    <section id="people" class="page"><header class="top"><div><div class="eyebrow">Cultura IA</div><h1>Pessoas, times e competências</h1><p>Mapeie capacidade por área, trilhas de capacitação e embaixadores que sustentam a adoção responsável.</p></div><button class="btn ctrl-only" onclick="openModal('skill')">+ Mapear competência</button></header><div class="two-col"><div class="card"><h3 class="section-title">Capacidade por macroárea</h3><div class="list" id="skillsList"></div></div><div class="card"><h3 class="section-title">Ativos de conhecimento por tipo</h3><div id="trainingList"></div></div></div></section>
 
     <section id="compliance" class="page"><header class="top"><div><div class="eyebrow">Confiança por design</div><h1>Compliance, riscos e auditoria</h1><p>Monitore o cumprimento da Política Corporativa de IA, da LGPD e dos padrões de qualidade das entregas.</p></div><button class="btn ctrl-only" onclick="openModal('incident')">+ Registrar ocorrência</button></header>
       <div class="kpis" style="grid-template-columns:repeat(4,1fr)">
-        <div class="card"><div class="label">Auditorias no mês</div><div class="value" id="cAudit">—</div><div class="sub">eventos na trilha (30d)</div></div>
-        <div class="card"><div class="label">Pendências abertas</div><div class="value" id="cPend">—</div><div class="sub"><span id="cPendBaixa">—</span> de baixa criticidade</div></div>
-        <div class="card"><div class="label">Saídas revisadas</div><div class="value" id="cRev">—</div><div class="sub">antes da entrega externa</div></div>
-        <div class="card"><div class="label">Incidentes críticos</div><div class="value" id="cCrit">—</div><div class="sub">nos últimos 90 dias</div></div>
+        <div class="card"><div class="label">Riscos abertos</div><div class="value" id="cRiscos">—</div><div class="sub"><span id="cAltos">—</span> de alta severidade</div></div>
+        <div class="card"><div class="label">Casos críticos</div><div class="value" id="cCrit2">—</div><div class="sub">severidade crítica</div></div>
+        <div class="card"><div class="label">Exposição de dados</div><div class="value" id="cExp">—</div><div class="sub"><span id="cExpPct">—</span>% dos respondentes</div></div>
+        <div class="card"><div class="label">Coorte crítica</div><div class="value" id="cCoorte">—</div><div class="sub">sensível + sem licença</div></div>
       </div>
       <div class="grid">
-        <div class="card"><h3 class="section-title">Registro de auditoria</h3><div class="list" id="incidentsList"></div></div>
+        <div class="card"><h3 class="section-title">Riscos declarados (top)</h3><div class="list" id="incidentsList"></div></div>
         <div class="card"><h3 class="section-title">Regras inegociáveis</h3><div class="notice">• Não inserir dados confidenciais em ferramentas não homologadas.<br>• Toda entrega externa passa por revisão humana responsável.<br>• Novos casos de uso, prompts e automações devem ser registrados.<br>• Incidentes devem ser reportados imediatamente.</div></div>
       </div>
       <div class="grid" style="margin-top:18px">
@@ -196,7 +196,14 @@ function renderSkills(list){
 }
 function renderTraining(list){document.getElementById('trainingList').innerHTML=list.map(t=>bar(t.name,t.percent)).join('');}
 function renderInitiatives(list){document.getElementById('initiativesList').innerHTML=list.map(i=>rowItem(i.name,i.area,`<span class="badge ${initTone(i.status)}">${esc(i.status)}</span>`)).join('');}
-function renderAdoption(list){document.getElementById('adoptionList').innerHTML=list.map(a=>bar(a.area,a.percent)).join('');}
+function renderAdoption(list){document.getElementById('adoptionList').innerHTML=(list||[]).map(a=>bar(a.area,a.percent)).join('');}
+const sevTone=s=>['Crítico','Alto'].includes(s)?'red':s==='Médio'?'warn':'ok';
+const prioTone=p=>p==='P1'?'red':p==='P2'?'warn':'ok';
+function renderPrioridades(list){document.getElementById('initiativesList').innerHTML=(list||[]).map(o=>rowItem(o.nome,o.area,`<span class="badge ${prioTone(o.prioridade)}">${esc(o.prioridade)}</span>`)).join('');}
+function renderStackTop(list){document.getElementById('stackList').innerHTML=(list||[]).map(t=>rowItem(t.ferramenta,t.usos+' usos declarados','<span class="badge warn">a homologar</span>')).join('');}
+function renderCapacidade(list){document.getElementById('skillsList').innerHTML=(list||[]).map(x=>rowItem(x.area,x.colaboradores+' colaboradores · '+x.ativos+' ativos',`<span class="badge ok">${x.colaboradores}</span>`)).join('');}
+function renderKnowledgeTipos(list){document.getElementById('trainingList').innerHTML=(list||[]).map(k=>bar(k.tipo+' ('+k.qtd+')',k.percent)).join('');}
+function renderRiscos(list){document.getElementById('incidentsList').innerHTML=(list||[]).map(r=>rowItem((r.code||'')+' · '+r.area,'Severidade '+r.severidade+' · '+r.status,`<span class="badge ${sevTone(r.severidade)}">${esc(r.severidade)}</span>`)).join('');}
 function renderIncidents(list){document.getElementById('incidentsList').innerHTML=list.map(i=>rowItem(i.title,(i.area?i.area+' · ':'')+'Criticidade '+i.criticality,`<span class="badge ${incTone(i.status)}">${esc(i.status)}</span>`)).join('');}
 function renderAudit(list){
   const el=document.getElementById('auditList');
@@ -211,20 +218,17 @@ function renderObs(o){
   txt.textContent=o.status==='operational'?'Operacional · '+o.events_24h+' eventos/24h':'Indisponível';
 }
 function setKpis(ov){
-  const d=ov.dashboard,c=ov.compliance;
-  document.getElementById('kAdocao').textContent=d.adocao_ativa;
-  document.getElementById('kClientes').textContent=d.clientes_governados;
-  document.getElementById('kPlaybooks').textContent=d.playbooks_ativos;
-  document.getElementById('kHoras').textContent=d.horas_economizadas+'h';
-  document.getElementById('kFluxos').textContent=d.fluxos_automatizados;
-  document.getElementById('kFluxosHom').textContent=d.fluxos_homologacao;
-  document.getElementById('kConf').textContent=d.conformidade_ia+'%';
-  document.getElementById('kRoi').textContent=String(d.roi_estimado).replace('.',',')+'x';
-  document.getElementById('cAudit').textContent=c.auditorias_mes;
-  document.getElementById('cPend').textContent=c.pendencias_abertas;
-  document.getElementById('cPendBaixa').textContent=c.pendencias_baixas;
-  document.getElementById('cRev').textContent=c.saidas_revisadas+'%';
-  document.getElementById('cCrit').textContent=c.incidentes_criticos;
+  const d=ov.dashboard,c=ov.compliance,g=id=>document.getElementById(id);
+  g('kMedia').textContent=String(d.media_ferramentas).replace('.',',');
+  g('kMencoes').textContent=d.mencoes_ferramentas;
+  g('kColab').textContent=d.colaboradores; g('kSens').textContent=d.com_dado_sensivel;
+  g('kAtivos').textContent=d.ativos_conhecimento; g('kPromptsK').textContent=d.prompts_conhecimento;
+  g('kRiscos').textContent=d.riscos_abertos; g('kCrit').textContent=d.riscos_criticos; g('kAltos').textContent=d.riscos_altos;
+  g('kGaps').textContent=d.gaps_licenca; g('kColGap').textContent=d.colaboradores_com_gap;
+  g('kOpp').textContent=d.oportunidades; g('kOppP1').textContent=d.oportunidades_p1;
+  g('cRiscos').textContent=c.riscos_abertos; g('cAltos').textContent=c.alta_severidade;
+  g('cCrit2').textContent=c.criticos; g('cExp').textContent=c.exposicao; g('cExpPct').textContent=c.exposicao_pct;
+  g('cCoorte').textContent=c.coorte_critica;
 }
 
 // ---- load ----
@@ -234,15 +238,16 @@ async function boot(){
     document.getElementById('whoami').textContent=((CURRENT&&CURRENT.name)||'—')+' · '+((CURRENT&&CURRENT.role)||'');
     applyRbac();
     if(isController()){
-      const [ov,stack,prompts,skills,training,inits,adoption,incidents,audit,obs,cp,regsum]=await Promise.all([
-        api('/governance/overview'),api('/governance/stack'),api('/governance/prompts'),
-        api('/governance/skills'),api('/governance/training'),api('/governance/initiatives'),api('/governance/adoption'),
-        api('/governance/incidents'),api('/governance/audit'),api('/governance/observability'),api('/governance/cost-policy'),api('/governance/registry')
+      const [ov,prompts,audit,obs,cp,regsum]=await Promise.all([
+        api('/governance/overview'),api('/governance/prompts'),
+        api('/governance/audit'),api('/governance/observability'),
+        api('/governance/cost-policy'),api('/governance/registry')
       ]);
       COST_POLICY=cp||COST_POLICY; buildRegistrySelect(regsum);
-      setKpis(ov);renderStack(stack);renderPrompts(prompts);renderSkills(skills);
-      renderTraining(training);renderInitiatives(inits);renderAdoption(adoption);renderIncidents(incidents);
-      renderAudit(audit);renderObs(obs);
+      setKpis(ov); renderPrompts(prompts);
+      renderPrioridades(ov.prioridades); renderAdoption(ov.adocao);
+      renderStackTop(ov.stack_top); renderCapacidade(ov.capacidade); renderKnowledgeTipos(ov.knowledge_tipos);
+      renderRiscos(ov.riscos); renderAudit(audit); renderObs(obs);
     } else {
       // Usuário comum: somente Biblioteca de prompts (leitura)
       COST_POLICY=await api('/governance/cost-policy');

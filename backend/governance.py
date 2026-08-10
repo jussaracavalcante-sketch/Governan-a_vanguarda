@@ -390,20 +390,78 @@ def create_incident(item: IncidentIn, db: Session = Depends(get_db), u: User = D
     return _serialize(obj)
 
 
-# ---- Indicadores (KPIs dos painéis) ----
+# ---- Indicadores (KPIs dos painéis) — contabilizados da base migrada ----
+def _reg(db: Session, name: str):
+    out = []
+    for r in db.query(RegistryRecord).filter(RegistryRecord.registry == name).all():
+        try:
+            out.append(json.loads(r.data))
+        except Exception:
+            pass
+    return out
+
+
+def _num(v, default=0):
+    try:
+        return float(v)
+    except Exception:
+        return default
+
+
 @router.get("/overview")
 def overview(db: Session = Depends(get_db), u: User = Depends(get_current_user)):
-    clients = db.query(Client).all()
-    tools = db.query(StackTool).all()
-    inits = db.query(Initiative).all()
-    incidents = db.query(Incident).all()
-    homolog = [t for t in tools if t.status == "Homologada"]
-    since = datetime.now(timezone.utc) - timedelta(days=30)
-    audits_month = db.query(AuditLog).filter(AuditLog.timestamp >= since).count()
-    pendencias = [i for i in incidents if i.status != "Conforme"]
+    from collections import Counter
+    asset = _reg(db, "asset"); risk = _reg(db, "risk"); know = _reg(db, "knowledge")
+    opp = _reg(db, "opportunity"); diag = _reg(db, "diagnostic")
+    dmap = {(r.get("Indicador") or ""): r.get("Valor") for r in diag if r.get("Indicador")}
+    dget = lambda k, d=0: dmap.get(k, d) if dmap.get(k) is not None else d
+
+    total_col = int(_num(dget("Respondentes", len(asset)))) or len(asset)
+    sens = int(_num(dget("Declaram uso de dados sensíveis/estratégicos em IA pública",
+                         sum(1 for a in asset if a.get("Usa dado sensível") == "Sim"))))
+    exposicao = int(_num(dget("Superfície de exposição potencial (sim + não sei)",
+                         sum(1 for a in asset if a.get("Usa dado sensível") in ("Sim", "Não sei")))))
+    gaps = int(_num(dget("Instâncias de uso sem licença correspondente (gap)", 0)))
+    mencoes = int(_num(dget("Menções a ferramentas de IA (uso declarado)", 0)))
+    media_fer = _num(dget("Média de ferramentas por colaborador", 0))
+    coorte = int(_num(dget("Coorte crítica: dados sensíveis + sem licença", 0)))
+
+    ativos_know = len(know)
+    tipo_c = Counter((k.get("Tipo") or "—") for k in know)
+    sev_c = Counter((r.get("Severidade") or "—") for r in risk)
+    riscos_abertos = sum(1 for r in risk if (r.get("Status") or "Aberto") != "Fechado")
+    col_com_gap = sum(1 for a in asset if (a.get("Gap (uso sem licença)") or "") not in ("", "Não", "—"))
+    opp_p1 = sum(1 for o in opp if o.get("Prioridade") == "P1")
+
+    area_c = Counter((a.get("Macroárea") or "—") for a in asset)
+    know_area = Counter((k.get("Macroárea") or "—") for k in know)
+    adocao = [{"area": a, "percent": round(100 * n / max(1, len(asset)))} for a, n in area_c.most_common(6)]
+    prioridades = [{"nome": o.get("Cluster de dor") or o.get("OPP-ID") or "—",
+                    "area": o.get("Macroárea mais afetada") or "",
+                    "prioridade": o.get("Prioridade") or ""}
+                   for o in sorted(opp, key=lambda o: (o.get("Prioridade") or "P9"))[:6]]
+    sev_rank = {"Crítico": 0, "Alto": 1, "Médio": 2, "Baixo": 3}
+    riscos = [{"code": r.get("RISK-ID") or "", "area": r.get("Macroárea") or "",
+               "severidade": r.get("Severidade") or "", "status": r.get("Status") or ""}
+              for r in sorted(risk, key=lambda r: sev_rank.get(r.get("Severidade"), 9))[:8]]
+    tool_c = Counter()
+    for a in asset:
+        for t in str(a.get("Ferramentas em uso") or "").split(","):
+            t = t.strip()
+            if t:
+                tool_c[t] += 1
+    stack_top = [{"ferramenta": t, "usos": n} for t, n in tool_c.most_common(8)]
+    capacidade = [{"area": a, "colaboradores": area_c.get(a, 0), "ativos": know_area.get(a, 0)}
+                  for a, _ in area_c.most_common(6)]
+    knowledge_tipos = [{"tipo": t, "qtd": n, "percent": round(100 * n / max(1, ativos_know))}
+                       for t, n in tipo_c.most_common()]
+
     pol = get_or_create_policy(db)
     prompts = db.query(PromptItem).all()
     acima = [p for p in prompts if (p.cost_per_call or 0) > pol.max_cost_per_call] if pol.max_cost_per_call else []
+    since = datetime.now(timezone.utc) - timedelta(days=30)
+    audits_month = db.query(AuditLog).filter(AuditLog.timestamp >= since).count()
+
     return {
         "custo": {
             "teto_por_chamada": pol.max_cost_per_call,
@@ -412,22 +470,35 @@ def overview(db: Session = Depends(get_db), u: User = Depends(get_current_user))
             "prompts_avaliados": len(prompts),
         },
         "dashboard": {
-            "clientes_governados": len(clients),
-            "playbooks_ativos": len([c for c in clients if c.playbook_active]),
-            "horas_economizadas": sum(i.hours_saved for i in inits),
-            "fluxos_automatizados": sum(c.flows for c in clients),
-            "fluxos_homologacao": len([i for i in inits if "homolog" in (i.status or "").lower()]),
-            "conformidade_ia": round(100 * len(homolog) / len(tools)) if tools else 0,
-            "roi_estimado": 3.4,
-            "adocao_ativa": 82,
+            "colaboradores": total_col,
+            "com_dado_sensivel": sens,
+            "ativos_conhecimento": ativos_know,
+            "prompts_conhecimento": tipo_c.get("Prompt", 0),
+            "riscos_abertos": riscos_abertos,
+            "riscos_criticos": sev_c.get("Crítico", 0),
+            "riscos_altos": sev_c.get("Alto", 0),
+            "gaps_licenca": gaps,
+            "colaboradores_com_gap": col_com_gap,
+            "oportunidades": len(opp),
+            "oportunidades_p1": opp_p1,
+            "media_ferramentas": round(media_fer, 2),
+            "mencoes_ferramentas": mencoes,
         },
         "compliance": {
+            "riscos_abertos": riscos_abertos,
+            "alta_severidade": sev_c.get("Alto", 0),
+            "criticos": sev_c.get("Crítico", 0),
+            "exposicao": exposicao,
+            "exposicao_pct": round(100 * exposicao / max(1, total_col)),
+            "coorte_critica": coorte,
             "auditorias_mes": audits_month,
-            "pendencias_abertas": len(pendencias),
-            "pendencias_baixas": len([i for i in pendencias if i.criticality in ("Baixa", "Média")]),
-            "saidas_revisadas": 97,
-            "incidentes_criticos": len([i for i in incidents if i.criticality == "Crítica"]),
         },
+        "adocao": adocao,
+        "prioridades": prioridades,
+        "riscos": riscos,
+        "stack_top": stack_top,
+        "capacidade": capacidade,
+        "knowledge_tipos": knowledge_tipos,
     }
 
 
