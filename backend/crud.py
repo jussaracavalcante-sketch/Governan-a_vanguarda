@@ -380,6 +380,7 @@ def seed_initial_data(db: Session):
         User(name="Ana Souza", email="ana.souza@empresa.com", hashed_password=get_password_hash("123456"), role="Manager", status="Ativo"),
         User(name="Bruno Lima", email="bruno.lima@empresa.com", hashed_password=get_password_hash("123456"), role="User", status="Ativo"),
         User(name="Carla Mendes", email="carla.m@empresa.com", hashed_password=get_password_hash("123456"), role="User", status="Inativo"),
+        User(name="Usuário Vanguarda", email="user@vanguardamartech.com.br", hashed_password=get_password_hash("user123"), role="User", status="Ativo"),
     ]
     db.add_all(users)
 
