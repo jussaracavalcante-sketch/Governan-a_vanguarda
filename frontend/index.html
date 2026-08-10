@@ -38,6 +38,7 @@
       <button data-page="prompts">✦ &nbsp; Biblioteca de prompts</button>
       <button class="ctrl-only" data-page="people">◌ &nbsp; Pessoas & skills</button>
       <button class="ctrl-only" data-page="compliance">◫ &nbsp; Compliance & auditoria</button>
+      <button class="ctrl-only" data-page="registros">▤ &nbsp; Registros (30d)</button>
     </nav>
     <div class="footer">
       <div><span class="dot" id="obsDot"></span><span id="obsText">Observabilidade…</span></div>
@@ -85,6 +86,7 @@
         <div class="card"><h3 class="section-title">Observabilidade</h3><div id="obsPanel" class="list"></div></div>
       </div>
     </section>
+    <section id="registros" class="page"><header class="top"><div><div class="eyebrow">Base migrada · 30 dias</div><h1>Registros de Governança de IA</h1><p>Inventário de ativos, riscos, conhecimento e oportunidades — dados anonimizados (LGPD).</p></div></header><div class="toolbar"><select id="registrySelect" onchange="loadRegistry(this.value)"></select><input placeholder="Filtrar nesta tabela" oninput="filterRows(this.value,'registryBody')"></div><div class="card"><div class="table-wrap"><table class="table"><thead id="registryHead"></thead><tbody id="registryBody"></tbody></table></div><div id="registryEmpty" class="empty">Selecione um registro.</div></div></section>
   </main>
 </div>
 
@@ -232,12 +234,12 @@ async function boot(){
     document.getElementById('whoami').textContent=((CURRENT&&CURRENT.name)||'—')+' · '+((CURRENT&&CURRENT.role)||'');
     applyRbac();
     if(isController()){
-      const [ov,stack,prompts,skills,training,inits,adoption,incidents,audit,obs,cp]=await Promise.all([
+      const [ov,stack,prompts,skills,training,inits,adoption,incidents,audit,obs,cp,regsum]=await Promise.all([
         api('/governance/overview'),api('/governance/stack'),api('/governance/prompts'),
         api('/governance/skills'),api('/governance/training'),api('/governance/initiatives'),api('/governance/adoption'),
-        api('/governance/incidents'),api('/governance/audit'),api('/governance/observability'),api('/governance/cost-policy')
+        api('/governance/incidents'),api('/governance/audit'),api('/governance/observability'),api('/governance/cost-policy'),api('/governance/registry')
       ]);
-      COST_POLICY=cp||COST_POLICY;
+      COST_POLICY=cp||COST_POLICY; buildRegistrySelect(regsum);
       setKpis(ov);renderStack(stack);renderPrompts(prompts);renderSkills(skills);
       renderTraining(training);renderInitiatives(inits);renderAdoption(adoption);renderIncidents(incidents);
       renderAudit(audit);renderObs(obs);
@@ -298,6 +300,25 @@ async function homologar(id,decision){
     toast('Prompt '+(decision==='Aprovado'?'aprovado':'reprovado')+'. Registrado na trilha de auditoria.');
     boot();
   }catch(ex){ toast('Erro ao homologar: '+ex.message,false); }
+}
+const REG_LABELS={asset:'AI Asset Registry',risk:'AI Risk Register',knowledge:'AI Knowledge Registry',opportunity:'Opportunity Backlog',diagnostic:'Diagnóstico',plan30:'Plano 30 dias'};
+function buildRegistrySelect(sum){
+  const sel=document.getElementById('registrySelect'); if(!sel||!sum||!sum.registries)return;
+  const order=['asset','risk','knowledge','opportunity','diagnostic','plan30'];
+  sel.innerHTML=order.filter(k=>sum.registries[k]).map(k=>`<option value="${k}">${REG_LABELS[k]||k} (${sum.registries[k]})</option>`).join('');
+  if(sel.value) loadRegistry(sel.value);
+}
+async function loadRegistry(name){
+  const head=document.getElementById('registryHead'),body=document.getElementById('registryBody'),empty=document.getElementById('registryEmpty');
+  head.innerHTML='';body.innerHTML='';empty.textContent='Carregando…';
+  try{
+    const rows=await api('/governance/registry/'+name);
+    if(!rows.length){empty.textContent='Sem registros.';return;}
+    empty.textContent='';
+    const cols=Object.keys(rows[0]).filter(k=>k!=='code');
+    head.innerHTML='<tr>'+cols.map(c=>`<th>${esc(c)}</th>`).join('')+'</tr>';
+    body.innerHTML=rows.map(r=>'<tr>'+cols.map(c=>`<td>${esc(r[c]==null?'':r[c])}</td>`).join('')+'</tr>').join('');
+  }catch(ex){empty.textContent='Erro: '+ex.message;}
 }
 function exportView(){toast('Relatório executivo gerado para download.');}
 

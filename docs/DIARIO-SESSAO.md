@@ -4,6 +4,29 @@ Registro cronológico do trabalho por sessão. Entrada mais recente no topo.
 
 ---
 
+## 2026-08-10 (sessão 4) — Migração dos registros de governança (30 dias)
+
+### 🎯 Objetivo
+Migrar a planilha "Governança IA Vanguarda — Registros 30 dias" para a base, com proteção de dados (repo público).
+
+### ✅ Entregas
+- **Migração anonimizada** de 258 registros: AI Asset Registry (93), AI Risk Register (33), AI Knowledge Registry (52), Opportunity Backlog (8), Diagnóstico (45), Plano 30 dias (27).
+- **Anonimização (LGPD)**: removidas colunas de nomes de colaboradores/líderes; nomes que vazavam em textos livres foram redigidos por dicionário derivado das próprias colunas pessoais (224 tokens); sem e-mail/CPF/telefone. O **xlsx original não foi versionado** — apenas o JSON anonimizado em `backend/data/registros_30dias.json`.
+- **Backend**: modelo `RegistryRecord` + carregador no seed (recarrega do JSON a cada deploy) + endpoints `GET /governance/registry` e `/registry/{name}` restritos a Manager/Admin.
+- **Frontend**: nova aba **"Registros (30d)"** (só controlador) com seletor de registro, tabela dinâmica e filtro.
+
+### 🧪 Validações ao vivo
+- `GET /governance/registry` → total 258 com as contagens por registro.
+- User → 403 nos endpoints de registro; Manager → 200.
+
+### 🔐 Nota de privacidade
+Dados completos (com nomes) só devem ir para ambiente **privado** (Supabase). Enquanto o repo for público, mantém-se apenas a versão anonimizada.
+
+### ⏳ Pendências (mantidas)
+- Render `prmo-api`, Supabase (billing "VTech" — habilita carga completa não-anonimizada), branch padrão → `main`, integração VanguardIA.
+
+---
+
 ## 2026-08-10 (sessão 3) — Homologação in-app e teto de custo por chamada
 
 ### 🎯 Objetivo
