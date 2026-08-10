@@ -555,8 +555,32 @@ def seed_registros(db: Session):
     db.commit()
 
 
+def seed_prompts_from_knowledge(db: Session):
+    """Importa os ativos do Knowledge Registry para a Biblioteca como candidatos
+    (status 'Revisão pendente') — a triar/homologar pelo administrador."""
+    if db.query(PromptItem).filter(PromptItem.title.like("%[KNOW-%")).first():
+        return
+    for r in db.query(RegistryRecord).filter(RegistryRecord.registry == "knowledge").order_by(RegistryRecord.id).all():
+        try:
+            rec = json.loads(r.data)
+        except Exception:
+            continue
+        code = r.code or rec.get("KNOW-ID") or ""
+        tipo = rec.get("Tipo") or "Prompt"
+        area = rec.get("Macroárea") or ""
+        tarefa = (rec.get("Tarefa que gostaria de delegar a um Agente Vanguarda")
+                  or rec.get("Ativo declarado (prompt/fluxo/automação)") or "")
+        desc = (str(tarefa).strip() or "Candidato do mapeamento — conteúdo a preencher na homologação.")[:380]
+        title = (f"{tipo} · {area} [{code}]" if area else f"{tipo} [{code}]")[:200]
+        db.add(PromptItem(title=title, description=desc, area=(area or tipo),
+                          control="Revisão pendente", content=str(tarefa),
+                          last_review="", uses=0, cost_per_call=0.0))
+    db.commit()
+
+
 def seed_governance(db: Session):
     seed_registros(db)
+    seed_prompts_from_knowledge(db)
     if db.query(Client).first():
         return
     db.add_all([
