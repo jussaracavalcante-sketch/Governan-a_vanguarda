@@ -65,7 +65,7 @@
 
     <section id="tools" class="page"><header class="top"><div><div class="eyebrow">Stack oficial</div><h1>Ferramentas, licenças e homologação</h1><p>Somente soluções aprovadas pelo Comitê de IA podem operar com dados internos ou de clientes.</p></div><button class="btn ctrl-only" onclick="openModal('tool')">+ Solicitar ferramenta</button></header><div class="two-col"><div class="card"><h3 class="section-title">Inventário homologado</h3><div class="list" id="stackList"></div></div><div class="card"><h3 class="section-title">Checklist de homologação</h3><div class="notice">Toda nova ferramenta passa por avaliação de segurança, LGPD, propriedade intelectual, custo, integração e plano de contingência.</div><div class="timeline" style="margin-top:18px"><div class="event"><b>1. Solicitação pela área</b><span>Caso de uso, dados e responsável</span></div><div class="event"><b>2. Avaliação técnica e de risco</b><span>CIO de IA + Segurança + Jurídico quando aplicável</span></div><div class="event"><b>3. Piloto controlado</b><span>Métricas de eficiência, qualidade e segurança</span></div><div class="event"><b>4. Deliberação do Comitê</b><span>Homologação, restrição ou reprovação</span></div></div></div></div></section>
 
-    <section id="prompts" class="page"><header class="top"><div><div class="eyebrow">Conhecimento que escala</div><h1>Biblioteca institucional de prompts</h1><p>Prompts reutilizáveis, versionados e alinhados à identidade da Vanguarda Martech e aos critérios de cada cliente.</p></div><button class="btn ctrl-only" onclick="openModal('prompt')">+ Novo prompt</button></header><div class="toolbar"><input placeholder="Buscar por objetivo, área ou cliente" oninput="filterRows(this.value,'promptRows')"><select onchange="void 0"><option>Todas as áreas</option><option>Criação</option><option>Atendimento</option><option>Planejamento</option><option>Mídia</option></select></div><div class="card"><table><thead><tr><th>Prompt / playbook</th><th>Área</th><th>Controle</th><th>Última revisão</th><th>Uso</th><th></th></tr></thead><tbody id="promptRows"></tbody></table></div></section>
+    <section id="prompts" class="page"><header class="top"><div><div class="eyebrow">Conhecimento que escala</div><h1>Biblioteca institucional de prompts</h1><p>Prompts reutilizáveis, versionados e alinhados à identidade da Vanguarda Martech e aos critérios de cada cliente.</p></div><button class="btn" onclick="openModal('prompt')">+ Novo prompt</button></header><div class="toolbar"><input placeholder="Buscar por objetivo, área ou cliente" oninput="filterRows(this.value,'promptRows')"><select onchange="void 0"><option>Todas as áreas</option><option>Criação</option><option>Atendimento</option><option>Planejamento</option><option>Mídia</option></select></div><div class="card"><table><thead><tr><th>Prompt / playbook</th><th>Área</th><th>Controle</th><th>Última revisão</th><th>Uso</th><th></th></tr></thead><tbody id="promptRows"></tbody></table></div></section>
 
     <section id="people" class="page"><header class="top"><div><div class="eyebrow">Cultura IA</div><h1>Pessoas, times e competências</h1><p>Mapeie capacidade por área, trilhas de capacitação e embaixadores que sustentam a adoção responsável.</p></div><button class="btn ctrl-only" onclick="openModal('skill')">+ Mapear competência</button></header><div class="two-col"><div class="card"><h3 class="section-title">Matriz de maturidade</h3><div class="list" id="skillsList"></div></div><div class="card"><h3 class="section-title">Trilhas obrigatórias</h3><div id="trainingList"></div></div></div></section>
 
@@ -247,8 +247,13 @@ const FORMS={
 let CURRENT_FORM=null;
 const modal=document.getElementById('modal'), form=document.getElementById('modalForm'), title=document.getElementById('modalTitle');
 function openModal(type){
-  const cfg=FORMS[type];CURRENT_FORM=cfg;title.textContent=cfg.title;
-  form.innerHTML=cfg.fields.map(([label,kind,ph,key])=>`<label>${label}${kind==='textarea'?`<textarea data-k="${key}" placeholder="${ph}"></textarea>`:kind==='select'?`<select data-k="${key}">${ph.split('|').map(o=>`<option>${o}</option>`).join('')}</select>`:`<input data-k="${key}" type="text" placeholder="${ph}">`}</label>`).join('');
+  const cfg=FORMS[type];CURRENT_FORM=cfg;
+  const userSubmit=(type==='prompt' && !isController());
+  // Colaborador não escolhe o controle: envia sempre para validação do administrador.
+  const fields=userSubmit?cfg.fields.filter(f=>f[3]!=='control'):cfg.fields;
+  title.textContent=userSubmit?'Novo prompt (envio para validação)':cfg.title;
+  const note=userSubmit?'<div class="notice" style="margin:0 0 4px">Seu prompt será enviado com status <b>Revisão pendente</b> para validação/homologação do administrador.</div>':'';
+  form.innerHTML=note+fields.map(([label,kind,ph,key])=>`<label>${label}${kind==='textarea'?`<textarea data-k="${key}" placeholder="${ph}"></textarea>`:kind==='select'?`<select data-k="${key}">${ph.split('|').map(o=>`<option>${o}</option>`).join('')}</select>`:`<input data-k="${key}" type="text" placeholder="${ph}">`}</label>`).join('');
   modal.classList.add('open');
 }
 function closeModal(){modal.classList.remove('open');}
@@ -257,6 +262,7 @@ async function saveItem(){
   const payload={};form.querySelectorAll('[data-k]').forEach(el=>{payload[el.dataset.k]=el.value;});
   if('hours_saved' in payload)payload.hours_saved=parseInt(payload.hours_saved,10)||0;
   if('playbook_active' in payload)payload.playbook_active=!!payload.playbook_active;
+  if(CURRENT_FORM.ep==='/governance/prompts' && !isController())payload.control='Revisão pendente';
   const btn=document.getElementById('saveBtn');btn.disabled=true;btn.textContent='Salvando…';
   try{
     await api(CURRENT_FORM.ep,{method:'POST',body:JSON.stringify(payload)});

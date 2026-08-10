@@ -223,10 +223,16 @@ def list_prompts(db: Session = Depends(get_db), u: User = Depends(get_current_us
 
 
 @router.post("/prompts", status_code=201)
-def create_prompt(item: PromptItemIn, db: Session = Depends(get_db), u: User = Depends(get_current_manager_user)):
-    obj = PromptItem(**item.model_dump())
+def create_prompt(item: PromptItemIn, db: Session = Depends(get_db), u: User = Depends(get_current_user)):
+    data = item.model_dump()
+    role = str(getattr(u.role, "value", u.role))
+    # Colaborador (User) só envia para validação: status sempre "Revisão pendente".
+    # A homologação (Aprovado/Reprovado) é exclusiva de Manager/Admin.
+    if role not in ("Admin", "Manager"):
+        data["control"] = "Revisão pendente"
+    obj = PromptItem(**data)
     db.add(obj); db.commit(); db.refresh(obj)
-    _audit(db, u, "CREATE", "prompt", obj.id, {"title": obj.title})
+    _audit(db, u, "CREATE", "prompt", obj.id, {"title": obj.title, "control": obj.control, "by_role": role})
     return _serialize(obj)
 
 
