@@ -1,0 +1,62 @@
+# Copie para: .github/workflows/deploy-vercel.yml (na raiz do repo Vanguardabuilders)
+#
+# Deploy do frontend (Vite/React) na Vercel via GitHub Actions.
+# Alternativa mais simples: usar a integração nativa Vercel↔GitHub (sem este
+# workflow). Use este arquivo apenas se quiser o deploy controlado pelo Actions.
+#
+# Secrets necessários (Repo → Settings → Secrets and variables → Actions):
+#   VERCEL_TOKEN        -> Vercel → Account Settings → Tokens
+#   VERCEL_ORG_ID       -> arquivo .vercel/project.json após `vercel link` (orgId)
+#   VERCEL_PROJECT_ID   -> arquivo .vercel/project.json após `vercel link` (projectId)
+# As variáveis VITE_SUPABASE_* devem estar cadastradas no PROJETO da Vercel
+# (Settings → Environment Variables), não aqui.
+
+name: Deploy to Vercel
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: vercel-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install Vercel CLI
+        run: npm i -g vercel@latest
+
+      # Produção só no push para main; PRs geram deploy de preview.
+      - name: Pull Vercel env (preview)
+        if: github.event_name == 'pull_request'
+        run: vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Build & deploy (preview)
+        if: github.event_name == 'pull_request'
+        run: |
+          vercel build --token=${{ secrets.VERCEL_TOKEN }}
+          vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Pull Vercel env (production)
+        if: github.ref == 'refs/heads/main'
+        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Build & deploy (production)
+        if: github.ref == 'refs/heads/main'
+        run: |
+          vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+          vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}

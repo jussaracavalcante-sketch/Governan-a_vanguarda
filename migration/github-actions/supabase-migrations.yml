@@ -1,0 +1,45 @@
+# Copie para: .github/workflows/supabase-migrations.yml (raiz do repo Vanguardabuilders)
+#
+# Aplica as migrations versionadas (supabase/migrations/*.sql) no projeto
+# Supabase PRÓPRIO sempre que houver push em main que altere o schema.
+#
+# Secrets necessários (Repo → Settings → Secrets and variables → Actions):
+#   SUPABASE_ACCESS_TOKEN  -> Supabase → Account → Access Tokens
+#   SUPABASE_PROJECT_REF   -> ref do projeto novo (subdomínio da URL)
+#   SUPABASE_DB_PASSWORD   -> senha do banco do projeto novo
+#
+# Requer que o repo tenha a pasta supabase/ (config.toml + migrations/).
+# Edge Functions podem ser publicadas no mesmo job (bloco comentado abaixo).
+
+name: Supabase migrations
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "supabase/migrations/**"
+      - "supabase/config.toml"
+  workflow_dispatch:
+
+jobs:
+  db-push:
+    runs-on: ubuntu-latest
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Link project
+        run: supabase link --project-ref ${{ secrets.SUPABASE_PROJECT_REF }}
+
+      - name: Push migrations
+        run: supabase db push
+
+      # --- Opcional: publicar Edge Functions no mesmo deploy ---
+      # - name: Deploy edge functions
+      #   run: supabase functions deploy --project-ref ${{ secrets.SUPABASE_PROJECT_REF }}

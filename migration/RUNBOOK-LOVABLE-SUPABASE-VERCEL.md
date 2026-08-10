@@ -212,10 +212,25 @@ Vercel até o checklist passar 100%. Reverter = voltar o DNS/domínio para o Lov
 
 ---
 
+## Repositório-alvo do app
+
+O código do app deve viver em **`VanguardaHub/Vanguardabuilders`** (repo indicado
+pela equipe). Os workflows de CI/CD prontos estão em
+`migration/github-actions/` — copie para `.github/workflows/` desse repo. Ver o
+`README.md` da pasta para a lista de secrets.
+
+> **Restrição de acesso desta sessão:** o Claude Code aqui está travado no owner
+> `jussaracavalcante-sketch` e **não** consegue anexar/editar repos do owner
+> `VanguardaHub` (cross-tier add bloqueado). Para eu operar direto no
+> `Vanguardabuilders`, abra uma **nova sessão com esse repo como origem** ou
+> conceda acesso do GitHub App do Claude a ele. Alternativa: espelhar o código
+> em um repo `jussaracavalcante-sketch/…`.
+
 ## Status desta sessão
 
 - ✅ App de origem identificado (Vanguarda Builder) e stack mapeada.
 - ✅ Conectores verificados: **Supabase** ativo; **Lovable/HubSpot/RD Station** presentes mas desligados no chat.
-- ✅ Templates entregues: `migration/vercel.json`, `migration/.env.vercel.example`.
+- ✅ Templates entregues: `migration/vercel.json`, `migration/.env.vercel.example`, `migration/github-actions/*`.
 - ⛔ **Criação do Supabase bloqueada por billing** (faturas em aberto na org VTech) — ver Pré-requisito #1.
-- ⏭️ Próximo: (a) quitar billing → criar projeto; (b) trazer o código para um repo `jussaracavalcante-sketch/…` ou ligar o conector Lovable.
+- ⛔ **Repo-alvo `VanguardaHub/Vanguardabuilders` inacessível nesta sessão** (owner cross-tier) — ver acima.
+- ⏭️ Próximo: (a) quitar billing → criar projeto; (b) dar acesso ao repo do app (nova sessão nele, ou GitHub App, ou espelho no owner atual).
