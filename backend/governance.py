@@ -7,6 +7,7 @@ Compliance & auditoria (ocorrências, trilha de auditoria, observabilidade).
 """
 from datetime import datetime, timedelta, timezone
 import json
+import os
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, ConfigDict
@@ -102,6 +103,16 @@ class CostPolicy(Base):
     currency = Column(String(8), default="BRL")
     updated_by = Column(String(120), default="")
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+
+
+class RegistryRecord(Base):
+    """Registros migrados (Governança IA — 30 dias), anonimizados."""
+    __tablename__ = "gov_registry"
+    id = Column(Integer, primary_key=True, index=True)
+    registry = Column(String(30), index=True)   # asset|risk|knowledge|opportunity|diagnostic|plan30
+    code = Column(String(60), default="")
+    data = Column(Text, default="{}")            # JSON do registro (sem dados pessoais)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
 
 
 class Incident(Base):
@@ -305,6 +316,28 @@ def update_cost_policy(item: CostPolicyIn, db: Session = Depends(get_db), u: Use
     return _serialize(pol)
 
 
+# ---- Base de registros migrados (Governança IA — 30 dias), anonimizados ----
+@router.get("/registry")
+def registry_summary(db: Session = Depends(get_db), u: User = Depends(get_current_manager_user)):
+    counts = {}
+    for (r,) in db.query(RegistryRecord.registry).all():
+        counts[r] = counts.get(r, 0) + 1
+    return {"registries": counts, "total": sum(counts.values())}
+
+
+@router.get("/registry/{name}")
+def registry_list(name: str, db: Session = Depends(get_db), u: User = Depends(get_current_manager_user)):
+    rows = db.query(RegistryRecord).filter(RegistryRecord.registry == name).order_by(RegistryRecord.id).all()
+    out = []
+    for r in rows:
+        try:
+            rec = json.loads(r.data)
+        except Exception:
+            rec = {}
+        out.append({"code": r.code, **rec})
+    return out
+
+
 # ---- Pessoas & skills ----
 @router.get("/skills")
 def list_skills(db: Session = Depends(get_db), u: User = Depends(get_current_user)):
@@ -431,7 +464,28 @@ def observability(db: Session = Depends(get_db), u: User = Depends(get_current_u
 
 
 # ─────────────────────────── SEED ───────────────────────────
+def seed_registros(db: Session):
+    """Carrega os registros anonimizados (30 dias) do JSON versionado, se vazio."""
+    if db.query(RegistryRecord).first():
+        return
+    path = os.path.join(os.path.dirname(__file__), "data", "registros_30dias.json")
+    if not os.path.exists(path):
+        return
+    with open(path, encoding="utf-8") as fh:
+        data = json.load(fh)
+    for reg, recs in data.items():
+        for rec in recs:
+            code = ""
+            for k, v in rec.items():
+                if str(k).endswith("-ID") or k in ("Indicador", "#"):
+                    code = "" if v is None else str(v)
+                    break
+            db.add(RegistryRecord(registry=reg, code=code, data=json.dumps(rec, ensure_ascii=False)))
+    db.commit()
+
+
 def seed_governance(db: Session):
+    seed_registros(db)
     if db.query(Client).first():
         return
     db.add_all([
