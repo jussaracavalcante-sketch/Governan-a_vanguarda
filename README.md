@@ -1,4 +1,4 @@
-# VANGUARDIAN — Governança de IA, Prompts & Propriedade Intelectual
+# PrMO — Prompt Management Office
 
 > **Repositório corporativo de prompts e propriedade intelectual da Vanguarda Martech.**
 > *Uma única inteligência. Múltiplas aplicações. Resultados exponenciais.*
@@ -9,7 +9,7 @@
 
 ## 📋 Visão Geral
 
-O **VANGUARDIAN** transforma iniciativas isoladas de Inteligência Artificial em um
+O **PrMO** transforma iniciativas isoladas de Inteligência Artificial em um
 ecossistema **integrado, versionado, auditável e governado**. Este repositório é a
 **fonte da verdade** dos ativos de IA da agência:
 
@@ -18,7 +18,7 @@ ecossistema **integrado, versionado, auditável e governado**. Este repositório
 - 🏛️ **Governança** com norma NIA-001, RBAC e trilha de auditoria ([`docs/`](docs/)).
 - 🖥️ **Plataforma** de governança: SPA de dashboard + API FastAPI.
 
-| Desafio | Solução VANGUARDIAN |
+| Desafio | Solução PrMO |
 |---------|---------------------|
 | Prompts perdidos em chats | **Biblioteca corporativa** versionada e homologada (NIA-001) |
 | PI não protegida | **Classificação de dados** + licença proprietária + cadeia de custódia por `git` |
@@ -94,7 +94,7 @@ uvicorn main:app --reload
 
 ### Frontend (protótipo estático)
 
-O frontend é o protótipo VANGUARDIAN — um `index.html` **autocontido** (CSS/JS inline,
+O frontend é o protótipo PrMO — um `index.html` **autocontido** (CSS/JS inline,
 sem dependências, sem build). Abra direto no navegador ou sirva estaticamente:
 
 ```bash

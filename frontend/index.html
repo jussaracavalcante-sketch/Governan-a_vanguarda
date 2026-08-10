@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>VANGUARDIAN | Governança de IA</title>
+  <title>PrMO — Prompt Management Office</title>
   <style>
     :root{--bg:#080708;--panel:#111015;--panel2:#17151c;--line:#302832;--ink:#f9f7f8;--muted:#afa8b0;--red:#ff1f45;--red2:#b80e2b;--green:#68d391;--amber:#ffc857;--blue:#70b7ff;--radius:16px;}
     *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;min-height:100vh}
@@ -30,7 +30,7 @@
 <body>
 <div class="app">
   <aside class="sidebar">
-    <div class="brand"><b>VANGUARDA.IA</b><small>VANGUARDIAN · GOVERNANÇA</small></div>
+    <div class="brand"><b>PrMO</b><small>PROMPT MANAGEMENT OFFICE</small></div>
     <div class="nav-title">OPERAÇÃO</div>
     <nav class="nav">
       <button class="active ctrl-only" data-page="dashboard">◈ &nbsp; Visão executiva</button>
@@ -41,7 +41,7 @@
     </nav>
     <div class="footer">
       <div><span class="dot" id="obsDot"></span><span id="obsText">Observabilidade…</span></div>
-      <div style="margin-top:8px">VANGUARDIAN v2.0 · <span id="whoami">—</span></div>
+      <div style="margin-top:8px">PrMO v2.0 · <span id="whoami">—</span></div>
       <div style="margin-top:2px">Uma única inteligência. <button class="linkbtn" onclick="logout()">Sair</button></div>
     </div>
   </aside>
@@ -91,8 +91,8 @@
 <div class="modal" id="modal"><div class="dialog"><h3 id="modalTitle">Registrar item</h3><div class="form" id="modalForm"></div><div class="modal-actions"><button class="btn alt" onclick="closeModal()">Cancelar</button><button class="btn" id="saveBtn" onclick="saveItem()">Salvar registro</button></div></div></div>
 
 <div id="login"><div class="box">
-  <div class="eyebrow">VANGUARDA.IA · Governança</div>
-  <h2>Entrar no VANGUARDIAN</h2>
+  <div class="eyebrow">PrMO · Prompt Management Office</div>
+  <h2>Entrar no PrMO</h2>
   <p>Acesse com suas credenciais corporativas.</p>
   <form onsubmit="doLogin(event)">
     <label>E-mail<input id="lEmail" type="email" value="admin@vanguardian.com" autocomplete="username"></label>

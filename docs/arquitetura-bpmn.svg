@@ -31,13 +31,13 @@
   <rect width="1200" height="700" fill="#ffffff"/>
 
   <!-- header -->
-  <text x="28" y="38" class="title">VANGUARDIAN — Arquitetura (BPMN)</text>
+  <text x="28" y="38" class="title">PrMO — Arquitetura (BPMN)</text>
   <text x="28" y="58" class="sub">Fluxo da operação de governança: autenticação, cadastro, persistência, auditoria e indicadores.</text>
 
   <!-- POOL -->
   <rect x="28" y="80" width="1144" height="540" fill="none" stroke="#94a3b8" stroke-width="1.5"/>
   <rect x="28" y="80" width="26" height="540" fill="#fce7ec" stroke="#94a3b8" stroke-width="1.5"/>
-  <text transform="translate(46,350) rotate(-90)" text-anchor="middle" class="poolt">OPERAÇÃO DE GOVERNANÇA · VANGUARDIAN</text>
+  <text transform="translate(46,350) rotate(-90)" text-anchor="middle" class="poolt">OPERAÇÃO DE GOVERNANÇA · PrMO</text>
 
   <!-- lanes -->
   <!-- L1 Usuário  y 80-215 -->
@@ -97,7 +97,7 @@
   <!-- Start -->
   <circle class="ev" cx="150" cy="147" r="16"/>
   <text x="150" y="200" text-anchor="middle" class="evtxt">Acessa</text>
-  <text x="150" y="212" text-anchor="middle" class="code">VANGUARDIAN</text>
+  <text x="150" y="212" text-anchor="middle" class="code">o PrMO</text>
 
   <!-- User: autentica -->
   <rect class="task" x="234" y="119" width="132" height="56" rx="9"/>

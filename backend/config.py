@@ -9,7 +9,7 @@ from functools import lru_cache
 
 class Settings(BaseSettings):
     # Application
-    app_name: str = "VANGUARDIAN API"
+    app_name: str = "PrMO API"
     debug: bool = True
     version: str = "1.0.0"
 

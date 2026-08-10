@@ -43,7 +43,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title=settings.app_name,
     description=(
-        "API de governança digital VANGUARDIAN: controle de acessos, "
+        "API do PrMO (Prompt Management Office) — governança de IA: acessos, "
         "ferramentas, skills, prompts, autenticação, admin, observabilidade "
         "e integrações (RD Station, ICLIPS, VJOB)."
     ),

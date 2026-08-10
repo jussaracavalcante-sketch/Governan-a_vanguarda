@@ -64,5 +64,5 @@ jobs:
       - name: Validate static site
         run: |
           test -f frontend/index.html || { echo "frontend/index.html ausente"; exit 1; }
-          grep -q "VANGUARDIAN" frontend/index.html || { echo "Marcador VANGUARDIAN não encontrado"; exit 1; }
+          grep -q "PrMO" frontend/index.html || { echo "Marcador PrMO não encontrado"; exit 1; }
           echo "Site estático OK."

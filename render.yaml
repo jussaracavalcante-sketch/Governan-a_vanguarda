@@ -10,7 +10,7 @@ services:
       - key: PYTHON_VERSION
         value: 3.11.8
       - key: APP_NAME
-        value: VANGUARDIAN API
+        value: PrMO API
       - key: DEBUG
         value: "False"
       - key: VERSION

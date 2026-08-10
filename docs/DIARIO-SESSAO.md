@@ -1,6 +1,33 @@
-# Diário de Sessão — VANGUARDIAN
+# Diário de Sessão — PrMO (Prompt Management Office)
 
 Registro cronológico do trabalho por sessão. Entrada mais recente no topo.
+
+---
+
+## 2026-08-10 (sessão 2) — RBAC do usuário comum e rebrand para PrMO
+
+### 🎯 Objetivo
+Definir a regra de acesso do usuário comum e renomear o projeto.
+
+### ✅ Entregas
+- **RBAC — usuário comum (`User`)**: acesso e visão **somente da Biblioteca de prompts**.
+  - Frontend: menus e botões de cadastro dos demais módulos ocultos (`ctrl-only`); User cai direto na Biblioteca.
+  - Backend: `POST /governance/*` restrito a Manager/Admin (User → 403).
+- **Cadastro de prompt pelo colaborador**: botão "+ Novo prompt" liberado para o User, porém o registro entra **sempre como "Revisão pendente"** (o campo Controle é ocultado e o backend força o status). Homologação (Aprovado/Reprovado) segue exclusiva de Manager/Admin.
+- **Novo login comum**: `user@vanguardamartech.com.br` / `user123` (perfil User, ativo).
+- **Rebrand do projeto → PrMO — Prompt Management Office**: frontend (marca, título, login, rodapé), backend (`app_name`, descrição da API), `render.yaml` (`APP_NAME`), README, CI (marcador) e diagrama BPMN (SVG+PNG). Slug do repositório e URLs (Pages/Render) mantidos para não quebrar links.
+
+### 🧪 Validações ao vivo
+- User: `GET /governance/prompts` 200; `POST` prompt 201 com `control` forçado a "Revisão pendente"; `POST` incident 403.
+- Manager/Admin: cadastram e homologam normalmente.
+- Login `user@vanguardamartech.com.br` ativo (HTTP 200, role User).
+
+### 🧭 Decisões
+- Nome do produto passa a ser **PrMO**; contexto corporativo "Vanguarda Martech" mantido.
+- Fluxo de homologação: colaborador envia (Revisão pendente) → Admin/Manager aprova ou reprova.
+
+### ⏳ Pendências (mantidas)
+- Supabase (billing "VTech"), branch padrão → `main`, integração VanguardIA, botão de aprovar/reprovar in-app, KPI "Clientes governados", migração de schema quando o banco for persistente.
 
 ---
 
