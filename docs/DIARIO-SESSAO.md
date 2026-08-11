@@ -4,6 +4,31 @@ Registro cronológico do trabalho por sessão. Entrada mais recente no topo.
 
 ---
 
+## 2026-08-10 (sessão 5) — Painéis com dados reais e prompts do mapeamento na Biblioteca
+
+### 🎯 Objetivo
+Fazer os painéis contabilizarem a base migrada (dados reais) e levar os prompts identificados no mapeamento para a Biblioteca.
+
+### ✅ Entregas
+- **`/overview` reescrito** para contabilizar a partir dos 258 registros (Diagnóstico + Asset/Risk/Knowledge/Opportunity). Passa a devolver KPIs reais e listas (`adocao`, `prioridades`, `riscos`, `stack_top`, `capacidade`, `knowledge_tipos`).
+- **Frontend religado ao overview real** em todos os menus do controlador:
+  - Visão executiva: 93 colaboradores · 28 dado sensível · 52 ativos (41 prompts) · 33 riscos (3 críticos/25 altos) · 147 gaps (68 colaboradores) · 8 oportunidades (4 P1) · 2,95 ferramentas/colab · 274 menções.
+  - Adoção por macroárea (real), Backlog de oportunidades (prioridades), Ferramentas mais usadas (ChatGPT 81…), Capacidade por macroárea, Ativos por tipo, Riscos declarados (top), Compliance (exposição 35%, coorte crítica 3).
+- **Importação de 52 candidatos** do Knowledge Registry para a **Biblioteca de prompts** (status "Revisão pendente", com KNOW-ID/área/tarefa) — fila de triagem/homologação. Biblioteca: 3 curados + 52 candidatos = 55.
+
+### 🧪 Validações ao vivo
+- `/overview` real ativo (dashboard/compliance/stack_top conferidos).
+- Biblioteca com 55 prompts · 52 candidatos em Revisão pendente.
+
+### 🧭 Decisões
+- Biblioteca curada e "ativos do mapeamento" convivem: candidatos entram como Revisão pendente e são homologados pelo admin (com preenchimento do conteúdo).
+- Dados sempre anonimizados enquanto o repositório for público.
+
+### ⏳ Pendências (mantidas)
+- Render `prmo-api` (Manual sync + repointar frontend), Supabase (persistência + carga não-anonimizada), branch padrão → `main`, integração VanguardIA, filtro por status/tipo na Biblioteca (opcional).
+
+---
+
 ## 2026-08-10 (sessão 4) — Migração dos registros de governança (30 dias)
 
 ### 🎯 Objetivo
