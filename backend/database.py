@@ -4,11 +4,19 @@ from config import get_settings
 
 settings = get_settings()
 
-engine = create_engine(
-    settings.database_url,
-    connect_args={"check_same_thread": False} if "sqlite" in settings.database_url else {},
-    echo=settings.debug,
-)
+_is_sqlite = "sqlite" in settings.database_url
+
+# Para bancos hospedados (Supabase/PostgreSQL atrás de pooler) usamos
+# pool_pre_ping + pool_recycle para descartar conexões ociosas/derrubadas
+# pelo pooler antes de reutilizá-las. Para SQLite mantemos o comportamento padrão.
+_engine_kwargs = dict(echo=settings.debug)
+if _is_sqlite:
+    _engine_kwargs["connect_args"] = {"check_same_thread": False}
+else:
+    _engine_kwargs["pool_pre_ping"] = True
+    _engine_kwargs["pool_recycle"] = 1800
+
+engine = create_engine(settings.database_url, **_engine_kwargs)
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()

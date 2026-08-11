@@ -110,7 +110,7 @@ class RegistryRecord(Base):
     __tablename__ = "gov_registry"
     id = Column(Integer, primary_key=True, index=True)
     registry = Column(String(30), index=True)   # asset|risk|knowledge|opportunity|diagnostic|plan30
-    code = Column(String(60), default="")
+    code = Column(String(255), default="")       # id/indicador do registro (rótulos de diagnóstico podem ser longos)
     data = Column(Text, default="{}")            # JSON do registro (sem dados pessoais)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 

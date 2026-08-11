@@ -4,6 +4,39 @@ Registro cronológico do trabalho por sessão. Entrada mais recente no topo.
 
 ---
 
+## 2026-08-11 (sessão 6) — Migração para o Supabase com validação do backend em Postgres
+
+### 🎯 Objetivo
+Migrar o projeto para o **Supabase/PostgreSQL** validando o backend (não só rodar em SQLite).
+
+### ✅ Entregas
+- **Projeto Supabase provisionado**: `prmo-governanca` (ref `ubixfcoigwpjdrioymdq`, região `sa-east-1`, Postgres 17), free tier (US$ 0/mês).
+- **Validação real do backend em Postgres**: subi um Postgres local, rodei o FastAPI contra ele (`create_all` + todos os seeds) e exercitei os endpoints via `TestClient` (login admin/usuário, RBAC, `/overview` com números reais, `/prompts`, `/registry`).
+- **Bug de portabilidade corrigido**: `gov_registry.code` era `VARCHAR(60)`, mas rótulos de `Indicador` do diagnóstico chegam a 62 chars. SQLite ignora tamanho de `VARCHAR`; o Postgres rejeitava (`StringDataRightTruncation`) e abortava todo o seed de governança. Ampliado para `VARCHAR(255)`.
+- **Schema aplicado no Supabase** (migração `prmo_initial_schema`): 18 tabelas, 4 enums, PKs `IDENTITY`, índices e FKs — idênticos ao `Base.metadata.create_all`.
+- **Dados migrados para o Supabase** (via Data API/HTTPS, a partir do seed anonimizado): `gov_registry` 258, `gov_prompts` 55 (52 candidatos + 3 curados), `users` 5, e demais tabelas de governança. Sequências `IDENTITY` reajustadas (`prmo_reset_identity_and_enable_rls`).
+- **Segurança (RLS)**: RLS ativado em todas as tabelas do schema `public`, sem policies (deny-by-default). A Data API (`anon`/`publishable`) fica bloqueada; o backend conecta como papel `postgres` e ignora RLS. Advisor: só `INFO rls_enabled_no_policy` (estado pretendido).
+- **Robustez do engine**: `pool_pre_ping` + `pool_recycle=1800` para conexões atrás do pooler (`backend/database.py`).
+- **Config de deploy**: `render.yaml` com `DATABASE_URL: sync:false` (senha nunca no repo público); `docs/SUPABASE.md` reescrito com dados reais do projeto e passo a passo; DDL versionado em `db/supabase_schema.sql`.
+
+### 🧪 Validações
+- Seed em Postgres: 258 registros (asset 93, diagnostic 45, knowledge 52, opportunity 8, plan30 27, risk 33), 55 prompts, 4 clientes, 5 usuários — **sem falhas**.
+- `/overview` em Postgres: 93 colaboradores, 33 riscos (3 críticos/25 altos), ChatGPT 81 usos — idêntico ao esperado.
+- Supabase: contagens conferidas por SQL; RLS confirmado (anon recebe `[]`).
+
+### 🧭 Decisões
+- Acesso ao banco é **mediado pelo backend** (JWT + RBAC); nenhum cliente fala direto com o Supabase → RLS deny-by-default é a postura correta.
+- Sandbox não tem egress TCP para o Postgres do Supabase; por isso a validação do backend foi feita em Postgres **local** e o carregamento no Supabase via **Data API (HTTPS)** + MCP.
+
+### ⚠️ Ponto de atenção
+- `/governance/overview` responde 200 para usuário comum (RBAC do dashboard hoje só no frontend). Pré-existente, não é da migração — avaliar restringir no backend.
+
+### ⏳ Pendência do usuário para concluir no Render
+- Em Supabase → Settings → Database: **Reset password** e copiar a URI do **Session pooler**.
+- No Render (`prmo-api` → Environment): definir `DATABASE_URL` com essa URI (`postgresql+psycopg2://…pooler…:5432/postgres?sslmode=require`) e fazer Deploy. O seed é idempotente — não duplica os dados já carregados.
+
+---
+
 ## 2026-08-10 (sessão 5) — Painéis com dados reais e prompts do mapeamento na Biblioteca
 
 ### 🎯 Objetivo

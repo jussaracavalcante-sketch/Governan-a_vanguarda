@@ -15,13 +15,16 @@ services:
         value: "False"
       - key: VERSION
         value: "1.0.0"
-      # SQLite efêmero por padrão — deploy funciona out-of-the-box no free tier.
-      # Para persistência, sobrescreva no painel do Render (Environment) com a
-      # URL do Supabase/PostgreSQL:
-      # postgresql://postgres.<ref>:<SENHA>@aws-1-sa-east-1.pooler.supabase.com:5432/postgres?sslmode=require
-      # Ver docs/SUPABASE.md.
+      # Banco de produção: Supabase/PostgreSQL (projeto prmo-governanca, ref
+      # ubixfcoigwpjdrioymdq, região sa-east-1). A URL contém a SENHA do banco e
+      # NÃO pode ser versionada (repo público) — por isso sync:false: informe o
+      # valor real no painel do Render (Environment). Sem valor definido, o boot
+      # falha de propósito para não cair silenciosamente no SQLite efêmero.
+      # Formato (Session pooler, IPv4 — recomendado para o Render):
+      # postgresql+psycopg2://postgres.ubixfcoigwpjdrioymdq:<SENHA>@aws-0-sa-east-1.pooler.supabase.com:5432/postgres?sslmode=require
+      # Passo a passo em docs/SUPABASE.md.
       - key: DATABASE_URL
-        value: sqlite:///./vanguardian.db
+        sync: false
       - key: SECRET_KEY
         generateValue: true
       - key: LOG_LEVEL
