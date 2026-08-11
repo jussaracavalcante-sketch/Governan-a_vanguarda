@@ -219,6 +219,13 @@ class AdminService:
             "integrations_enabled": integrations_enabled,
             "recent_logins": recent_logins,
             "failed_logins": failed_logins,
+            # Métricas de runtime (SystemMetricsResponse). Aproximadas a partir da
+            # trilha de auditoria; contadores em tempo real vivem na camada Prometheus
+            # (/health/metrics). Mantidos aqui para o painel admin não quebrar.
+            "active_connections": 0,
+            "total_requests": total_audit_logs,
+            "error_rate": round((failed_logins / recent_logins) if recent_logins else 0.0, 4),
+            "avg_response_time_ms": 0.0,
         }
 
     def get_dashboard_stats(self) -> Dict[str, Any]:

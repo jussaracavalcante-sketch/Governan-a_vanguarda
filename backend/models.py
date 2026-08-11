@@ -146,7 +146,7 @@ class IntegrationConfig(Base):
     is_enabled = Column(Boolean, default=False)
     config = Column(Text, nullable=True)  # JSON with credentials and settings
     last_sync = Column(DateTime(timezone=True), nullable=True)
-    last_sync_status = Column(String(20), default="pending")  # success, error, pending
+    last_sync_status = Column(String(20), default="pending", server_default="pending")  # success, error, pending
     last_sync_error = Column(Text, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())

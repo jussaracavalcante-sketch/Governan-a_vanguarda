@@ -104,7 +104,7 @@ class IntegrationConfigAdminResponse(BaseModel):
     is_enabled: bool
     config: Optional[str] = None
     last_sync: Optional[datetime] = None
-    last_sync_status: str
+    last_sync_status: Optional[str] = "pending"
     last_sync_error: Optional[str] = None
     created_at: datetime
     updated_at: Optional[datetime] = None
