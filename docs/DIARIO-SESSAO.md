@@ -31,9 +31,15 @@ Migrar o projeto para o **Supabase/PostgreSQL** validando o backend (não só ro
 ### ⚠️ Ponto de atenção
 - `/governance/overview` responde 200 para usuário comum (RBAC do dashboard hoje só no frontend). Pré-existente, não é da migração — avaliar restringir no backend.
 
-### ⏳ Pendência do usuário para concluir no Render
-- Em Supabase → Settings → Database: **Reset password** e copiar a URI do **Session pooler**.
-- No Render (`prmo-api` → Environment): definir `DATABASE_URL` com essa URI (`postgresql+psycopg2://…pooler…:5432/postgres?sslmode=require`) e fazer Deploy. O seed é idempotente — não duplica os dados já carregados.
+### ✅ Adendo — virada de chave concluída (mesmo dia)
+- Usuário definiu `DATABASE_URL` (Session pooler) no serviço **`prmo-api`** e redeployou.
+- **Validação ao vivo, ponta a ponta**: inseri um registro-sentinela direto no Supabase → apareceu na API do `prmo-api` (leitura OK); criei um prompt pela API → gravou no Supabase (escrita OK); registros de teste removidos. Persistência real confirmada (fim do SQLite efêmero).
+- **Frontend repontado** de `vanguardian-api-omg6` → `https://prmo-api.onrender.com` (commit `de1fc26`); **GitHub Pages** republicado e confirmado servindo a nova URL.
+
+### ⏳ Pendências (do usuário, opcionais)
+- Arquivar/desativar o serviço antigo `vanguardian-api-omg6` no Render (ocioso).
+- Trocar a branch padrão do repo para `main`.
+- Integração VanguardIA e filtro por status/tipo na Biblioteca.
 
 ---
 
