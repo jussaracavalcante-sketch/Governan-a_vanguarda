@@ -29,6 +29,12 @@ Analisar os três normativos corporativos (Política de IA, Manual por Departame
 ### ⚠️ Nota de acesso
 - Não foi possível anexar o repo `VanguardaHub/vanguardIA` nesta sessão (bloqueio de owner cruzado). O conector ficou **configurável** por `base_url`/token, pronto para apontar ao endpoint real quando publicado.
 
+### 🔧 Adendo — validação e ativação das funcionalidades existentes
+- Varredura de **todos os endpoints** ao vivo (prmo-api → Supabase): 33 rotas OK; 2 quebradas corrigidas:
+  - `/admin/metrics` (500) — `SystemMetricsResponse` exigia `active_connections`/`total_requests`/`error_rate`/`avg_response_time_ms`, ausentes no service. Adicionados. ✅
+  - `/admin/integrations` (500) — registro `vanguardia` (inserido via SQL) com `last_sync_status` nulo. Schema tolerante + `server_default='pending'` no modelo + `UPDATE`/`ALTER DEFAULT` no Supabase. ✅
+- Revalidado ao vivo após redeploy: ambos **200**; núcleo (overview/rules/prompts/integrations) 200.
+
 ---
 
 ## 2026-08-11 (sessão 6) — Migração para o Supabase com validação do backend em Postgres
