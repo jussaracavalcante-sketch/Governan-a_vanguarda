@@ -425,6 +425,7 @@ def seed_initial_data(db: Session):
         IntegrationConfig(name="rd_station", display_name="RD Station", is_enabled=False, config="{}"),
         IntegrationConfig(name="iclips", display_name="ICLIPS", is_enabled=False, config="{}"),
         IntegrationConfig(name="vjob", display_name="VJOB", is_enabled=False, config="{}"),
+        IntegrationConfig(name="vanguardia", display_name="VanguardIA", is_enabled=False, config="{}"),
     ]
     db.add_all(integrations)
 

@@ -120,7 +120,9 @@ async function api(path, opts={}){
   const t=localStorage.getItem(TKEY);
   const r=await fetch(API+path,{...opts,headers:{'Content-Type':'application/json',...(t?{Authorization:'Bearer '+t}:{}),...(opts.headers||{})}});
   if(r.status===401){logout();throw new Error('401');}
-  if(!r.ok){let d='HTTP '+r.status;try{const j=await r.json();d=j.detail||d;}catch(e){}throw new Error(typeof d==='string'?d:'Erro');}
+  if(!r.ok){let d='HTTP '+r.status;try{const j=await r.json();if(j&&j.detail!=null)d=j.detail;}catch(e){}
+    if(d&&typeof d==='object')d=Array.isArray(d.regras)?('Regra de governança — '+d.regras.join(' · ')):JSON.stringify(d);
+    throw new Error(typeof d==='string'?d:'Erro');}
   return r.status===204?null:r.json();
 }
 
@@ -176,16 +178,18 @@ function renderClients(list){
 function renderStack(list){
   document.getElementById('stackList').innerHTML=list.map(t=>rowItem(t.name,t.description,`<span class="badge ${toolTone(t.status)}">${esc(t.status)}</span>`)).join('');
 }
+const TIPO_LABEL={A:'Operacional',B:'Analítico',C:'Estratégico',D:'Automação',E:'Criativo'};
 function renderPrompts(list){
   const ctrl=isController();
   document.getElementById('promptRows').innerHTML=list.map(p=>{
+    const meta=`<span class="muted" style="font-size:11px;letter-spacing:.04em">${esc(p.code||'—')}${p.version?(' · v'+esc(p.version)):''}${p.ptype?(' · '+esc(p.ptype)+' '+(TIPO_LABEL[p.ptype]||'')):''}</span>`;
     const repo=p.repo_url?`<a class="table-action" href="${esc(p.repo_url)}" target="_blank" rel="noopener" style="text-decoration:none;margin-right:10px">Repo ↗</a>`:'';
     const homolog=ctrl?`<button class="table-action" style="color:var(--green);margin-right:10px" onclick="homologar(${p.id},'Aprovado')">Aprovar</button><button class="table-action" style="color:#ff8aa0;margin-right:10px" onclick="homologar(${p.id},'Reprovado')">Reprovar</button>`:'';
     const teto=COST_POLICY.max_cost_per_call||0; const cc=Number(p.cost_per_call||0);
     const cur=(COST_POLICY.currency==='USD')?'US$':'R$';
     const over=teto>0 && cc>teto;
     const costCell=`<td>${cc>0?cur+' '+cc.toFixed(2):'—'}${over?' <span class="badge red">acima do teto</span>':''}</td>`;
-    return `<tr><td><b>${esc(p.title)}</b><br><span class="muted">${esc(p.description)}</span></td><td>${esc(p.area)}</td><td><span class="badge ${ctrlTone(p.control)}">${esc(p.control)}</span></td><td>${esc(p.last_review)}</td><td>${p.uses}</td>${costCell}<td>${homolog}${repo}<button class="table-action" onclick='copyPrompt(${JSON.stringify(p.content||p.title)})'>Copiar</button></td></tr>`;
+    return `<tr><td>${meta}<br><b>${esc(p.title)}</b><br><span class="muted">${esc(p.description)}</span></td><td>${esc(p.area)}</td><td><span class="badge ${ctrlTone(p.control)}">${esc(p.control)}</span></td><td>${esc(p.last_review)}</td><td>${p.uses}</td>${costCell}<td>${homolog}${repo}<button class="table-action" onclick='copyPrompt(${JSON.stringify(p.content||p.title)})'>Copiar</button></td></tr>`;
   }).join('');
   const teto=COST_POLICY.max_cost_per_call||0, cur=(COST_POLICY.currency==='USD')?'US$':'R$';
   const acima=(list||[]).filter(p=>teto>0 && Number(p.cost_per_call||0)>teto).length;
@@ -262,7 +266,7 @@ async function boot(){
 const FORMS={
   initiative:{title:'Registrar iniciativa',ep:'/governance/initiatives',fields:[['Iniciativa','text','Ex.: Agente de briefing','name'],['Área responsável','text','Ex.: Atendimento + Criação','area'],['Status','select','Em validação|Em produção|Em homologação|Risco: dados','status'],['Horas economizadas (estimadas)','text','Ex.: 40','hours_saved']]},
   tool:{title:'Solicitar ferramenta',ep:'/governance/stack',fields:[['Ferramenta','text','Nome da solução','name'],['Descrição / caso de uso','text','Objetivo operacional','description'],['Status','select','Em análise|Homologada|Restrita|Reprovada','status']]},
-  prompt:{title:'Novo prompt institucional',ep:'/governance/prompts',fields:[['Título','text','Ex.: Diagnóstico de campanha','title'],['Descrição','text','Resumo do objetivo','description'],['Área','select','Criação|Atendimento|Planejamento|Mídia|Social|Comercial','area'],['Conteúdo','textarea','Escreva o prompt com variáveis e critérios de revisão','content'],['Repositório hospedado','text','https://github.com/org/repo (opcional)','repo_url'],['Custo por chamada (R$)','text','Ex.: 0.35','cost_per_call'],['Controle','select','Revisão pendente|Aprovado|Reprovado','control']]},
+  prompt:{title:'Novo prompt institucional',ep:'/governance/prompts',fields:[['Título','text','Ex.: Diagnóstico de campanha','title'],['Descrição / objetivo','text','Resumo do objetivo (NIA-001)','description'],['Área','select','Criação|Atendimento|Planejamento|Mídia|Social|Comercial|Inbound|RH|Financeiro|Desenvolvimento|Diretoria','area'],['Tipo (NIA-001)','select','A · Operacional|B · Analítico|C · Estratégico|D · Automação|E · Criativo','ptype'],['Ferramenta utilizada','text','Ex.: ChatGPT Enterprise (deve ser homologada)','tool'],['Classificação da informação','select','Uso interno|Público|Confidencial|Restrito','data_class'],['Conteúdo','textarea','Objetivo · Contexto · Papel da IA · Instruções · Restrições · Formato','content'],['Repositório hospedado','text','https://github.com/org/repo (opcional)','repo_url'],['Custo por chamada (R$)','text','Ex.: 0.35','cost_per_call'],['Controle','select','Revisão pendente|Aprovado|Reprovado','control']]},
   costpolicy:{title:'Teto de custo por chamada',ep:'/governance/cost-policy',method:'PUT',fields:[['Teto por chamada','text','Ex.: 0.50','max_cost_per_call'],['Moeda','select','BRL|USD','currency']]},
   skill:{title:'Mapear competência',ep:'/governance/skills',fields:[['Time / área','text','Ex.: Social Media','area'],['Competência','text','Ex.: análise de tendências','description'],['Nível','select','Iniciante|Intermediário|Avançado|Especialista|Prioridade','level'],['Responsável pela avaliação','text','Nome do líder','reviewer']]},
   incident:{title:'Registrar ocorrência',ep:'/governance/incidents',fields:[['Tipo / título','text','Ex.: Uso de dados fora do fluxo','title'],['Área','text','Ex.: Conta Nexo','area'],['Criticidade','select','Baixa|Média|Alta|Crítica','criticality'],['Status','select','Em análise|Conforme|Ação necessária','status'],['Descrição','textarea','Contexto, impacto e ação imediata','description']]},
@@ -288,6 +292,7 @@ async function saveItem(){
   if('hours_saved' in payload)payload.hours_saved=parseInt(payload.hours_saved,10)||0;
   if('playbook_active' in payload)payload.playbook_active=!!payload.playbook_active;
   if(CURRENT_FORM.ep==='/governance/prompts' && !isController())payload.control='Revisão pendente';
+  if('ptype' in payload && payload.ptype)payload.ptype=String(payload.ptype).trim().charAt(0);
   if('cost_per_call' in payload)payload.cost_per_call=parseFloat(String(payload.cost_per_call).replace(',','.'))||0;
   if('max_cost_per_call' in payload)payload.max_cost_per_call=parseFloat(String(payload.max_cost_per_call).replace(',','.'))||0;
   const btn=document.getElementById('saveBtn');btn.disabled=true;btn.textContent='Salvando…';

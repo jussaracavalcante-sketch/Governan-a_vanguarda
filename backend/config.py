@@ -49,6 +49,10 @@ class Settings(BaseSettings):
     vjob_client_id: str = ""
     vjob_client_secret: str = ""
 
+    # VanguardIA Integration (ecossistema VanguardaHub/vanguardIA)
+    vanguardia_base_url: str = ""
+    vanguardia_api_key: str = ""
+
     # Admin
     admin_email: str = "admin@vanguardian.com"
     admin_password: str = "admin123"  # Change in production!

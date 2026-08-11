@@ -1,7 +1,18 @@
-# Modelo de Governança — VANGUARDIAN
+# Modelo de Governança — PrMO
 
 > Papéis, fluxos e regras que garantem que o repositório de prompts e PI opere
 > com qualidade, segurança e conformidade.
+
+## Normas corporativas e regras aplicadas
+
+O PrMO implementa as normas corporativas de IA. Documentos-fonte e o mapa de
+implementação:
+
+- [Política Corporativa de IA](normas/POLITICA-IA.md)
+- [Manual de Uso da IA por Departamento](normas/MANUAL-IA-DEPARTAMENTOS.md)
+- [Norma NIA-001 — Engenharia de Prompts](normas/NIA-001-ENGENHARIA-DE-PROMPTS.md)
+- **[Regras de Negócio (normas → sistema)](REGRAS-DE-NEGOCIO.md)** — campos NIA-001 do
+  prompt, motor de regras `R1–R4` (`GET /governance/rules`) e integração VanguardIA.
 
 ## 1. Papéis (RBAC)
 

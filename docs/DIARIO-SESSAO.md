@@ -4,6 +4,33 @@ Registro cronológico do trabalho por sessão. Entrada mais recente no topo.
 
 ---
 
+## 2026-08-11 (sessão 7) — Normas corporativas: padrão NIA-001, regras de negócio e integração VanguardIA
+
+### 🎯 Objetivo
+Analisar os três normativos corporativos (Política de IA, Manual por Departamento, NIA-001) e implementar no PrMO o que é aplicável, além de atuar na integração do VanguardIA.
+
+### ✅ Entregas
+- **Padrão NIA-001 no prompt** (`gov_prompts`): novos campos `code` (nomenclatura `PROMPT-ÁREA-NNN`, auto-gerado), `version`, `ptype` (A–E, auto-classificado), `tool`, `author`, `data_class`. Código único por área (55/55).
+- **Motor de regras de negócio** (`GET /governance/rules`), aplicado no ciclo do prompt:
+  - **R1** (NIA-001 §13 / Política §6) — bloqueia cadastro com credenciais/segredos/PII (senha, token, CPF, cartão, fraude).
+  - **R2** (Política §4) — só homologa prompt com **ferramenta homologada**.
+  - **R3** (NIA-001 §5/§12) — aprovação exige código + objetivo + conteúdo.
+  - **R4** (Política §7) — dado **Restrito** não pode ter repositório público externo.
+  - Violações → HTTP 422 `{regras:[…]}` + trilha de auditoria. Reprovar é sempre permitido.
+- **Integração VanguardIA**: conector `integrations/vanguardia/` (padrão rd_station/iclips/vjob), factory, settings `VANGUARDIA_*`, seed do `integration_config`. `test`/`sync` prontos; `sync` importa agentes/prompts homologados do VanguardIA para a Biblioteca como candidatos no padrão NIA-001.
+- **Frontend**: formulário de prompt com Tipo/Ferramenta/Classificação; Biblioteca exibe código·versão·tipo; mensagens das regras (422) exibidas ao usuário.
+- **Docs**: normas versionadas em `docs/normas/` (Política, Manual, NIA-001) + `docs/REGRAS-DE-NEGOCIO.md` (normas → sistema) + referência no `GOVERNANCA.md`.
+- **Supabase**: `ALTER` de `gov_prompts` (6 colunas + índice), recarga dos 55 prompts com os campos NIA-001 (RLS reativado), integração `vanguardia` inserida.
+
+### 🧪 Validações
+- Backend em Postgres (TestClient): regras R1–R4 (bloqueios e caminho válido), 4 integrações, 55 prompts com 55 códigos únicos, `/overview` real (93 colaboradores).
+- Supabase: 55 prompts com código único, RLS bloqueando anon, `integration_configs` com VanguardIA.
+
+### ⚠️ Nota de acesso
+- Não foi possível anexar o repo `VanguardaHub/vanguardIA` nesta sessão (bloqueio de owner cruzado). O conector ficou **configurável** por `base_url`/token, pronto para apontar ao endpoint real quando publicado.
+
+---
+
 ## 2026-08-11 (sessão 6) — Migração para o Supabase com validação do backend em Postgres
 
 ### 🎯 Objetivo

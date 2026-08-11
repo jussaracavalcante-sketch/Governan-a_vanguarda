@@ -57,6 +57,13 @@ class PromptItem(Base):
     cost_per_call = Column(Float, default=0.0)
     last_review = Column(String(30), default="")
     uses = Column(Integer, default=0)
+    # --- Padrão corporativo NIA-001 (Engenharia de Prompts) ---
+    code = Column(String(40), default="", index=True)   # Nomenclatura PROMPT-ÁREA-NNN (NIA-001 §7)
+    version = Column(String(10), default="1.0")          # Versionamento (NIA-001 §8)
+    ptype = Column(String(1), default="")                # Classificação A|B|C|D|E (NIA-001 §6)
+    tool = Column(String(80), default="")                # Ferramenta utilizada (NIA-001 §5)
+    author = Column(String(120), default="")             # Autor/responsável (NIA-001 §9)
+    data_class = Column(String(20), default="")          # Classificação da informação (Política §7)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
 
@@ -160,6 +167,13 @@ class PromptItemIn(BaseModel):
     cost_per_call: float = 0.0
     last_review: str = ""
     uses: int = 0
+    # Padrão NIA-001 (todos opcionais no envio; o backend completa código/autor/versão)
+    code: str = ""
+    version: str = "1.0"
+    ptype: str = ""
+    tool: str = ""
+    author: str = ""
+    data_class: str = ""
 
 
 class SkillItemIn(BaseModel):
@@ -207,6 +221,131 @@ _MESES = ["jan", "fev", "mar", "abr", "mai", "jun", "jul", "ago", "set", "out", 
 def _hoje_pt() -> str:
     d = datetime.now(timezone.utc)
     return f"{d.day:02d} {_MESES[d.month - 1]} {d.year}"
+
+
+# ── Padrão corporativo NIA-001 (Engenharia de Prompts) ──────────────────────
+# Nomenclatura PROMPT-ÁREA-NNN (§7). Mapa de sigla por macroárea; fallback = 3 letras.
+_AREA_CODE = {
+    "criação": "CRI", "criacao": "CRI", "criação & conteúdo": "CRI", "conteúdo": "CRI",
+    "atendimento": "ATD", "account": "ATD",
+    "planejamento": "PLA", "planejamento & estratégia": "PLA", "estratégia": "PLA",
+    "mídia": "MID", "midia": "MID", "mídia & performance": "MID", "performance": "MID",
+    "social": "SOC", "social media": "SOC",
+    "comercial": "CML", "vendas": "CML",
+    "inbound": "INB", "rh": "RH", "recursos humanos": "RH",
+    "financeiro": "FIN", "financeiro & rh": "FIN", "administrativo": "ADM",
+    "desenvolvimento": "DEV", "diretoria": "CEO", "gestão de projetos": "PMO",
+    "dados": "DAT", "conhecimento": "KNW",
+}
+
+
+def _area_prefix(area: str) -> str:
+    a = (area or "").strip().lower()
+    if a in _AREA_CODE:
+        return _AREA_CODE[a]
+    for key, sig in _AREA_CODE.items():
+        if key in a:
+            return sig
+    base = "".join(ch for ch in a if ch.isalnum())
+    return (base[:3] or "GEN").upper()
+
+
+def _ptype_from(text: str) -> str:
+    """Classifica o tipo (A operacional | B analítico | C estratégico | D automação |
+    E criativo) a partir de palavras-chave do Tipo/Área/Título — NIA-001 §6."""
+    t = (text or "").lower()
+    def has(*words): return any(w in t for w in words)
+    if has("automa", "fluxo", "api", "agente", "integra", "webhook"):
+        return "D"
+    if has("planejamento", "estrat", "roadmap", "plano diretor", "consultoria", "diretoria"):
+        return "C"
+    if has("benchmark", "swot", "indicador", "kpi", "análise", "analise", "analítico", "forecast", "dados"):
+        return "B"
+    if has("campanha", "roteiro", "storytelling", "design", "naming", "criativ", "copy", "conteúdo", "social", "vídeo", "video", "imagem"):
+        return "E"
+    return "A"
+
+
+def _next_prompt_code(db: Session, area: str) -> str:
+    pref = _area_prefix(area)
+    like = f"PROMPT-{pref}-%"
+    n = db.query(PromptItem).filter(PromptItem.code.like(like)).count()
+    return f"PROMPT-{pref}-{n + 1:03d}"
+
+
+# ── Regras de negócio (derivadas das normas corporativas) ───────────────────
+import re
+
+# R1 — Proibições de segurança/LGPD (NIA-001 §13 / Política §6): segredos e PII.
+_FORBIDDEN_PATTERNS = [
+    (r"\b\d{3}\.?\d{3}\.?\d{3}-?\d{2}\b", "CPF"),
+    (r"\b\d{4}[ .-]?\d{4}[ .-]?\d{4}[ .-]?\d{4}\b", "cartão de crédito"),
+    (r"(?i)\b(senha|password|api[_ -]?key|secret|client_secret|token|bearer)\b\s*[:=]\s*\S+", "credencial/segredo"),
+    (r"(?i)\b(burlar|sonegar|fraude|fraudar)\b", "conteúdo vedado (fraude/burla)"),
+]
+
+# R4 — Repositórios "externos" (serviços fora do ambiente corporativo).
+_EXTERNAL_REPO_HOSTS = ("github.com", "gitlab.com", "bitbucket.org", "drive.google.com", "dropbox.com")
+
+# Catálogo público das regras (para /governance/rules, frontend e auditoria).
+BUSINESS_RULES = [
+    {"id": "R1", "base": "NIA-001 §13 / Política §6", "quando": "cadastro",
+     "regra": "Prompt não pode conter credenciais, segredos ou dados pessoais (CPF, cartão)."},
+    {"id": "R2", "base": "Política §4", "quando": "homologação",
+     "regra": "Só homologa (Aprovado) prompt cuja ferramenta esteja Homologada no stack."},
+    {"id": "R3", "base": "NIA-001 §5/§12", "quando": "homologação",
+     "regra": "Aprovação exige metadados mínimos: código, objetivo/descrição e conteúdo."},
+    {"id": "R4", "base": "Política §7", "quando": "cadastro/homologação",
+     "regra": "Dado classificado como Restrito não pode ter repositório público externo."},
+]
+
+
+def check_forbidden(*texts: str) -> list[str]:
+    """R1: retorna as categorias proibidas encontradas no texto do prompt."""
+    blob = " \n ".join(t for t in texts if t)
+    hits = []
+    for pat, label in _FORBIDDEN_PATTERNS:
+        if re.search(pat, blob):
+            hits.append(label)
+    return hits
+
+
+def _repo_is_external(url: str) -> bool:
+    u = (url or "").lower()
+    return any(h in u for h in _EXTERNAL_REPO_HOSTS)
+
+
+def validate_prompt_intake(data: dict) -> list[str]:
+    """Regras aplicadas no cadastro (R1, R4). Retorna lista de violações."""
+    problems = []
+    forb = check_forbidden(data.get("title", ""), data.get("description", ""), data.get("content", ""))
+    if forb:
+        problems.append("R1: conteúdo proibido — " + ", ".join(sorted(set(forb))))
+    if str(data.get("data_class", "")).strip().lower() == "restrito" and _repo_is_external(data.get("repo_url", "")):
+        problems.append("R4: dado 'Restrito' não pode apontar para repositório público externo")
+    return problems
+
+
+def validate_prompt_approval(obj: "PromptItem", db: Session) -> list[str]:
+    """Regras aplicadas na homologação-Aprovado (R1–R4). Retorna lista de violações."""
+    problems = validate_prompt_intake({
+        "title": obj.title, "description": obj.description, "content": obj.content,
+        "data_class": obj.data_class, "repo_url": obj.repo_url,
+    })
+    # R3 — metadados mínimos
+    faltas = [n for n, v in (("código", obj.code), ("objetivo/descrição", obj.description), ("conteúdo", obj.content)) if not (v or "").strip()]
+    if faltas:
+        problems.append("R3: preencha antes de aprovar — " + ", ".join(faltas))
+    # R2 — ferramenta homologada
+    tool = (obj.tool or "").strip()
+    if not tool:
+        problems.append("R2: informe a ferramenta utilizada (deve ser homologada)")
+    else:
+        homolog = db.query(StackTool).filter(StackTool.status == "Homologada").all()
+        nomes = [t.name.lower() for t in homolog]
+        if not any(tool.lower() in n or n in tool.lower() for n in nomes):
+            problems.append(f"R2: ferramenta '{tool}' não está homologada no stack")
+    return problems
 
 
 # ─────────────────────────── ROUTER ───────────────────────────
@@ -273,13 +412,30 @@ def list_prompts(db: Session = Depends(get_db), u: User = Depends(get_current_us
 def create_prompt(item: PromptItemIn, db: Session = Depends(get_db), u: User = Depends(get_current_user)):
     data = item.model_dump()
     role = str(getattr(u.role, "value", u.role))
+    # R1/R4 — regras de cadastro (segurança/LGPD e classificação da informação).
+    violacoes = validate_prompt_intake(data)
+    if violacoes:
+        _audit(db, u, "REJECT", "prompt", 0, {"title": data.get("title"), "violacoes": violacoes})
+        raise HTTPException(status_code=422, detail={"regras": violacoes})
     # Colaborador (User) só envia para validação: status sempre "Revisão pendente".
     # A homologação (Aprovado/Reprovado) é exclusiva de Manager/Admin.
     if role not in ("Admin", "Manager"):
         data["control"] = "Revisão pendente"
+    # Padrão NIA-001: completa metadados obrigatórios se não vierem preenchidos.
+    if not data.get("code"):
+        data["code"] = _next_prompt_code(db, data.get("area", ""))
+    if not data.get("ptype"):
+        data["ptype"] = _ptype_from(f"{data.get('area','')} {data.get('title','')} {data.get('description','')}")
+    if not data.get("author"):
+        data["author"] = u.name or u.email
+    if not data.get("version"):
+        data["version"] = "1.0"
+    if not data.get("data_class"):
+        data["data_class"] = "Uso interno"
     obj = PromptItem(**data)
     db.add(obj); db.commit(); db.refresh(obj)
-    _audit(db, u, "CREATE", "prompt", obj.id, {"title": obj.title, "control": obj.control, "by_role": role})
+    _audit(db, u, "CREATE", "prompt", obj.id,
+           {"title": obj.title, "code": obj.code, "control": obj.control, "by_role": role})
     return _serialize(obj)
 
 
@@ -290,12 +446,24 @@ def homologar_prompt(pid: int, item: HomologacaoIn, db: Session = Depends(get_db
     obj = db.query(PromptItem).filter(PromptItem.id == pid).first()
     if not obj:
         raise HTTPException(status_code=404, detail="Prompt não encontrado")
+    # R1–R4 — regras de homologação (só bloqueiam a APROVAÇÃO; reprovar é sempre permitido).
+    if item.decision == "Aprovado":
+        violacoes = validate_prompt_approval(obj, db)
+        if violacoes:
+            _audit(db, u, "REJECT", "prompt", obj.id, {"title": obj.title, "violacoes": violacoes})
+            raise HTTPException(status_code=422, detail={"regras": violacoes})
     obj.control = item.decision
     obj.last_review = _hoje_pt()
     db.commit(); db.refresh(obj)
     _audit(db, u, "APPROVE" if item.decision == "Aprovado" else "REJECT", "prompt", obj.id,
            {"title": obj.title, "control": obj.control})
     return _serialize(obj)
+
+
+# ---- Regras de negócio (catálogo derivado das normas corporativas) ----
+@router.get("/rules")
+def list_rules(u: User = Depends(get_current_user)):
+    return {"regras": BUSINESS_RULES}
 
 
 # ---- Política de custo (teto por chamada, controlado pelo PrMO) ----
@@ -560,21 +728,30 @@ def seed_prompts_from_knowledge(db: Session):
     (status 'Revisão pendente') — a triar/homologar pelo administrador."""
     if db.query(PromptItem).filter(PromptItem.title.like("%[KNOW-%")).first():
         return
+    seq: dict[str, int] = {}
     for r in db.query(RegistryRecord).filter(RegistryRecord.registry == "knowledge").order_by(RegistryRecord.id).all():
         try:
             rec = json.loads(r.data)
         except Exception:
             continue
-        code = r.code or rec.get("KNOW-ID") or ""
+        know_id = r.code or rec.get("KNOW-ID") or ""
         tipo = rec.get("Tipo") or "Prompt"
         area = rec.get("Macroárea") or ""
         tarefa = (rec.get("Tarefa que gostaria de delegar a um Agente Vanguarda")
                   or rec.get("Ativo declarado (prompt/fluxo/automação)") or "")
         desc = (str(tarefa).strip() or "Candidato do mapeamento — conteúdo a preencher na homologação.")[:380]
-        title = (f"{tipo} · {area} [{code}]" if area else f"{tipo} [{code}]")[:200]
-        db.add(PromptItem(title=title, description=desc, area=(area or tipo),
-                          control="Revisão pendente", content=str(tarefa),
-                          last_review="", uses=0, cost_per_call=0.0))
+        title = (f"{tipo} · {area} [{know_id}]" if area else f"{tipo} [{know_id}]")[:200]
+        # Metadados NIA-001: código de nomenclatura, tipo (A–E), autoria da origem.
+        pref = _area_prefix(area or tipo)
+        seq[pref] = seq.get(pref, 0) + 1
+        db.add(PromptItem(
+            title=title, description=desc, area=(area or tipo),
+            control="Revisão pendente", content=str(tarefa),
+            last_review="", uses=0, cost_per_call=0.0,
+            code=f"PROMPT-{pref}-{seq[pref]:03d}",
+            version="1.0", ptype=_ptype_from(f"{tipo} {area} {tarefa}"),
+            tool="", author="Mapeamento de Governança", data_class="Uso interno",
+        ))
     db.commit()
 
 
@@ -604,14 +781,20 @@ def seed_governance(db: Session):
         StackTool(name="Ferramenta externa de vídeo", description="Solicitação #VG-204", status="Em análise", request_code="VG-204"),
     ])
     db.add(CostPolicy(max_cost_per_call=0.50, currency="BRL"))
-    db.add_all([
-        PromptItem(title="Briefing estratégico 360°", description="Transforma demanda em contexto, objetivos e critérios de entrega.",
-                   area="Planejamento", control="Aprovado", last_review="04 ago 2026", uses=86, cost_per_call=0.30),
-        PromptItem(title="Legendas com voz de marca", description="Gera variações com tom, persona e restrições do cliente.",
-                   area="Social", control="Aprovado", last_review="02 ago 2026", uses=143, cost_per_call=0.18),
-        PromptItem(title="Insight de performance semanal", description="Converte dados de mídia em decisões acionáveis.",
-                   area="Mídia", control="Revisão pendente", last_review="28 jul 2026", uses=48, cost_per_call=0.82),
-    ])
+    _curados = [
+        dict(title="Briefing estratégico 360°", description="Transforma demanda em contexto, objetivos e critérios de entrega.",
+             area="Planejamento", control="Aprovado", last_review="04 ago 2026", uses=86, cost_per_call=0.30,
+             ptype="C", tool="ChatGPT Enterprise", author="Diretoria de IA", data_class="Uso interno"),
+        dict(title="Legendas com voz de marca", description="Gera variações com tom, persona e restrições do cliente.",
+             area="Social", control="Aprovado", last_review="02 ago 2026", uses=143, cost_per_call=0.18,
+             ptype="E", tool="ChatGPT Enterprise", author="Diretoria de IA", data_class="Uso interno"),
+        dict(title="Insight de performance semanal", description="Converte dados de mídia em decisões acionáveis.",
+             area="Mídia", control="Revisão pendente", last_review="28 jul 2026", uses=48, cost_per_call=0.82,
+             ptype="B", tool="Make / APIs", author="Diretoria de IA", data_class="Uso interno"),
+    ]
+    for c in _curados:
+        c["code"] = _next_prompt_code(db, c["area"]); c["version"] = "1.0"
+        db.add(PromptItem(**c)); db.flush()
     db.add_all([
         SkillItem(area="Criação", description="Ideação, imagem, vídeo e revisão criativa", level="Avançado"),
         SkillItem(area="Planejamento & Estratégia", description="Research, personas, SWOT e propostas", level="Avançado"),

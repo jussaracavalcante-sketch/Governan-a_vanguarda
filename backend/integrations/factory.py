@@ -18,4 +18,7 @@ def get_integration(config: IntegrationConfig, db: Session) -> BaseIntegration:
     if name == "vjob":
         from integrations.vjob.client import VJobIntegration
         return VJobIntegration(config, db)
+    if name == "vanguardia":
+        from integrations.vanguardia.client import VanguardIAIntegration
+        return VanguardIAIntegration(config, db)
     raise ValueError(f"Integração desconhecida: {config.name}")
