@@ -16,9 +16,6 @@ from observability.logging import configure_logging, get_logger
 from observability.middleware import RequestLoggingMiddleware, AuditMiddleware
 from integrations.router import router as integrations_router
 from crud import seed_initial_data
-import head.models  # noqa: F401  (registra as tabelas do módulo HEAD de IA no metadata)
-from head.router import router as head_router
-from head.seed import seed_head_data
 
 settings = get_settings()
 configure_logging()
@@ -32,7 +29,6 @@ async def lifespan(app: FastAPI):
     db = SessionLocal()
     try:
         seed_initial_data(db)
-        seed_head_data(db)
     except Exception as exc:
         logger.error("seed_failed", error=str(exc))
     finally:
@@ -44,10 +40,9 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title=settings.app_name,
     description=(
-        "API da plataforma PRMO: governança digital, controle de acessos, "
-        "ferramentas, skills, prompts, autenticação, admin, observabilidade, "
-        "integrações (RD Station, ICLIPS, VJOB) e o app Gestão HEAD de IA "
-        "(ativos, tarefas, licenças, indicadores/KPIs, relatórios e base de conhecimento)."
+        "API de governança digital VANGUARDIAN: controle de acessos, "
+        "ferramentas, skills, prompts, autenticação, admin, observabilidade "
+        "e integrações (RD Station, ICLIPS, VJOB)."
     ),
     version=settings.version,
     lifespan=lifespan,
@@ -72,7 +67,6 @@ app.include_router(routes_tools.router)
 app.include_router(routes_skills.router)
 app.include_router(routes_prompts.router)
 app.include_router(routes_dashboard.router)
-app.include_router(head_router)
 
 
 @app.get("/", tags=["Root"])

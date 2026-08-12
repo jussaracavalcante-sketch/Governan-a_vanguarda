@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: prmo-api
+    name: vanguardian-api
     env: python
     region: oregon
     plan: free
@@ -10,7 +10,7 @@ services:
       - key: PYTHON_VERSION
         value: 3.11.8
       - key: APP_NAME
-        value: PRMO API
+        value: VANGUARDIAN API
       - key: DEBUG
         value: "False"
       - key: VERSION
@@ -21,7 +21,7 @@ services:
       # postgresql://postgres.<ref>:<SENHA>@aws-1-sa-east-1.pooler.supabase.com:5432/postgres?sslmode=require
       # Ver docs/SUPABASE.md.
       - key: DATABASE_URL
-        value: sqlite:///./prmo.db
+        value: sqlite:///./vanguardian.db
       - key: SECRET_KEY
         generateValue: true
       - key: LOG_LEVEL
@@ -29,6 +29,6 @@ services:
       - key: LOG_FORMAT
         value: json
       - key: ADMIN_EMAIL
-        value: admin@prmo.com.br
+        value: admin@vanguardian.local
       - key: ADMIN_PASSWORD
         value: admin123
