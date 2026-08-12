@@ -13,6 +13,8 @@ implementação:
 - [Norma NIA-001 — Engenharia de Prompts](normas/NIA-001-ENGENHARIA-DE-PROMPTS.md)
 - **[Regras de Negócio (normas → sistema)](REGRAS-DE-NEGOCIO.md)** — campos NIA-001 do
   prompt, motor de regras `R1–R4` (`GET /governance/rules`) e integração VanguardIA.
+- **[Documentação Técnica](DOCUMENTACAO-TECNICA.md)** — arquitetura, requisitos (RF/RNF),
+  modelo de dados, API, segurança e implantação.
 
 ## 1. Papéis (RBAC)
 
