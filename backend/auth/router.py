@@ -232,6 +232,48 @@ async def register(
     return UserResponse.model_validate(user)
 
 
+# Domínio corporativo autorizado para autocadastro.
+DOMINIO_CORPORATIVO = "@vanguardamartech.com.br"
+
+
+class SignupRequest(BaseModel):
+    name: str
+    email: EmailStr
+    password: str
+
+
+@router.post("/signup", response_model=TokenResponse, status_code=status.HTTP_201_CREATED, summary="Autocadastro (domínio corporativo)")
+async def signup(response: Response, body: SignupRequest, db: Session = Depends(get_db)):
+    """
+    Autocadastro público restrito a e-mails **@vanguardamartech.com.br**.
+    O usuário é criado com papel **User** (acesso à Biblioteca de prompts) e já é autenticado.
+    """
+    email = body.email.strip().lower()
+    if not email.endswith(DOMINIO_CORPORATIVO):
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"Cadastro restrito a e-mails {DOMINIO_CORPORATIVO}",
+        )
+    if len((body.password or "")) < 6:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Senha muito curta (mínimo 6 caracteres)")
+    if crud.get_user_by_email(db, email):
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="E-mail já cadastrado")
+
+    user = crud.create_user(db, {
+        "name": (body.name or email.split("@")[0]).strip(),
+        "email": email,
+        "hashed_password": get_password_hash(body.password),
+        "role": "User",
+        "status": "Ativo",
+    })
+
+    role_value = getattr(user.role, "value", user.role)
+    token_data = create_token_pair(user.id, user.email, role_value)
+    response.set_cookie("access_token", token_data["access_token"], httponly=True, secure=False, samesite="lax", max_age=ACCESS_TOKEN_EXPIRE_MINUTES * 60)
+    response.set_cookie("refresh_token", token_data["refresh_token"], httponly=True, secure=False, samesite="lax", max_age=7 * 24 * 60 * 60)
+    return TokenResponse(**token_data, user=UserResponse.model_validate(user))
+
+
 @router.post("/change-password", response_model=MessageResponse, summary="Alterar senha")
 async def change_password(
     request: PasswordChangeRequest,

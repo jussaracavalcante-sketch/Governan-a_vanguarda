@@ -94,15 +94,23 @@
 
 <div id="login"><div class="box">
   <div class="eyebrow">PrMO · Prompt Management Office</div>
-  <h2>Entrar no PrMO</h2>
-  <p>Acesse com suas credenciais corporativas.</p>
-  <form onsubmit="doLogin(event)">
-    <label>E-mail<input id="lEmail" type="email" value="admin@vanguardian.com" autocomplete="username"></label>
+  <h2 id="authTitle">Entrar no PrMO</h2>
+  <p id="authSub">Acesse com suas credenciais corporativas.</p>
+  <form id="loginForm" onsubmit="doLogin(event)">
+    <label>E-mail<input id="lEmail" type="email" placeholder="voce@vanguardamartech.com.br" autocomplete="username"></label>
     <label>Senha<input id="lPass" type="password" placeholder="••••••" autocomplete="current-password"></label>
     <div class="err" id="lErr"></div>
     <button class="btn" style="width:100%;justify-content:center" id="lBtn" type="submit">Entrar</button>
   </form>
-  <p style="margin-top:14px;font-size:11px">Demo: admin@vanguardian.com · admin123</p>
+  <form id="signupForm" style="display:none" onsubmit="doSignup(event)">
+    <label>Nome<input id="sName" type="text" placeholder="Seu nome" autocomplete="name"></label>
+    <label>E-mail corporativo<input id="sEmail" type="email" placeholder="voce@vanguardamartech.com.br" autocomplete="username"></label>
+    <label>Senha<input id="sPass" type="password" placeholder="mínimo 6 caracteres" autocomplete="new-password"></label>
+    <div class="err" id="sErr"></div>
+    <button class="btn" style="width:100%;justify-content:center" id="sBtn" type="submit">Criar conta</button>
+    <p style="margin-top:8px;font-size:11px">Somente e-mails <b>@vanguardamartech.com.br</b>. Novos cadastros entram como <b>usuário comum</b> (acesso à Biblioteca de prompts).</p>
+  </form>
+  <p style="margin-top:14px;font-size:12px"><a href="#" id="authToggle" onclick="toggleAuth(event)" style="color:var(--brand,#7c5cff)">Criar conta corporativa</a></p>
 </div></div>
 
 <div id="toast"></div>
@@ -146,6 +154,36 @@ async function doLogin(e){
   finally{btn.disabled=false; btn.textContent='Entrar';}
 }
 function logout(){localStorage.removeItem(TKEY);CURRENT=null;document.getElementById('login').style.display='grid';}
+const DOMINIO_CORP='@vanguardamartech.com.br';
+function toggleAuth(e){if(e)e.preventDefault();
+  const toSignup=document.getElementById('signupForm').style.display==='none';
+  document.getElementById('loginForm').style.display=toSignup?'none':'';
+  document.getElementById('signupForm').style.display=toSignup?'':'none';
+  document.getElementById('authTitle').textContent=toSignup?'Criar conta no PrMO':'Entrar no PrMO';
+  document.getElementById('authSub').textContent=toSignup?'Cadastro para colaboradores da Vanguarda Martech.':'Acesse com suas credenciais corporativas.';
+  document.getElementById('authToggle').textContent=toSignup?'Já tenho conta — entrar':'Criar conta corporativa';
+}
+async function doSignup(e){
+  e.preventDefault();
+  const btn=document.getElementById('sBtn'), err=document.getElementById('sErr');
+  err.textContent='';
+  const name=document.getElementById('sName').value.trim();
+  const email=document.getElementById('sEmail').value.trim().toLowerCase();
+  const pass=document.getElementById('sPass').value;
+  if(!email.endsWith(DOMINIO_CORP)){err.textContent='Cadastro restrito a e-mails '+DOMINIO_CORP;return;}
+  if(pass.length<6){err.textContent='Senha muito curta (mínimo 6 caracteres).';return;}
+  btn.disabled=true; btn.textContent='Criando…';
+  try{
+    const res=await fetch(API+'/auth/signup',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,email,password:pass})});
+    if(!res.ok){const j=await res.json().catch(()=>({}));throw new Error((j&&typeof j.detail==='string')?j.detail:'Não foi possível cadastrar');}
+    const data=await res.json();
+    localStorage.setItem(TKEY,data.access_token);
+    CURRENT=data.user;
+    document.getElementById('login').style.display='none';
+    boot();
+  }catch(ex){err.textContent=ex.message;}
+  finally{btn.disabled=false; btn.textContent='Criar conta';}
+}
 
 // ---- RBAC: User comum só vê/acessa a Biblioteca de prompts; Admin/Manager (controlador) vê tudo ----
 function isController(){return !!(CURRENT && (CURRENT.role==='Admin'||CURRENT.role==='Manager'));}
