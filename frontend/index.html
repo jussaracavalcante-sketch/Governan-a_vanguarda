@@ -30,6 +30,13 @@
     .pd-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:4px}
     #promptForm .pdmeta{font-size:12px;color:var(--muted,#a69fa8);border-top:1px solid rgba(56,47,58,.72);padding-top:10px;margin-top:4px}
     #promptForm input:disabled,#promptForm textarea:disabled,#promptForm select:disabled{opacity:.7;cursor:not-allowed}
+    /* Ranking de setores por ativos digitais */
+    .rank-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid rgba(56,47,58,.72)}
+    .rank-row:last-child{border-bottom:0}
+    .rank-pos{font-size:16px;font-weight:900;min-width:36px;text-align:center;color:#fff}
+    .rank-body{flex:1;min-width:0}
+    .rank-top{display:flex;justify-content:space-between;gap:10px;font-size:13px;margin-bottom:6px}
+    .rank-top span{color:var(--muted,#a69fa8);font-size:12px;white-space:nowrap}
     /* Barra de usuário (topo da sidebar) + Sair */
     .userbar{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 12px 16px;padding:10px 12px;
       border:1px solid #2a2430;border-radius:12px;background:rgba(255,255,255,.02)}
@@ -105,6 +112,7 @@
         <div class="card"><div class="label">Gaps de licença</div><div class="value" id="kGaps">—</div><div class="sub"><span id="kColGap">—</span> colaboradores</div></div>
         <div class="card"><div class="label">Oportunidades</div><div class="value" id="kOpp">—</div><div class="sub"><span id="kOppP1">—</span> prioridade P1</div></div>
       </div>
+      <div class="card" style="margin-bottom:18px"><h3 class="section-title">🏆 Ranking de setores por ativos digitais</h3><div id="rankingSetores"></div></div>
       <div class="grid">
         <div class="card"><h3 class="section-title">Backlog de oportunidades (prioridades)</h3><div class="list" id="initiativesList"></div></div>
         <div class="card"><h3 class="section-title">Adoção por área</h3><div id="adoptionList"></div></div>
@@ -325,6 +333,13 @@ function renderPrioridades(list){document.getElementById('initiativesList').inne
 function renderStackTop(list){document.getElementById('stackList').innerHTML=(list||[]).map(t=>rowItem(t.ferramenta,t.usos+' usos declarados','<span class="badge warn">a homologar</span>')).join('');}
 function renderCapacidade(list){document.getElementById('skillsList').innerHTML=(list||[]).map(x=>rowItem(x.area,x.colaboradores+' colaboradores · '+x.ativos+' ativos',`<span class="badge ok">${x.colaboradores}</span>`)).join('');}
 function renderKnowledgeTipos(list){document.getElementById('trainingList').innerHTML=(list||[]).map(k=>bar(k.tipo+' ('+k.qtd+')',k.percent)).join('');}
+function renderRankingSetores(list){
+  const el=document.getElementById('rankingSetores'); if(!el)return;
+  el.innerHTML=(list&&list.length)?list.map(r=>{
+    const medal=r.pos===1?'🥇':r.pos===2?'🥈':r.pos===3?'🥉':('#'+r.pos);
+    return `<div class="rank-row"><span class="rank-pos">${medal}</span><div class="rank-body"><div class="rank-top"><b>${esc(r.setor)}</b><span>${r.ativos} ativos · ${r.percent}%</span></div><div class="bar"><i style="width:${Math.max(4,r.percent)}%"></i></div></div></div>`;
+  }).join(''):'<div class="sub">Sem ativos digitais registrados.</div>';
+}
 function renderRiscos(list){document.getElementById('incidentsList').innerHTML=(list||[]).map(r=>rowItem((r.code||'')+' · '+r.area,'Severidade '+r.severidade+' · '+r.status,`<span class="badge ${sevTone(r.severidade)}">${esc(r.severidade)}</span>`)).join('');}
 function renderIncidents(list){document.getElementById('incidentsList').innerHTML=list.map(i=>rowItem(i.title,(i.area?i.area+' · ':'')+'Criticidade '+i.criticality,`<span class="badge ${incTone(i.status)}">${esc(i.status)}</span>`)).join('');}
 function renderAudit(list){
@@ -370,6 +385,7 @@ async function boot(){
       setKpis(ov); renderPrompts(prompts);
       renderPrioridades(ov.prioridades); renderAdoption(ov.adocao);
       renderStackTop(ov.stack_top); renderCapacidade(ov.capacidade); renderKnowledgeTipos(ov.knowledge_tipos);
+      renderRankingSetores(ov.ranking_setores);
       renderRiscos(ov.riscos); renderAudit(audit); renderObs(obs);
     } else {
       // Usuário comum: somente Biblioteca de prompts (leitura)

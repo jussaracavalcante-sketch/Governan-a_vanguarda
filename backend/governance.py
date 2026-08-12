@@ -659,6 +659,10 @@ def overview(db: Session = Depends(get_db), u: User = Depends(get_current_user))
                   for a, _ in area_c.most_common(6)]
     knowledge_tipos = [{"tipo": t, "qtd": n, "percent": round(100 * n / max(1, ativos_know))}
                        for t, n in tipo_c.most_common()]
+    # Ranking de setores (macroáreas) centralizado nos ativos digitais (base de conhecimento).
+    ranking_setores = [{"pos": i + 1, "setor": a, "ativos": n,
+                        "percent": round(100 * n / max(1, ativos_know))}
+                       for i, (a, n) in enumerate(know_area.most_common()) if a and a != "—"]
 
     pol = get_or_create_policy(db)
     prompts = db.query(PromptItem).all()
@@ -703,6 +707,7 @@ def overview(db: Session = Depends(get_db), u: User = Depends(get_current_user))
         "stack_top": stack_top,
         "capacidade": capacidade,
         "knowledge_tipos": knowledge_tipos,
+        "ranking_setores": ranking_setores,
     }
 
 
