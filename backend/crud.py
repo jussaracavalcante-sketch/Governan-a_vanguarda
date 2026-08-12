@@ -366,7 +366,7 @@ def seed_initial_data(db: Session):
     # Create admin user
     admin = User(
         name="Administrador",
-        email="admin@vanguardian.local",
+        email="admin@prmo.com.br",
         hashed_password=get_password_hash("admin123"),
         role="Admin",
         status="Ativo",
