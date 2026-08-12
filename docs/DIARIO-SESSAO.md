@@ -4,6 +4,35 @@ Registro cronológico do trabalho por sessão. Entrada mais recente no topo.
 
 ---
 
+## 2026-08-12 (sessão 8) — Autocadastro, UX, edição de prompt, ranking de setores e exportação
+
+### 🎯 Objetivo
+Validar/ativar as funcionalidades existentes e evoluir a experiência: acesso, navegação, edição de prompts, ranking e exportação de relatórios.
+
+### ✅ Entregas
+- **Validação e ativação de tudo que existe**: varredura de todos os endpoints ao vivo (prmo-api → Supabase); corrigidos os 2 quebrados: `/admin/metrics` (faltavam métricas de runtime no schema) e `/admin/integrations` (registro `vanguardia` com `last_sync_status` nulo).
+- **Autocadastro restrito ao domínio**: `POST /auth/signup` (público) aceita só `@vanguardamartech.com.br`, cria usuário **User** e autentica. Tela de login com alternância **Entrar / Criar conta corporativa** (validação de domínio no cliente).
+- **Edição de prompt**: `PUT /governance/prompts/{id}` (manager) com regras R1/R4 e auditoria. Biblioteca: título clicável + ação **Ver/Editar** abrem modal (editável p/ controlador, leitura p/ usuário comum).
+- **Ranking de setores por ativos digitais**: `/overview` → `ranking_setores` (macroáreas por nº de ativos da base de conhecimento, com `itens`). Card no dashboard com pódio (🥇🥈🥉), barra de participação e **linhas clicáveis que expandem** os ativos do setor (código KNOW · tipo · tarefa).
+- **Exportação do relatório**: menu "Exportar ▾" com **PDF** (A4 paginado), **XLSX** (abas KPIs / Ranking / Biblioteca), **PNG** e **JPEG**. Libs (SheetJS, html2canvas, jsPDF) carregadas sob demanda; overlay de progresso; arquivos `PrMO-relatorio-AAAAMMDD.<ext>`.
+- **UX**:
+  - **Cold start** do Render mitigado: overlay "Carregando informações…" com aviso + ping de aquecimento a `/health/live` na tela de login.
+  - **Hover flutuante** em cards, botões, itens de menu e ações de tabela (respeita `prefers-reduced-motion`).
+  - **Navegação**: botão **‹ Voltar** no cabeçalho da página (histórico) + logo **PrMO** volta à tela inicial.
+  - **Sidebar** reorganizada: nome do usuário + **Sair** no topo; menus abaixo; observabilidade no rodapé.
+  - **Favicon** de biblioteca (📚). Modais roláveis (botão salvar não sai da viewport).
+
+### 🧪 Validações
+- Backend em Postgres/Supabase (TestClient + ao vivo): signup (domínio/RBAC), PUT edição (R1/R4/RBAC/404), `ranking_setores` com 52 itens, `/admin/metrics` e `/admin/integrations` 200.
+- UI no navegador (Playwright, API mockada): 30/30 nos fluxos base; navegação/Sair/edição 10/10; ranking expansível + 4 exportações 8/8 (downloads com extensão correta).
+
+### ⏳ Pendências (do usuário)
+- **VanguardIA**: sem credenciais cadastradas no projeto — falta `base_url` + token para ligar o `sync`.
+- **SSO Google Workspace**: implementável com OAuth Client ID + Secret (login com trava `hd=vanguardamartech.com.br`).
+- **Cold start**: pinger externo (UptimeRobot/cron-job.org) ou upgrade do plano Render. Arquivar o serviço antigo `vanguardian-api-omg6`. Branch padrão → `main`.
+
+---
+
 ## 2026-08-11 (sessão 7) — Normas corporativas: padrão NIA-001, regras de negócio e integração VanguardIA
 
 ### 🎯 Objetivo
