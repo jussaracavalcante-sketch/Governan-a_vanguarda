@@ -176,6 +176,20 @@ class PromptItemIn(BaseModel):
     data_class: str = ""
 
 
+class PromptUpdateIn(BaseModel):
+    """Edição de prompt (todos os campos opcionais; só os enviados são alterados)."""
+    title: str | None = None
+    description: str | None = None
+    area: str | None = None
+    content: str | None = None
+    repo_url: str | None = None
+    cost_per_call: float | None = None
+    tool: str | None = None
+    ptype: str | None = None
+    data_class: str | None = None
+    version: str | None = None
+
+
 class SkillItemIn(BaseModel):
     area: str
     description: str = ""
@@ -457,6 +471,28 @@ def homologar_prompt(pid: int, item: HomologacaoIn, db: Session = Depends(get_db
     db.commit(); db.refresh(obj)
     _audit(db, u, "APPROVE" if item.decision == "Aprovado" else "REJECT", "prompt", obj.id,
            {"title": obj.title, "control": obj.control})
+    return _serialize(obj)
+
+
+@router.put("/prompts/{pid}")
+def update_prompt(pid: int, item: PromptUpdateIn, db: Session = Depends(get_db), u: User = Depends(get_current_manager_user)):
+    obj = db.query(PromptItem).filter(PromptItem.id == pid).first()
+    if not obj:
+        raise HTTPException(status_code=404, detail="Prompt não encontrado")
+    data = item.model_dump(exclude_unset=True)
+    if "ptype" in data and data["ptype"]:
+        data["ptype"] = str(data["ptype"]).strip()[:1]
+    # R1/R4 sobre o resultado mesclado (segurança/LGPD e classificação).
+    merged = {"title": obj.title, "description": obj.description, "content": obj.content,
+              "data_class": obj.data_class, "repo_url": obj.repo_url, **data}
+    violacoes = validate_prompt_intake(merged)
+    if violacoes:
+        _audit(db, u, "REJECT", "prompt", obj.id, {"title": merged.get("title"), "violacoes": violacoes})
+        raise HTTPException(status_code=422, detail={"regras": violacoes})
+    for k, v in data.items():
+        setattr(obj, k, v)
+    db.commit(); db.refresh(obj)
+    _audit(db, u, "UPDATE", "prompt", obj.id, {"title": obj.title, "campos": list(data.keys())})
     return _serialize(obj)
 
 

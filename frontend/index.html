@@ -19,13 +19,26 @@
     .nav button:hover{transform:translateX(3px)}
     .table-action{transition:transform .12s ease, filter .15s ease}
     .table-action:hover{transform:translateY(-1px); filter:brightness(1.15)}
-    /* Logo clicável + botão Voltar */
+    /* Logo clicável + botão Voltar (no cabeçalho da página) */
     .brand{cursor:pointer;border-radius:10px;transition:background .15s ease}
     .brand:hover{background:rgba(255,31,69,.08)}
-    .backbtn{display:flex;align-items:center;gap:6px;width:calc(100% - 0px);margin:0 0 10px;padding:9px 12px;
-      border:1px solid #3b303b;background:transparent;color:var(--ink,#e9e3ea);border-radius:10px;font-weight:800;
-      cursor:pointer;font-size:13px;transition:transform .12s ease, background .15s ease, border-color .15s ease}
-    .backbtn:hover{transform:translateX(-3px);background:rgba(255,255,255,.04);border-color:#5a4a55}
+    #backBtn{display:inline-flex;align-items:center;gap:6px}
+    #backBtn:hover{transform:translateX(-3px)}
+    /* Detalhe/edição de prompt */
+    .prompt-open{cursor:pointer}
+    .prompt-open:hover{color:#fff;text-decoration:underline}
+    .pd-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:4px}
+    #promptForm .pdmeta{font-size:12px;color:var(--muted,#a69fa8);border-top:1px solid rgba(56,47,58,.72);padding-top:10px;margin-top:4px}
+    #promptForm input:disabled,#promptForm textarea:disabled,#promptForm select:disabled{opacity:.7;cursor:not-allowed}
+    /* Barra de usuário (topo da sidebar) + Sair */
+    .userbar{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 12px 16px;padding:10px 12px;
+      border:1px solid #2a2430;border-radius:12px;background:rgba(255,255,255,.02)}
+    .userbar .uinfo{display:flex;align-items:center;gap:8px;min-width:0}
+    .userbar #whoami{font-size:12px;font-weight:800;color:#e9e3ea;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:120px}
+    .logout-btn{padding:7px 11px;font-size:12px;white-space:nowrap}
+    /* Modal rolável em telas menores (evita botão de salvar fora da viewport) */
+    .dialog{max-height:90vh;overflow:auto}
+    .modal-actions{position:sticky;bottom:-24px;background:#141217;padding-bottom:4px;margin-bottom:-4px}
     /* Overlay de carregamento */
     #loading{position:fixed;inset:0;z-index:40;display:none;align-items:center;justify-content:center;
       background:rgba(8,7,10,.72);backdrop-filter:blur(2px)}
@@ -63,7 +76,10 @@
 <div class="app">
   <aside class="sidebar">
     <div class="brand" onclick="goHome()" title="Voltar à tela inicial" role="button" tabindex="0" onkeydown="if(event.key==='Enter')goHome()"><b>PrMO</b><small>PROMPT MANAGEMENT OFFICE</small></div>
-    <button id="backBtn" class="backbtn" style="display:none" onclick="goBack()">‹ Voltar</button>
+    <div class="userbar">
+      <div class="uinfo"><span class="dot on"></span><b id="whoami">—</b></div>
+      <button class="btn alt logout-btn" onclick="logout()" title="Encerrar sessão">Sair ⏻</button>
+    </div>
     <div class="nav-title">OPERAÇÃO</div>
     <nav class="nav">
       <button class="active ctrl-only" data-page="dashboard">◈ &nbsp; Visão executiva</button>
@@ -75,8 +91,7 @@
     </nav>
     <div class="footer">
       <div><span class="dot" id="obsDot"></span><span id="obsText">Observabilidade…</span></div>
-      <div style="margin-top:8px">PrMO v2.0 · <span id="whoami">—</span></div>
-      <div style="margin-top:2px">Uma única inteligência. <button class="linkbtn" onclick="logout()">Sair</button></div>
+      <div style="margin-top:6px" class="muted">PrMO v2.0 · Uma única inteligência.</div>
     </div>
   </aside>
   <main class="main">
@@ -124,6 +139,7 @@
 </div>
 
 <div class="modal" id="modal"><div class="dialog"><h3 id="modalTitle">Registrar item</h3><div class="form" id="modalForm"></div><div class="modal-actions"><button class="btn alt" onclick="closeModal()">Cancelar</button><button class="btn" id="saveBtn" onclick="saveItem()">Salvar registro</button></div></div></div>
+<div class="modal" id="promptModal"><div class="dialog"><h3 id="pmTitle">Detalhe do prompt</h3><div class="form" id="promptForm"></div><div class="modal-actions"><button class="btn alt" onclick="closePromptModal()">Fechar</button><button class="btn" id="pmSave" style="display:none" onclick="savePromptEdit()">Salvar alterações</button></div></div></div>
 
 <div id="login"><div class="box">
   <div class="eyebrow">PrMO · Prompt Management Office</div>
@@ -170,13 +186,30 @@ async function api(path, opts={}){
 
 // ---- nav ----
 let NAV_HISTORY=[];
+function ensureBackBtn(){
+  let b=document.getElementById('backBtn');
+  if(!b){ b=document.createElement('button'); b.id='backBtn'; b.className='btn alt'; b.type='button';
+    b.textContent='‹ Voltar'; b.onclick=goBack; b.style.display='none'; }
+  return b;
+}
+function placeBackBtn(pageEl){
+  const b=ensureBackBtn(); if(!pageEl) return;
+  const top=pageEl.querySelector('.top'); if(!top){ return; }
+  let actions=top.querySelector('.actions');
+  if(!actions){ // agrupa botões soltos do cabeçalho numa .actions
+    actions=document.createElement('div'); actions.className='actions';
+    Array.from(top.children).forEach(ch=>{ if(ch.tagName==='BUTTON') actions.appendChild(ch); });
+    top.appendChild(actions);
+  }
+  actions.insertBefore(b, actions.firstChild); // à esquerda do botão de ação
+}
 function navigate(pageid, record=true){
   const cur=document.querySelector('.page.active');
   if(record && cur && cur.id!==pageid) NAV_HISTORY.push(cur.id);
   document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));
   document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
   const btn=document.querySelector('.nav button[data-page="'+pageid+'"]'); if(btn) btn.classList.add('active');
-  const pg=document.getElementById(pageid); if(pg) pg.classList.add('active');
+  const pg=document.getElementById(pageid); if(pg){ pg.classList.add('active'); placeBackBtn(pg); }
   updateBackBtn();
 }
 function homePage(){return isController()?'dashboard':'prompts';}
@@ -261,8 +294,10 @@ function renderStack(list){
   document.getElementById('stackList').innerHTML=list.map(t=>rowItem(t.name,t.description,`<span class="badge ${toolTone(t.status)}">${esc(t.status)}</span>`)).join('');
 }
 const TIPO_LABEL={A:'Operacional',B:'Analítico',C:'Estratégico',D:'Automação',E:'Criativo'};
+let LAST_PROMPTS=[];
 function renderPrompts(list){
   const ctrl=isController();
+  LAST_PROMPTS=list||[];
   document.getElementById('promptRows').innerHTML=list.map(p=>{
     const meta=`<span class="muted" style="font-size:11px;letter-spacing:.04em">${esc(p.code||'—')}${p.version?(' · v'+esc(p.version)):''}${p.ptype?(' · '+esc(p.ptype)+' '+(TIPO_LABEL[p.ptype]||'')):''}</span>`;
     const repo=p.repo_url?`<a class="table-action" href="${esc(p.repo_url)}" target="_blank" rel="noopener" style="text-decoration:none;margin-right:10px">Repo ↗</a>`:'';
@@ -271,7 +306,8 @@ function renderPrompts(list){
     const cur=(COST_POLICY.currency==='USD')?'US$':'R$';
     const over=teto>0 && cc>teto;
     const costCell=`<td>${cc>0?cur+' '+cc.toFixed(2):'—'}${over?' <span class="badge red">acima do teto</span>':''}</td>`;
-    return `<tr><td>${meta}<br><b>${esc(p.title)}</b><br><span class="muted">${esc(p.description)}</span></td><td>${esc(p.area)}</td><td><span class="badge ${ctrlTone(p.control)}">${esc(p.control)}</span></td><td>${esc(p.last_review)}</td><td>${p.uses}</td>${costCell}<td>${homolog}${repo}<button class="table-action" onclick='copyPrompt(${JSON.stringify(p.content||p.title)})'>Copiar</button></td></tr>`;
+    const verLabel=ctrl?'Ver/Editar':'Ver';
+    return `<tr><td>${meta}<br><b class="prompt-open" onclick="openPromptDetail(${p.id})" title="Abrir detalhes">${esc(p.title)}</b><br><span class="muted">${esc(p.description)}</span></td><td>${esc(p.area)}</td><td><span class="badge ${ctrlTone(p.control)}">${esc(p.control)}</span></td><td>${esc(p.last_review)}</td><td>${p.uses}</td>${costCell}<td><button class="table-action" style="margin-right:10px" onclick="openPromptDetail(${p.id})">${verLabel}</button>${homolog}${repo}<button class="table-action" onclick='copyPrompt(${JSON.stringify(p.content||p.title)})'>Copiar</button></td></tr>`;
   }).join('');
   const teto=COST_POLICY.max_cost_per_call||0, cur=(COST_POLICY.currency==='USD')?'US$':'R$';
   const acima=(list||[]).filter(p=>teto>0 && Number(p.cost_per_call||0)>teto).length;
@@ -389,6 +425,50 @@ async function saveItem(){
 }
 function filterRows(q,id){q=q.toLowerCase();document.querySelectorAll('#'+id+' tr').forEach(r=>r.style.display=r.innerText.toLowerCase().includes(q)?'':'none');}
 function copyPrompt(text){navigator.clipboard?.writeText(text);toast('Prompt copiado para a área de transferência.');}
+
+// ---- Detalhe / edição de prompt ----
+let CURRENT_PROMPT_ID=null;
+const PTYPE_OPTS=['A · Operacional','B · Analítico','C · Estratégico','D · Automação','E · Criativo'];
+const CLASS_OPTS=['Uso interno','Público','Confidencial','Restrito'];
+function closePromptModal(){document.getElementById('promptModal').classList.remove('open');CURRENT_PROMPT_ID=null;}
+function openPromptDetail(id){
+  const p=(LAST_PROMPTS||[]).find(x=>x.id===id); if(!p)return;
+  CURRENT_PROMPT_ID=id;
+  const ro=!isController(); const dis=ro?'disabled':'';
+  const opt=(arr,val)=>arr.map(o=>`<option ${String(o).charAt(0)===String(val||'')?'selected':''}>${o}</option>`).join('');
+  document.getElementById('pmTitle').textContent=(ro?'Prompt · ':'Editar · ')+(p.code||p.title);
+  document.getElementById('promptForm').innerHTML=`
+    <div class="pd-grid">
+      <label>Código<input value="${esc(p.code||'')}" disabled></label>
+      <label>Versão<input data-k="version" value="${esc(p.version||'1.0')}" ${dis}></label>
+      <label>Área<input data-k="area" value="${esc(p.area||'')}" ${dis}></label>
+      <label>Tipo (NIA-001)<select data-k="ptype" ${dis}>${opt(PTYPE_OPTS,p.ptype)}</select></label>
+      <label>Ferramenta utilizada<input data-k="tool" value="${esc(p.tool||'')}" placeholder="Deve ser homologada" ${dis}></label>
+      <label>Classificação<select data-k="data_class" ${dis}>${CLASS_OPTS.map(o=>`<option ${o===(p.data_class||'')?'selected':''}>${o}</option>`).join('')}</select></label>
+    </div>
+    <label>Título<input data-k="title" value="${esc(p.title||'')}" ${dis}></label>
+    <label>Descrição / objetivo<input data-k="description" value="${esc(p.description||'')}" ${dis}></label>
+    <label>Conteúdo do prompt<textarea data-k="content" placeholder="Objetivo · Contexto · Papel da IA · Instruções · Restrições · Formato" ${dis}>${esc(p.content||'')}</textarea></label>
+    <label>Repositório hospedado<input data-k="repo_url" value="${esc(p.repo_url||'')}" ${dis}></label>
+    <label>Custo por chamada (R$)<input data-k="cost_per_call" value="${Number(p.cost_per_call||0)}" ${dis}></label>
+    <div class="pdmeta">Controle: <b>${esc(p.control||'—')}</b> · Autor: ${esc(p.author||'—')} · Última revisão: ${esc(p.last_review||'—')} · Usos: ${p.uses||0}</div>`;
+  document.getElementById('pmSave').style.display=ro?'none':'';
+  document.getElementById('promptModal').classList.add('open');
+}
+async function savePromptEdit(){
+  if(CURRENT_PROMPT_ID==null)return;
+  const f=document.getElementById('promptForm'); const payload={};
+  f.querySelectorAll('[data-k]').forEach(el=>{payload[el.dataset.k]=el.value;});
+  if(payload.ptype)payload.ptype=String(payload.ptype).trim().charAt(0);
+  if('cost_per_call' in payload)payload.cost_per_call=parseFloat(String(payload.cost_per_call).replace(',','.'))||0;
+  const btn=document.getElementById('pmSave');btn.disabled=true;btn.textContent='Salvando…';
+  try{
+    await api('/governance/prompts/'+CURRENT_PROMPT_ID,{method:'PUT',body:JSON.stringify(payload)});
+    closePromptModal();toast('Prompt atualizado. Registrado na auditoria.');
+    renderPrompts(await api('/governance/prompts'));
+  }catch(ex){toast('Erro ao salvar: '+ex.message,false);}
+  finally{btn.disabled=false;btn.textContent='Salvar alterações';}
+}
 async function homologar(id,decision){
   try{ await api('/governance/prompts/'+id+'/homologar',{method:'POST',body:JSON.stringify({decision})});
     toast('Prompt '+(decision==='Aprovado'?'aprovado':'reprovado')+'. Registrado na trilha de auditoria.');
