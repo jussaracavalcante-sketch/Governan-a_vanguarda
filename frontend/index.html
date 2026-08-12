@@ -19,6 +19,13 @@
     .nav button:hover{transform:translateX(3px)}
     .table-action{transition:transform .12s ease, filter .15s ease}
     .table-action:hover{transform:translateY(-1px); filter:brightness(1.15)}
+    /* Logo clicável + botão Voltar */
+    .brand{cursor:pointer;border-radius:10px;transition:background .15s ease}
+    .brand:hover{background:rgba(255,31,69,.08)}
+    .backbtn{display:flex;align-items:center;gap:6px;width:calc(100% - 0px);margin:0 0 10px;padding:9px 12px;
+      border:1px solid #3b303b;background:transparent;color:var(--ink,#e9e3ea);border-radius:10px;font-weight:800;
+      cursor:pointer;font-size:13px;transition:transform .12s ease, background .15s ease, border-color .15s ease}
+    .backbtn:hover{transform:translateX(-3px);background:rgba(255,255,255,.04);border-color:#5a4a55}
     /* Overlay de carregamento */
     #loading{position:fixed;inset:0;z-index:40;display:none;align-items:center;justify-content:center;
       background:rgba(8,7,10,.72);backdrop-filter:blur(2px)}
@@ -55,7 +62,8 @@
 <body>
 <div class="app">
   <aside class="sidebar">
-    <div class="brand"><b>PrMO</b><small>PROMPT MANAGEMENT OFFICE</small></div>
+    <div class="brand" onclick="goHome()" title="Voltar à tela inicial" role="button" tabindex="0" onkeydown="if(event.key==='Enter')goHome()"><b>PrMO</b><small>PROMPT MANAGEMENT OFFICE</small></div>
+    <button id="backBtn" class="backbtn" style="display:none" onclick="goBack()">‹ Voltar</button>
     <div class="nav-title">OPERAÇÃO</div>
     <nav class="nav">
       <button class="active ctrl-only" data-page="dashboard">◈ &nbsp; Visão executiva</button>
@@ -161,7 +169,21 @@ async function api(path, opts={}){
 }
 
 // ---- nav ----
-document.querySelectorAll('.nav button').forEach(b=>b.onclick=()=>{document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));b.classList.add('active');document.getElementById(b.dataset.page).classList.add('active');});
+let NAV_HISTORY=[];
+function navigate(pageid, record=true){
+  const cur=document.querySelector('.page.active');
+  if(record && cur && cur.id!==pageid) NAV_HISTORY.push(cur.id);
+  document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+  const btn=document.querySelector('.nav button[data-page="'+pageid+'"]'); if(btn) btn.classList.add('active');
+  const pg=document.getElementById(pageid); if(pg) pg.classList.add('active');
+  updateBackBtn();
+}
+function homePage(){return isController()?'dashboard':'prompts';}
+function goHome(){NAV_HISTORY=[];navigate(homePage(),false);}
+function goBack(){const prev=NAV_HISTORY.pop(); navigate(prev||homePage(), false);}
+function updateBackBtn(){const b=document.getElementById('backBtn'); if(b) b.style.display=NAV_HISTORY.length?'':'none';}
+document.querySelectorAll('.nav button').forEach(b=>b.onclick=()=>navigate(b.dataset.page));
 
 // ---- auth ----
 async function doLogin(e){
@@ -216,12 +238,8 @@ function isController(){return !!(CURRENT && (CURRENT.role==='Admin'||CURRENT.ro
 function applyRbac(){
   const ctrl=isController();
   document.querySelectorAll('.ctrl-only').forEach(el=>{el.style.display=ctrl?'':'none';});
-  if(!ctrl){
-    document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));
-    document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
-    const pb=document.querySelector('.nav button[data-page="prompts"]'); if(pb) pb.classList.add('active');
-    const pg=document.getElementById('prompts'); if(pg) pg.classList.add('active');
-  }
+  if(!ctrl){ NAV_HISTORY=[]; navigate('prompts', false); }
+  updateBackBtn();
 }
 
 // ---- tone helpers ----
