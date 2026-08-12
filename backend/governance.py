@@ -660,8 +660,19 @@ def overview(db: Session = Depends(get_db), u: User = Depends(get_current_user))
     knowledge_tipos = [{"tipo": t, "qtd": n, "percent": round(100 * n / max(1, ativos_know))}
                        for t, n in tipo_c.most_common()]
     # Ranking de setores (macroáreas) centralizado nos ativos digitais (base de conhecimento).
+    know_items: dict = {}
+    for k in know:
+        a = k.get("Macroárea") or "—"
+        titulo = str(k.get("Tarefa que gostaria de delegar a um Agente Vanguarda")
+                     or k.get("Ativo declarado (prompt/fluxo/automação)") or "").strip()
+        know_items.setdefault(a, []).append({
+            "code": k.get("KNOW-ID") or "",
+            "tipo": k.get("Tipo") or "Prompt",
+            "titulo": (titulo[:120] or "—"),
+        })
     ranking_setores = [{"pos": i + 1, "setor": a, "ativos": n,
-                        "percent": round(100 * n / max(1, ativos_know))}
+                        "percent": round(100 * n / max(1, ativos_know)),
+                        "itens": know_items.get(a, [])}
                        for i, (a, n) in enumerate(know_area.most_common()) if a and a != "—"]
 
     pol = get_or_create_policy(db)

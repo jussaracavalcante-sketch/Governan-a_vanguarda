@@ -37,6 +37,20 @@
     .rank-body{flex:1;min-width:0}
     .rank-top{display:flex;justify-content:space-between;gap:10px;font-size:13px;margin-bottom:6px}
     .rank-top span{color:var(--muted,#a69fa8);font-size:12px;white-space:nowrap}
+    .rank-row{cursor:pointer;border-radius:8px;transition:background .15s ease}
+    .rank-row:hover{background:rgba(255,255,255,.03)}
+    .rank-caret{color:var(--muted,#a69fa8);font-size:11px}
+    .rank-items{padding:4px 0 12px 48px}
+    .rank-asset{padding:8px 10px;margin:6px 0;border-left:2px solid rgba(255,31,69,.4);background:rgba(255,255,255,.02);border-radius:0 8px 8px 0;font-size:12px}
+    .rank-asset .mono{font-weight:800;letter-spacing:.03em;color:#e9e3ea}
+    .rank-asset .muted{margin-top:3px}
+    /* Menu de exportação */
+    .exp-wrap{position:relative}
+    .exp-menu{position:absolute;top:calc(100% + 6px);right:0;z-index:20;background:#141217;border:1px solid #453442;
+      border-radius:12px;padding:6px;min-width:150px;box-shadow:0 14px 34px rgba(0,0,0,.5);display:flex;flex-direction:column;gap:2px}
+    .exp-menu button{background:transparent;border:0;color:#e9e3ea;text-align:left;padding:9px 12px;border-radius:8px;
+      font-weight:700;font-size:13px;cursor:pointer;transition:background .12s ease}
+    .exp-menu button:hover{background:rgba(255,31,69,.14)}
     /* Barra de usuário (topo da sidebar) + Sair */
     .userbar{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 12px 16px;padding:10px 12px;
       border:1px solid #2a2430;border-radius:12px;background:rgba(255,255,255,.02)}
@@ -103,7 +117,7 @@
   </aside>
   <main class="main">
     <section id="dashboard" class="page active">
-      <header class="top"><div><div class="eyebrow">Vanguarda Martech · IA operacional</div><h1>Governança que dá escala à criatividade.</h1><p>Centralize ferramentas, conhecimento, padrões de marca, dados e automações para transformar cada entrega em resultado mensurável.</p></div><div class="actions"><button class="btn alt ctrl-only" onclick="exportView()">Exportar visão</button><button class="btn ctrl-only" onclick="openModal('initiative')">+ Registrar iniciativa</button></div></header>
+      <header class="top"><div><div class="eyebrow">Vanguarda Martech · IA operacional</div><h1>Governança que dá escala à criatividade.</h1><p>Centralize ferramentas, conhecimento, padrões de marca, dados e automações para transformar cada entrega em resultado mensurável.</p></div><div class="actions"><div class="exp-wrap ctrl-only"><button class="btn alt" onclick="toggleExportMenu(event)">Exportar ▾</button><div id="exportMenu" class="exp-menu" style="display:none"><button onclick="exportReport('pdf')">📄 PDF</button><button onclick="exportReport('xlsx')">📊 XLSX</button><button onclick="exportReport('png')">🖼️ PNG</button><button onclick="exportReport('jpeg')">🖼️ JPEG</button></div></div><button class="btn ctrl-only" onclick="openModal('initiative')">+ Registrar iniciativa</button></div></header>
       <div class="hero"><div><div class="eyebrow">Programa VKB 2026–2027</div><h2>Uma agência inteira, potencializada por IA.</h2><p>Foco da semana: homologar o fluxo de <strong>briefing → criação → revisão → publicação</strong> para reduzir retrabalho e preservar a voz de cada marca.</p></div><div><span class="badge ok">● <span id="kMedia">—</span> ferramentas/colaborador</span><div class="sub" style="margin-top:8px"><span id="kMencoes">—</span> menções de IA declaradas</div></div></div>
       <div class="kpis">
         <div class="card"><div class="label">Colaboradores mapeados</div><div class="value" id="kColab">—</div><div class="sub"><span id="kSens">—</span> usam dado sensível</div></div>
@@ -337,8 +351,23 @@ function renderRankingSetores(list){
   const el=document.getElementById('rankingSetores'); if(!el)return;
   el.innerHTML=(list&&list.length)?list.map(r=>{
     const medal=r.pos===1?'🥇':r.pos===2?'🥈':r.pos===3?'🥉':('#'+r.pos);
-    return `<div class="rank-row"><span class="rank-pos">${medal}</span><div class="rank-body"><div class="rank-top"><b>${esc(r.setor)}</b><span>${r.ativos} ativos · ${r.percent}%</span></div><div class="bar"><i style="width:${Math.max(4,r.percent)}%"></i></div></div></div>`;
+    const itens=(r.itens||[]);
+    const lista=itens.length?itens.map(it=>`<div class="rank-asset"><span class="mono">${esc(it.code||'—')}</span> · ${esc(it.tipo||'')}<div class="muted">${esc(it.titulo||'—')}</div></div>`).join(''):'<div class="sub">Sem ativos listados.</div>';
+    return `<div class="rank-item-wrap">
+      <div class="rank-row" onclick="toggleRank(this)" role="button" tabindex="0" onkeydown="if(event.key==='Enter')toggleRank(this)" title="Ver ativos do setor">
+        <span class="rank-pos">${medal}</span>
+        <div class="rank-body"><div class="rank-top"><b>${esc(r.setor)} <span class="rank-caret">▸</span></b><span>${r.ativos} ativos · ${r.percent}%</span></div><div class="bar"><i style="width:${Math.max(4,r.percent)}%"></i></div></div>
+      </div>
+      <div class="rank-items" style="display:none">${lista}</div>
+    </div>`;
   }).join(''):'<div class="sub">Sem ativos digitais registrados.</div>';
+}
+function toggleRank(rowEl){
+  const wrap=rowEl.closest('.rank-item-wrap'); if(!wrap)return;
+  const box=wrap.querySelector('.rank-items'), caret=rowEl.querySelector('.rank-caret');
+  const open=box.style.display==='none';
+  box.style.display=open?'block':'none';
+  if(caret)caret.textContent=open?'▾':'▸';
 }
 function renderRiscos(list){document.getElementById('incidentsList').innerHTML=(list||[]).map(r=>rowItem((r.code||'')+' · '+r.area,'Severidade '+r.severidade+' · '+r.status,`<span class="badge ${sevTone(r.severidade)}">${esc(r.severidade)}</span>`)).join('');}
 function renderIncidents(list){document.getElementById('incidentsList').innerHTML=list.map(i=>rowItem(i.title,(i.area?i.area+' · ':'')+'Criticidade '+i.criticality,`<span class="badge ${incTone(i.status)}">${esc(i.status)}</span>`)).join('');}
@@ -385,7 +414,7 @@ async function boot(){
       setKpis(ov); renderPrompts(prompts);
       renderPrioridades(ov.prioridades); renderAdoption(ov.adocao);
       renderStackTop(ov.stack_top); renderCapacidade(ov.capacidade); renderKnowledgeTipos(ov.knowledge_tipos);
-      renderRankingSetores(ov.ranking_setores);
+      renderRankingSetores(ov.ranking_setores); window.LAST_OVERVIEW=ov;
       renderRiscos(ov.riscos); renderAudit(audit); renderObs(obs);
     } else {
       // Usuário comum: somente Biblioteca de prompts (leitura)
@@ -510,7 +539,69 @@ async function loadRegistry(name){
     body.innerHTML=rows.map(r=>'<tr>'+cols.map(c=>`<td>${esc(r[c]==null?'':r[c])}</td>`).join('')+'</tr>').join('');
   }catch(ex){empty.textContent='Erro: '+ex.message;}
 }
-function exportView(){toast('Relatório executivo gerado para download.');}
+// ---- Exportação do relatório (PDF / XLSX / PNG / JPEG) ----
+const CDN={
+  html2canvas:'https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js',
+  jspdf:'https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js',
+  xlsx:'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js'
+};
+const _loaded={};
+function loadScript(src){return new Promise((res,rej)=>{const s=document.createElement('script');s.src=src;s.onload=()=>res();s.onerror=()=>rej(new Error('Falha ao carregar biblioteca de exportação'));document.head.appendChild(s);});}
+async function ensureLib(name){ if(_loaded[name])return; await loadScript(CDN[name]); _loaded[name]=true; }
+function fname(ext){const d=new Date();const p=n=>String(n).padStart(2,'0');return `PrMO-relatorio-${d.getFullYear()}${p(d.getMonth()+1)}${p(d.getDate())}.${ext}`;}
+function downloadBlob(blob,name){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},1500);}
+function toggleExportMenu(e){if(e)e.stopPropagation();const m=document.getElementById('exportMenu');if(m)m.style.display=m.style.display==='none'?'flex':'none';}
+document.addEventListener('click',e=>{const m=document.getElementById('exportMenu');if(m&&m.style.display!=='none'&&!e.target.closest('.exp-wrap'))m.style.display='none';});
+
+async function exportReport(fmt){
+  const m=document.getElementById('exportMenu'); if(m)m.style.display='none';
+  const L=document.getElementById('loading'); if(L)L.classList.add('show');
+  try{
+    if(fmt==='xlsx') await exportXlsx();
+    else await exportCanvas(fmt);
+    toast('Relatório exportado ('+fmt.toUpperCase()+').');
+  }catch(ex){toast('Erro ao exportar: '+ex.message,false);}
+  finally{ if(L)L.classList.remove('show'); }
+}
+async function exportXlsx(){
+  await ensureLib('xlsx');
+  const ov=window.LAST_OVERVIEW||{}, d=ov.dashboard||{}, c=ov.compliance||{};
+  const wb=XLSX.utils.book_new();
+  const kpis=[['Indicador','Valor'],
+    ['Colaboradores mapeados',d.colaboradores],['Com dado sensível',d.com_dado_sensivel],
+    ['Ativos de conhecimento',d.ativos_conhecimento],['Prompts próprios',d.prompts_conhecimento],
+    ['Riscos abertos',d.riscos_abertos],['Riscos críticos',d.riscos_criticos],['Riscos altos',d.riscos_altos],
+    ['Gaps de licença',d.gaps_licenca],['Oportunidades',d.oportunidades],
+    ['Exposição (%)',c.exposicao_pct],['Auditorias no mês',c.auditorias_mes]];
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(kpis),'KPIs');
+  const rank=[['#','Setor','Ativos','%']].concat((ov.ranking_setores||[]).map(r=>[r.pos,r.setor,r.ativos,r.percent]));
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(rank),'Ranking de setores');
+  const pr=[['Código','Título','Área','Tipo','Versão','Controle','Custo/chamada','Ferramenta','Classificação']]
+    .concat((LAST_PROMPTS||[]).map(p=>[p.code,p.title,p.area,p.ptype,p.version,p.control,p.cost_per_call,p.tool,p.data_class]));
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(pr),'Biblioteca');
+  XLSX.writeFile(wb,fname('xlsx'));
+}
+async function exportCanvas(fmt){
+  await ensureLib('html2canvas');
+  const el=document.getElementById('dashboard')||document.querySelector('.page.active');
+  const canvas=await html2canvas(el,{backgroundColor:'#0d0c0f',scale:2,useCORS:true,windowWidth:el.scrollWidth});
+  if(fmt==='pdf'){
+    await ensureLib('jspdf');
+    const {jsPDF}=window.jspdf;
+    const pdf=new jsPDF({orientation:'portrait',unit:'pt',format:'a4'});
+    const pw=pdf.internal.pageSize.getWidth(), phg=pdf.internal.pageSize.getHeight();
+    const imgW=pw, imgH=canvas.height*pw/canvas.width;
+    const img=canvas.toDataURL('image/jpeg',0.95);
+    let left=imgH, pos=0;
+    pdf.addImage(img,'JPEG',0,pos,imgW,imgH); left-=phg;
+    while(left>0){ pos-=phg; pdf.addPage(); pdf.addImage(img,'JPEG',0,pos,imgW,imgH); left-=phg; }
+    pdf.save(fname('pdf'));
+  }else{
+    const mime=fmt==='png'?'image/png':'image/jpeg';
+    await new Promise(res=>canvas.toBlob(bl=>{downloadBlob(bl,fname(fmt));res();},mime,fmt==='jpeg'?0.95:undefined));
+  }
+}
+function exportView(){toggleExportMenu();}
 
 // ---- start ----
 if(localStorage.getItem(TKEY)){document.getElementById('login').style.display='none';boot();}
