@@ -89,6 +89,36 @@ class Indicator(Base):
     )
 
 
+class ProcessImprovement(Base):
+    """Iniciativa de otimização de processo interno (fluxo PDCA/Kaizen)."""
+    __tablename__ = "head_processes"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(200), nullable=False, index=True)
+    area = Column(String(80), default="")
+    owner = Column(String(120), default="")           # dono do processo
+    stage = Column(String(20), nullable=False, default="Mapeamento")  # Mapeamento | Diagnóstico | Priorização | Redesenho | Implementação | Medição | Padronizado
+    status = Column(String(20), nullable=False, default="Em andamento")  # Em andamento | Concluído | Pausado
+    impact = Column(String(10), default="Médio")      # Baixo | Médio | Alto  (matriz)
+    effort = Column(String(10), default="Médio")      # Baixo | Médio | Alto  (matriz)
+    ai_automation = Column(String(10), default="Não")  # Não | Parcial | Total (grau de automação com IA)
+    problem = Column(Text, default="")                # situação atual / gargalo (as-is)
+    proposal = Column(Text, default="")               # proposta otimizada (to-be)
+    time_before = Column(Float, default=0.0)          # horas/ciclo antes
+    time_after = Column(Float, default=0.0)           # horas/ciclo depois
+    cost_before = Column(Float, default=0.0)          # custo mensal antes
+    cost_after = Column(Float, default=0.0)           # custo mensal depois
+    responsible = Column(String(120), default="")     # responsável pela implementação
+    due_date = Column(String(10), default="")
+    notes = Column(Text, default="")
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+
+    __table_args__ = (
+        Index("ix_head_processes_stage_status", "stage", "status"),
+    )
+
+
 class KnowledgeArticle(Base):
     """Artigo da base de conhecimento do HEAD de IA."""
     __tablename__ = "head_knowledge"

@@ -37,8 +37,14 @@ export default function HeadDashboard() {
             <StatCard label="KPIs na meta" value={`${data.kpis_on_target}/${data.total_indicators}`} hint={`${data.kpis_off_target} fora da meta`} />
           </div>
 
-          <div className="grid" style={{ gridTemplateColumns: 'repeat(3, 1fr)' }}>
+          <div className="grid" style={{ gridTemplateColumns: 'repeat(4, 1fr)' }}>
+            <StatCard label="Otimização de processos" value={data.total_processes} hint={`${data.processes_done} concluídos · ${data.processes_in_progress} em andamento`} />
+            <StatCard label="Horas economizadas" value={`${data.hours_saved}h`} hint="por ciclo (antes → depois)" />
+            <StatCard label="Economia mensal" value={brl(data.cost_saved)} hint="custo evitado com otimização" />
             <StatCard label="Base de conhecimento" value={data.total_articles} hint={`${data.published_articles} publicados`} />
+          </div>
+
+          <div className="grid" style={{ gridTemplateColumns: 'repeat(2, 1fr)' }}>
             <StatCard label="Licenças em renovação" value={data.licenses_renewing} hint="requerem atenção" />
             <StatCard label="Ativos críticos" value={data.critical_assets} hint="prioridade máxima" />
           </div>

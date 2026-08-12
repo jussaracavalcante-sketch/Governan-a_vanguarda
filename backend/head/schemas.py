@@ -22,6 +22,10 @@ LICENSE_STATUS = "^(Ativa|Em renovação|Expirada|Cancelada)$"
 INDICATOR_CATEGORY = "^(Operacional|Financeiro|Adoção|Qualidade|Risco)$"
 TREND = "^(Subindo|Estável|Caindo)$"
 KNOWLEDGE_STATUS = "^(Rascunho|Publicado|Arquivado)$"
+PROCESS_STAGE = "^(Mapeamento|Diagnóstico|Priorização|Redesenho|Implementação|Medição|Padronizado)$"
+PROCESS_STATUS = "^(Em andamento|Concluído|Pausado)$"
+LEVEL3 = "^(Baixo|Médio|Alto)$"
+AI_AUTOMATION = "^(Não|Parcial|Total)$"
 
 
 # ─── Asset ───
@@ -197,6 +201,57 @@ class KnowledgeResponse(KnowledgeBase):
     updated_at: Optional[datetime] = None
 
 
+# ─── Otimização de Processos ───
+class ProcessBase(BaseSchema):
+    name: str = Field(..., min_length=1, max_length=200)
+    area: str = Field(default="", max_length=80)
+    owner: str = Field(default="", max_length=120)
+    stage: str = Field(default="Mapeamento", pattern=PROCESS_STAGE)
+    status: str = Field(default="Em andamento", pattern=PROCESS_STATUS)
+    impact: str = Field(default="Médio", pattern=LEVEL3)
+    effort: str = Field(default="Médio", pattern=LEVEL3)
+    ai_automation: str = Field(default="Não", pattern=AI_AUTOMATION)
+    problem: str = Field(default="")
+    proposal: str = Field(default="")
+    time_before: float = Field(default=0.0, ge=0)
+    time_after: float = Field(default=0.0, ge=0)
+    cost_before: float = Field(default=0.0, ge=0)
+    cost_after: float = Field(default=0.0, ge=0)
+    responsible: str = Field(default="", max_length=120)
+    due_date: str = Field(default="")
+    notes: str = Field(default="")
+
+
+class ProcessCreate(ProcessBase):
+    pass
+
+
+class ProcessUpdate(BaseSchema):
+    name: Optional[str] = Field(None, min_length=1, max_length=200)
+    area: Optional[str] = Field(None, max_length=80)
+    owner: Optional[str] = Field(None, max_length=120)
+    stage: Optional[str] = Field(None, pattern=PROCESS_STAGE)
+    status: Optional[str] = Field(None, pattern=PROCESS_STATUS)
+    impact: Optional[str] = Field(None, pattern=LEVEL3)
+    effort: Optional[str] = Field(None, pattern=LEVEL3)
+    ai_automation: Optional[str] = Field(None, pattern=AI_AUTOMATION)
+    problem: Optional[str] = None
+    proposal: Optional[str] = None
+    time_before: Optional[float] = Field(None, ge=0)
+    time_after: Optional[float] = Field(None, ge=0)
+    cost_before: Optional[float] = Field(None, ge=0)
+    cost_after: Optional[float] = Field(None, ge=0)
+    responsible: Optional[str] = Field(None, max_length=120)
+    due_date: Optional[str] = None
+    notes: Optional[str] = None
+
+
+class ProcessResponse(ProcessBase):
+    id: int
+    created_at: datetime
+    updated_at: Optional[datetime] = None
+
+
 # ─── Dashboard / Relatório ───
 class HeadDashboard(BaseSchema):
     total_assets: int
@@ -219,6 +274,11 @@ class HeadDashboard(BaseSchema):
     kpis_off_target: int
     total_articles: int
     published_articles: int
+    total_processes: int
+    processes_done: int
+    processes_in_progress: int
+    hours_saved: float
+    cost_saved: float
     recent_tasks: List[TaskResponse]
 
 

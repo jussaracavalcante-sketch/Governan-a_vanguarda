@@ -5,7 +5,7 @@ Popula dados de exemplo do módulo HEAD de IA quando as tabelas estão vazias.
 from datetime import date
 from sqlalchemy.orm import Session
 
-from head.models import Asset, DailyTask, License, Indicator, KnowledgeArticle
+from head.models import Asset, DailyTask, License, Indicator, KnowledgeArticle, ProcessImprovement
 
 
 def seed_head_data(db: Session):
@@ -91,5 +91,32 @@ def seed_head_data(db: Session):
                          tags="finops,custo,tokens", author="Ops IA", status="Rascunho", updated_date=today),
     ]
     db.add_all(articles)
+
+    processes = [
+        ProcessImprovement(
+            name="Geração de relatórios mensais de campanha", area="Mídia", owner="HEAD de IA",
+            stage="Medição", status="Em andamento", impact="Alto", effort="Baixo", ai_automation="Total",
+            problem="Analistas gastam ~12h/mês compilando relatórios manualmente em planilhas.",
+            proposal="Automatizar coleta via MCP + geração de relatório com IA e envio automático.",
+            time_before=12.0, time_after=1.5, cost_before=1800.0, cost_after=300.0,
+            responsible="Ops IA", due_date="2026-09-15",
+            notes="Quick win: alto impacto, baixo esforço."),
+        ProcessImprovement(
+            name="Triagem inicial de atendimento", area="Atendimento", owner="Squad IA",
+            stage="Implementação", status="Em andamento", impact="Alto", effort="Médio", ai_automation="Parcial",
+            problem="Tempo médio de primeira resposta acima do SLA em horários de pico.",
+            proposal="Agente VBOT faz triagem e responde FAQs, escalando apenas casos complexos.",
+            time_before=8.0, time_after=3.0, cost_before=0.0, cost_after=0.0,
+            responsible="Squad IA", due_date="2026-10-01"),
+        ProcessImprovement(
+            name="Onboarding de novos prompts", area="Governança", owner="HEAD de IA",
+            stage="Padronizado", status="Concluído", impact="Médio", effort="Baixo", ai_automation="Parcial",
+            problem="Prompts entravam em produção sem revisão de brand safety padronizada.",
+            proposal="Checklist + revisão automatizada antes da publicação (POP no SGQ).",
+            time_before=4.0, time_after=1.0, cost_before=0.0, cost_after=0.0,
+            responsible="HEAD de IA", due_date="2026-07-30",
+            notes="Padronizado como POP no SGQ (ISO 9001)."),
+    ]
+    db.add_all(processes)
 
     db.commit()

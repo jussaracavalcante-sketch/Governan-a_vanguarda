@@ -17,6 +17,7 @@ import Tasks from '@/pages/head/Tasks'
 import Licenses from '@/pages/head/Licenses'
 import Indicators from '@/pages/head/Indicators'
 import Reports from '@/pages/head/Reports'
+import Processes from '@/pages/head/Processes'
 import Knowledge from '@/pages/head/Knowledge'
 
 function Protected({ children }: { children: JSX.Element }) {
@@ -51,6 +52,7 @@ function AppRoutes() {
         <Route path="/head/indicadores" element={<Indicators />} />
         <Route path="/head/relatorios" element={<Reports />} />
         <Route path="/head/licencas" element={<Licenses />} />
+        <Route path="/head/processos" element={<Processes />} />
         <Route path="/head/conhecimento" element={<Knowledge />} />
       </Route>
       <Route path="*" element={<NotFound />} />

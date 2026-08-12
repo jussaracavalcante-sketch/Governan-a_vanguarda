@@ -7,7 +7,7 @@ from datetime import date
 from sqlalchemy.orm import Session
 from sqlalchemy import or_, func
 
-from head.models import Asset, DailyTask, License, Indicator, KnowledgeArticle
+from head.models import Asset, DailyTask, License, Indicator, KnowledgeArticle, ProcessImprovement
 from head import schemas
 
 
@@ -186,6 +186,40 @@ def delete_article(db: Session, article_id: int):
     return _delete(db, obj) if obj else None
 
 
+# ─────────────────────────── Otimização de Processos ───────────────────────────
+def create_process(db: Session, data: schemas.ProcessCreate) -> ProcessImprovement:
+    return _create(db, ProcessImprovement, data)
+
+
+def get_processes(db: Session, skip=0, limit=200, search="", stage="", status=""):
+    q = db.query(ProcessImprovement)
+    if search:
+        q = q.filter(or_(
+            ProcessImprovement.name.ilike(f"%{search}%"),
+            ProcessImprovement.area.ilike(f"%{search}%"),
+            ProcessImprovement.owner.ilike(f"%{search}%"),
+        ))
+    if stage:
+        q = q.filter(ProcessImprovement.stage == stage)
+    if status:
+        q = q.filter(ProcessImprovement.status == status)
+    return q.order_by(ProcessImprovement.id.desc()).offset(skip).limit(limit).all()
+
+
+def get_process(db: Session, process_id: int):
+    return db.query(ProcessImprovement).filter(ProcessImprovement.id == process_id).first()
+
+
+def update_process(db: Session, process_id: int, data: schemas.ProcessUpdate):
+    obj = get_process(db, process_id)
+    return _update(db, obj, data) if obj else None
+
+
+def delete_process(db: Session, process_id: int):
+    obj = get_process(db, process_id)
+    return _delete(db, obj) if obj else None
+
+
 # ─────────────────────────── Dashboard ───────────────────────────
 def _kpi_on_target(ind: Indicator) -> bool:
     """KPI é considerado 'na meta' quando o realizado atinge/ultrapassa o alvo."""
@@ -227,6 +261,13 @@ def get_dashboard(db: Session) -> schemas.HeadDashboard:
     total_articles = len(articles)
     published_articles = sum(1 for a in articles if a.status == "Publicado")
 
+    processes = db.query(ProcessImprovement).all()
+    total_processes = len(processes)
+    processes_done = sum(1 for p in processes if p.status == "Concluído")
+    processes_in_progress = sum(1 for p in processes if p.status == "Em andamento")
+    hours_saved = sum(max(0.0, (p.time_before or 0) - (p.time_after or 0)) for p in processes)
+    cost_saved = sum(max(0.0, (p.cost_before or 0) - (p.cost_after or 0)) for p in processes)
+
     recent_tasks = get_tasks(db, limit=6)
 
     return schemas.HeadDashboard(
@@ -250,6 +291,11 @@ def get_dashboard(db: Session) -> schemas.HeadDashboard:
         kpis_off_target=kpis_off_target,
         total_articles=total_articles,
         published_articles=published_articles,
+        total_processes=total_processes,
+        processes_done=processes_done,
+        processes_in_progress=processes_in_progress,
+        hours_saved=round(hours_saved, 1),
+        cost_saved=round(cost_saved, 2),
         recent_tasks=recent_tasks,
     )
 

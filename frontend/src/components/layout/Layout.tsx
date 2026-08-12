@@ -27,6 +27,7 @@ const NAV_GROUPS: { title: string; items: NavItem[] }[] = [
       { to: '/head/indicadores', label: 'Indicadores & KPIs', icon: '📈' },
       { to: '/head/relatorios', label: 'Relatórios Mensais', icon: '🗓️' },
       { to: '/head/licencas', label: 'Controle de Licenças', icon: '🔑' },
+      { to: '/head/processos', label: 'Otimização de Processos', icon: '⚙️' },
       { to: '/head/conhecimento', label: 'Base de Conhecimento', icon: '📖' },
     ],
   },
@@ -45,6 +46,7 @@ const TITLES: Record<string, string> = {
   '/head/indicadores': 'Indicadores & KPIs',
   '/head/relatorios': 'Relatórios Mensais',
   '/head/licencas': 'Controle de Licenças',
+  '/head/processos': 'Otimização de Processos',
   '/head/conhecimento': 'Base de Conhecimento',
 }
 

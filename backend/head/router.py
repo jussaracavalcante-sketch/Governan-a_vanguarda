@@ -144,6 +144,35 @@ def delete_indicator(item_id: int, db: Session = Depends(get_db), user: User = D
     return None
 
 
+# ─────────────────────────── Otimização de Processos ───────────────────────────
+@router.get("/processes", response_model=List[schemas.ProcessResponse])
+def list_processes(
+    search: str = Query(""), stage: str = Query(""), status: str = Query(""),
+    db: Session = Depends(get_db), user: User = Depends(get_current_user),
+):
+    return crud.get_processes(db, search=search, stage=stage, status=status)
+
+
+@router.post("/processes", response_model=schemas.ProcessResponse, status_code=201)
+def create_process(item: schemas.ProcessCreate, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
+    return crud.create_process(db, item)
+
+
+@router.put("/processes/{item_id}", response_model=schemas.ProcessResponse)
+def update_process(item_id: int, item: schemas.ProcessUpdate, db: Session = Depends(get_db), user: User = Depends(get_current_user)):
+    obj = crud.update_process(db, item_id, item)
+    if not obj:
+        raise HTTPException(status_code=404, detail="Processo não encontrado")
+    return obj
+
+
+@router.delete("/processes/{item_id}", status_code=204)
+def delete_process(item_id: int, db: Session = Depends(get_db), user: User = Depends(get_current_manager_user)):
+    if not crud.delete_process(db, item_id):
+        raise HTTPException(status_code=404, detail="Processo não encontrado")
+    return None
+
+
 # ─────────────────────────── Base de conhecimento ───────────────────────────
 @router.get("/knowledge", response_model=List[schemas.KnowledgeResponse])
 def list_articles(

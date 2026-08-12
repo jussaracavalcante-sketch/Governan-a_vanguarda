@@ -166,6 +166,34 @@ export interface KnowledgeArticle {
   updated_at?: string | null
 }
 
+export type ProcessStage = 'Mapeamento' | 'Diagnóstico' | 'Priorização' | 'Redesenho' | 'Implementação' | 'Medição' | 'Padronizado'
+export type ProcessStatus = 'Em andamento' | 'Concluído' | 'Pausado'
+export type Level3 = 'Baixo' | 'Médio' | 'Alto'
+export type AiAutomation = 'Não' | 'Parcial' | 'Total'
+
+export interface ProcessImprovement {
+  id: number
+  name: string
+  area: string
+  owner: string
+  stage: ProcessStage
+  status: ProcessStatus
+  impact: Level3
+  effort: Level3
+  ai_automation: AiAutomation
+  problem: string
+  proposal: string
+  time_before: number
+  time_after: number
+  cost_before: number
+  cost_after: number
+  responsible: string
+  due_date: string
+  notes: string
+  created_at: string
+  updated_at?: string | null
+}
+
 export interface HeadDashboard {
   total_assets: number
   active_assets: number
@@ -187,6 +215,11 @@ export interface HeadDashboard {
   kpis_off_target: number
   total_articles: number
   published_articles: number
+  total_processes: number
+  processes_done: number
+  processes_in_progress: number
+  hours_saved: number
+  cost_saved: number
   recent_tasks: HeadTask[]
 }
 
