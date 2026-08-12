@@ -6,7 +6,7 @@ import { ApiError } from '@/lib/api'
 
 export default function Login() {
   const { user, login } = useAuth()
-  const [email, setEmail] = useState('admin@vanguardian.local')
+  const [email, setEmail] = useState('admin@prmo.com.br')
   const [password, setPassword] = useState('')
   const [remember, setRemember] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -45,11 +45,11 @@ export default function Login() {
               background: 'linear-gradient(135deg, var(--accent), var(--accent-2))',
             }}
           >
-            V
+            P
           </div>
-          <h1 style={{ fontSize: '1.4rem' }}>VANGUARDIAN</h1>
+          <h1 style={{ fontSize: '1.4rem' }}>PRMO</h1>
           <p className="muted" style={{ fontSize: '0.85rem' }}>
-            Governança de IA · Prompts · Propriedade Intelectual
+            Governança de IA · Gestão HEAD de IA · Prompts
           </p>
         </div>
 
@@ -106,7 +106,7 @@ export default function Login() {
           </Button>
 
           <p className="muted" style={{ fontSize: '0.72rem', textAlign: 'center', marginTop: '1rem' }}>
-            Demo: admin@vanguardian.local · admin123
+            Demo: admin@prmo.com.br · admin123
           </p>
         </form>
       </div>
