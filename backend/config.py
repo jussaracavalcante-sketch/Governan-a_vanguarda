@@ -9,7 +9,7 @@ from functools import lru_cache
 
 class Settings(BaseSettings):
     # Application
-    app_name: str = "VANGUARDIAN API"
+    app_name: str = "PRMO API"
     debug: bool = True
     version: str = "1.0.0"
 
@@ -50,7 +50,7 @@ class Settings(BaseSettings):
     vjob_client_secret: str = ""
 
     # Admin
-    admin_email: str = "admin@vanguardian.local"
+    admin_email: str = "admin@prmo.com.br"
     admin_password: str = "admin123"  # Change in production!
 
     class Config:
