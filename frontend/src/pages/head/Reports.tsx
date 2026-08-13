@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
 import { api, ApiError } from '@/lib/api'
 import { brl, currentPeriod } from '@/lib/format'
-import { Card, StatCard, Badge, Spinner, Empty } from '@/components/ui'
+import { Card, StatCard, Badge, Spinner, Empty, Button } from '@/components/ui'
 import { PageHead } from '@/components/layout/PageHead'
+import { exportReportPDF, exportReportPPTX } from '@/lib/export'
 import type { MonthlyReport } from '@/types'
 
 export default function Reports() {
@@ -10,6 +11,20 @@ export default function Reports() {
   const [data, setData] = useState<MonthlyReport | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [exporting, setExporting] = useState<null | 'pdf' | 'pptx'>(null)
+
+  async function download(kind: 'pdf' | 'pptx') {
+    if (!data) return
+    setExporting(kind)
+    try {
+      if (kind === 'pdf') await exportReportPDF(data)
+      else await exportReportPPTX(data)
+    } catch {
+      alert('Não foi possível gerar o arquivo. Tente novamente.')
+    } finally {
+      setExporting(null)
+    }
+  }
 
   useEffect(() => {
     let alive = true
@@ -29,12 +44,20 @@ export default function Reports() {
         title="Relatórios Mensais"
         subtitle="Consolidação mensal de esforço, custos e desempenho de KPIs"
         actions={
-          <input
-            type="month"
-            value={period}
-            onChange={(e) => setPeriod(e.target.value)}
-            style={{ maxWidth: 180 }}
-          />
+          <div className="row" style={{ gap: '0.5rem', flexWrap: 'wrap' }}>
+            <input
+              type="month"
+              value={period}
+              onChange={(e) => setPeriod(e.target.value)}
+              style={{ maxWidth: 170 }}
+            />
+            <Button variant="ghost" onClick={() => download('pdf')} disabled={!data || exporting !== null}>
+              {exporting === 'pdf' ? 'Gerando…' : '⬇️ PDF'}
+            </Button>
+            <Button variant="ghost" onClick={() => download('pptx')} disabled={!data || exporting !== null}>
+              {exporting === 'pptx' ? 'Gerando…' : '⬇️ PPTX'}
+            </Button>
+          </div>
         }
       />
 
