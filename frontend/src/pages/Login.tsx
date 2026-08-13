@@ -6,7 +6,7 @@ import { ApiError } from '@/lib/api'
 
 export default function Login() {
   const { user, login } = useAuth()
-  const [email, setEmail] = useState('admin@headia.app')
+  const [email, setEmail] = useState('jussara.cavalcante@vanguardamartech.com.br')
   const [password, setPassword] = useState('')
   const [remember, setRemember] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -49,7 +49,7 @@ export default function Login() {
           </div>
           <h1 style={{ fontSize: '1.4rem' }}>HEAD de IA</h1>
           <p className="muted" style={{ fontSize: '0.85rem' }}>
-            Painel de Gestão · Ativos · Tarefas · KPIs · Licenças
+            Vanguarda Martech · acesse com sua conta institucional
           </p>
         </div>
 
@@ -61,6 +61,7 @@ export default function Login() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              placeholder="seu.nome@vanguardamartech.com.br"
               required
               autoComplete="username"
             />
@@ -106,7 +107,7 @@ export default function Login() {
           </Button>
 
           <p className="muted" style={{ fontSize: '0.72rem', textAlign: 'center', marginTop: '1rem' }}>
-            Demo: admin@headia.app · admin123
+            Use seu e-mail @vanguardamartech.com.br
           </p>
         </form>
       </div>

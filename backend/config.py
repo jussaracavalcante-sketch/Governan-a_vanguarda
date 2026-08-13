@@ -40,8 +40,11 @@ class Settings(BaseSettings):
     # O app Gestão HEAD de IA apenas CONSULTA o PrMO; não grava nada nele.
     prmo_base_url: str = ""
 
-    # Admin (usuário inicial de acesso ao painel)
-    admin_email: str = "admin@headia.app"
+    # Contas institucionais — apenas e-mails deste domínio podem ser criados.
+    allowed_email_domain: str = "vanguardamartech.com.br"
+
+    # Admin institucional (usuário inicial de acesso ao painel)
+    admin_email: str = "jussara.cavalcante@vanguardamartech.com.br"
     admin_password: str = "admin123"  # Troque em produção!
 
     class Config:

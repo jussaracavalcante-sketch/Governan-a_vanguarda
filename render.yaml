@@ -31,7 +31,7 @@ services:
       - key: PRMO_BASE_URL
         value: ""
       - key: ADMIN_EMAIL
-        value: admin@headia.app
+        value: jussara.cavalcante@vanguardamartech.com.br
       # Definido no painel do Render (Environment) — não versionado.
       - key: ADMIN_PASSWORD
         sync: false

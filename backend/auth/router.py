@@ -210,6 +210,15 @@ async def register(
     Registra novo usuário (requer autenticação).
     Apenas admins podem criar outros admins.
     """
+    # Apenas contas institucionais (domínio permitido)
+    from config import get_settings
+    domain = get_settings().allowed_email_domain
+    if domain and not user_data.email.lower().endswith("@" + domain.lower()):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Apenas e-mails @{domain} são permitidos.",
+        )
+
     # Check if email already exists
     existing = crud.get_user_by_email(db, user_data.email)
     if existing:

@@ -35,22 +35,43 @@ def update_user(db: Session, user_id: int, obj: dict) -> User | None:
 
 
 def seed_admin(db: Session) -> None:
-    """Cria o usuário administrador inicial a partir das configurações."""
+    """Cria as contas institucionais iniciais (admin + exemplos da equipe)."""
     from auth.security import get_password_hash
     from config import get_settings
 
     settings = get_settings()
     if get_user_by_email(db, settings.admin_email):
         return
-    db.add(
+    domain = settings.allowed_email_domain
+    users = [
         User(
-            name="Administrador",
+            name="Jussara Cavalcante",
             email=settings.admin_email,
             hashed_password=get_password_hash(settings.admin_password),
             role="Admin",
             status="Ativo",
             is_superuser=True,
             last_access="",
-        )
-    )
+        ),
+        # Contas de exemplo (mesmo domínio institucional) — edite/remova à vontade.
+        User(
+            name="Gestor(a) de Área",
+            email=f"gestor@{domain}",
+            hashed_password=get_password_hash("vanguarda123"),
+            role="Manager",
+            status="Ativo",
+            is_superuser=False,
+            last_access="",
+        ),
+        User(
+            name="Colaborador(a)",
+            email=f"colaborador@{domain}",
+            hashed_password=get_password_hash("vanguarda123"),
+            role="User",
+            status="Ativo",
+            is_superuser=False,
+            last_access="",
+        ),
+    ]
+    db.add_all(users)
     db.commit()
