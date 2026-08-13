@@ -137,7 +137,10 @@
 
     <section id="tools" class="page"><header class="top"><div><div class="eyebrow">Stack oficial</div><h1>Ferramentas, licenças e homologação</h1><p>Somente soluções aprovadas pelo Comitê de IA podem operar com dados internos ou de clientes.</p></div><button class="btn ctrl-only" onclick="openModal('tool')">+ Solicitar ferramenta</button></header><div class="two-col"><div class="card"><h3 class="section-title">Ferramentas mais usadas (base)</h3><div class="list" id="stackList"></div></div><div class="card"><h3 class="section-title">Checklist de homologação</h3><div class="notice">Toda nova ferramenta passa por avaliação de segurança, LGPD, propriedade intelectual, custo, integração e plano de contingência.</div><div class="timeline" style="margin-top:18px"><div class="event"><b>1. Solicitação pela área</b><span>Caso de uso, dados e responsável</span></div><div class="event"><b>2. Avaliação técnica e de risco</b><span>CIO de IA + Segurança + Jurídico quando aplicável</span></div><div class="event"><b>3. Piloto controlado</b><span>Métricas de eficiência, qualidade e segurança</span></div><div class="event"><b>4. Deliberação do Comitê</b><span>Homologação, restrição ou reprovação</span></div></div></div></div></section>
 
-    <section id="prompts" class="page"><header class="top"><div><div class="eyebrow">Conhecimento que escala</div><h1>Biblioteca institucional de prompts</h1><p>Prompts reutilizáveis, versionados e alinhados à identidade da Vanguarda Martech e aos critérios de cada cliente.</p></div><div class="actions"><span id="costNote" class="sub"></span><button class="btn alt ctrl-only" onclick="openCostPolicy()">Teto de custo</button><button class="btn" onclick="openModal('prompt')">+ Novo prompt</button></div></header><div class="toolbar"><input placeholder="Buscar por objetivo, área ou cliente" oninput="filterRows(this.value,'promptRows')"><select onchange="void 0"><option>Todas as áreas</option><option>Criação</option><option>Atendimento</option><option>Planejamento</option><option>Mídia</option></select></div><div class="card"><table><thead><tr><th>Prompt / playbook</th><th>Área</th><th>Controle</th><th>Última revisão</th><th>Uso</th><th>Custo/chamada</th><th></th></tr></thead><tbody id="promptRows"></tbody></table></div></section>
+    <section id="prompts" class="page"><header class="top"><div><div class="eyebrow">Conhecimento que escala</div><h1>Biblioteca institucional de prompts</h1><p>Prompts reutilizáveis, versionados e alinhados à identidade da Vanguarda Martech e aos critérios de cada cliente.</p></div><div class="actions"><span id="costNote" class="sub"></span><button class="btn alt ctrl-only" onclick="openCostPolicy()">Teto de custo</button><button class="btn alt" onclick="openModal('assetreq')">+ Solicitar ativo digital</button><button class="btn" onclick="openModal('prompt')">+ Novo prompt</button></div></header><div class="toolbar"><input placeholder="Buscar por objetivo, área ou cliente" oninput="filterRows(this.value,'promptRows')"><select onchange="void 0"><option>Todas as áreas</option><option>Criação</option><option>Atendimento</option><option>Planejamento</option><option>Mídia</option></select></div><div class="card"><table><thead><tr><th>Prompt / playbook</th><th>Área</th><th>Controle</th><th>Última revisão</th><th>Uso</th><th>Custo/chamada</th><th></th></tr></thead><tbody id="promptRows"></tbody></table></div>
+      <div class="card" style="margin-top:18px"><h3 class="section-title">Minhas solicitações de ativo digital</h3><div class="list" id="assetReqMine"><div class="sub">Nenhuma solicitação ainda.</div></div></div>
+      <div class="card ctrl-only" style="margin-top:18px"><h3 class="section-title">Solicitações de novos ativos de IA (triagem)</h3><div class="table-wrap"><table><thead><tr><th>Ativo</th><th>Solicitante</th><th>URL</th><th>Repositório</th><th>Status</th><th></th></tr></thead><tbody id="assetReqRows"></tbody></table></div></div>
+    </section>
 
     <section id="support" class="page"><header class="top"><div><div class="eyebrow">Canal de comunicação</div><h1>Suporte & canal de IA</h1><p>Reporte uso indevido da IA, faça solicitações e comunique-se como embaixador de IA. Aberto a todos os colaboradores.</p></div></header>
       <div class="two-col">
@@ -446,11 +449,12 @@ async function boot(){
       renderRankingSetores(ov.ranking_setores); window.LAST_OVERVIEW=ov;
       renderRiscos(ov.riscos); renderAudit(audit); renderObs(obs);
       loadSupportQueue(); loadMySupport();
+      loadAssetReqQueue(); loadMyAssetReq();
     } else {
       // Usuário comum: Biblioteca de prompts (leitura) + canal de suporte
       COST_POLICY=await api('/governance/cost-policy');
       renderPrompts(await api('/governance/prompts'));
-      loadMySupport();
+      loadMySupport(); loadMyAssetReq();
       document.getElementById('obsDot').className='dot on';
       document.getElementById('obsText').textContent='Acesso: leitura · Biblioteca + Suporte';
     }
@@ -464,6 +468,7 @@ const FORMS={
   tool:{title:'Solicitar ferramenta',ep:'/governance/stack',fields:[['Ferramenta','text','Nome da solução','name'],['Descrição / caso de uso','text','Objetivo operacional','description'],['Status','select','Em análise|Homologada|Restrita|Reprovada','status']]},
   prompt:{title:'Novo prompt institucional',ep:'/governance/prompts',fields:[['Título','text','Ex.: Diagnóstico de campanha','title'],['Descrição / objetivo','text','Resumo do objetivo (NIA-001)','description'],['Área','select','Criação|Atendimento|Planejamento|Mídia|Social|Comercial|Inbound|RH|Financeiro|Desenvolvimento|Diretoria','area'],['Tipo (NIA-001)','select','A · Operacional|B · Analítico|C · Estratégico|D · Automação|E · Criativo','ptype'],['Ferramenta utilizada','text','Ex.: ChatGPT Enterprise (deve ser homologada)','tool'],['Classificação da informação','select','Uso interno|Público|Confidencial|Restrito','data_class'],['Conteúdo','textarea','Objetivo · Contexto · Papel da IA · Instruções · Restrições · Formato','content'],['Repositório hospedado','text','https://github.com/org/repo (opcional)','repo_url'],['Custo por chamada (R$)','text','Ex.: 0.35','cost_per_call'],['Controle','select','Revisão pendente|Aprovado|Reprovado','control']]},
   costpolicy:{title:'Teto de custo por chamada',ep:'/governance/cost-policy',method:'PUT',fields:[['Teto por chamada','text','Ex.: 0.50','max_cost_per_call'],['Moeda','select','BRL|USD','currency']]},
+  assetreq:{title:'Solicitar novo ativo digital de IA',ep:'/governance/asset-requests',fields:[['Nome completo','text','Nome do ativo / aplicação de IA','name'],['Funcionalidades da aplicação','textarea','Descreva o que a aplicação faz','features'],['URL','text','https://… (endereço da aplicação)','url'],['Repositório (URL)','text','https://github.com/org/repo (opcional)','repo_url'],['Repositório','select','Público|Institucional','repo_scope']]},
   skill:{title:'Mapear competência',ep:'/governance/skills',fields:[['Time / área','text','Ex.: Social Media','area'],['Competência','text','Ex.: análise de tendências','description'],['Nível','select','Iniciante|Intermediário|Avançado|Especialista|Prioridade','level'],['Responsável pela avaliação','text','Nome do líder','reviewer']]},
   incident:{title:'Registrar ocorrência',ep:'/governance/incidents',fields:[['Tipo / título','text','Ex.: Uso de dados fora do fluxo','title'],['Área','text','Ex.: Conta Nexo','area'],['Criticidade','select','Baixa|Média|Alta|Crítica','criticality'],['Status','select','Em análise|Conforme|Ação necessária','status'],['Descrição','textarea','Contexto, impacto e ação imediata','description']]},
 };
@@ -605,6 +610,35 @@ async function saveSupport(){
     closeSupportModal(); toast('Atendimento registrado.'); loadSupportQueue();
   }catch(ex){toast('Erro: '+ex.message,false);}
   finally{btn.disabled=false; btn.textContent='Salvar atendimento';}
+}
+
+// ---- Solicitação de novo ativo digital de IA ----
+let LAST_ASSETREQ=[];
+function assetTone(s){return s==='Aprovado'?'ok':(s==='Reprovado'?'red':'warn');}
+async function loadMyAssetReq(){
+  try{
+    const list=await api('/governance/asset-requests/mine');
+    document.getElementById('assetReqMine').innerHTML=(list&&list.length)
+      ? list.map(r=>rowItem(esc(r.name),(r.repo_scope?('Repo '+esc(r.repo_scope)):'')+(r.url?(' · '+esc(r.url)):''),`<span class="badge ${assetTone(r.status)}">${esc(r.status)}</span>`)).join('')
+      : '<div class="sub">Nenhuma solicitação ainda.</div>';
+  }catch(ex){}
+}
+async function loadAssetReqQueue(){
+  if(!isController())return;
+  const list=await api('/governance/asset-requests'); LAST_ASSETREQ=list||[];
+  document.getElementById('assetReqRows').innerHTML=(list&&list.length)?list.map(r=>{
+    const acts=(r.status==='Pendente')
+      ? `<button class="table-action" style="color:var(--green);margin-right:8px" onclick="reviewAsset(${r.id},'Aprovado')">Aprovar</button><button class="table-action" style="color:#ff8aa0" onclick="reviewAsset(${r.id},'Reprovado')">Reprovar</button>`
+      : `<button class="table-action" onclick="reviewAsset(${r.id},'Pendente')">Reabrir</button>`;
+    const url=r.url?`<a class="table-action" href="${esc(r.url)}" target="_blank" rel="noopener" style="text-decoration:none">abrir ↗</a>`:'—';
+    const repo=r.repo_url?`<a class="table-action" href="${esc(r.repo_url)}" target="_blank" rel="noopener" style="text-decoration:none">${esc(r.repo_scope||'repo')} ↗</a>`:esc(r.repo_scope||'—');
+    return `<tr><td><b>${esc(r.name)}</b><br><span class="muted">${esc((r.features||'').slice(0,100))}</span></td><td>${esc(r.requester||'')}</td><td>${url}</td><td>${repo}</td><td><span class="badge ${assetTone(r.status)}">${esc(r.status)}</span></td><td>${acts}</td></tr>`;
+  }).join(''):'<tr><td colspan="6" class="sub">Sem solicitações.</td></tr>';
+}
+async function reviewAsset(id,decision){
+  try{ await api('/governance/asset-requests/'+id,{method:'PUT',body:JSON.stringify({decision})});
+    toast('Solicitação: '+decision+'.'); loadAssetReqQueue();
+  }catch(ex){toast('Erro: '+ex.message,false);}
 }
 async function homologar(id,decision){
   try{ await api('/governance/prompts/'+id+'/homologar',{method:'POST',body:JSON.stringify({decision})});

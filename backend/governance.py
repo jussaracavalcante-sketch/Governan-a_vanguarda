@@ -152,6 +152,24 @@ class SupportTicket(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
 
+class AssetRequest(Base):
+    """Solicitação de cadastro de um novo ativo digital de IA (aplicação/agente)."""
+    __tablename__ = "gov_asset_requests"
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(200), nullable=False)            # nome completo do ativo/aplicação
+    features = Column(Text, default="")                    # funcionalidades da aplicação
+    url = Column(String(300), default="")                  # URL da aplicação
+    repo_url = Column(String(300), default="")             # repositório
+    repo_scope = Column(String(20), default="Público")     # Público | Institucional
+    requester = Column(String(120), default="")
+    requester_email = Column(String(120), default="", index=True)
+    status = Column(String(20), default="Pendente")        # Pendente | Aprovado | Reprovado
+    review_note = Column(Text, default="")
+    handled_by = Column(String(120), default="")
+    handled_at = Column(String(30), default="")
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+
 # ─────────────────────────── SCHEMAS ───────────────────────────
 class ORM(BaseModel):
     model_config = ConfigDict(from_attributes=True)
@@ -242,6 +260,19 @@ class SupportTicketIn(BaseModel):
 class SupportUpdateIn(BaseModel):
     status: str | None = None          # Aberto | Em atendimento | Resolvido | Fechado
     response: str | None = None
+
+
+class AssetRequestIn(BaseModel):
+    name: str                           # nome completo
+    features: str = ""                  # funcionalidades da aplicação
+    url: str = ""
+    repo_url: str = ""
+    repo_scope: str = "Público"         # Público | Institucional
+
+
+class AssetReviewIn(BaseModel):
+    decision: str                       # Aprovado | Reprovado
+    note: str | None = None
 
 
 class HomologacaoIn(BaseModel):
@@ -593,6 +624,58 @@ def update_support(sid: int, item: SupportUpdateIn, db: Session = Depends(get_db
     obj.handled_at = _hoje_pt()
     db.commit(); db.refresh(obj)
     _audit(db, u, "UPDATE", "support", obj.id, {"status": obj.status})
+    return _serialize(obj)
+
+
+# ---- Solicitação de cadastro de novo ativo digital de IA ----
+@router.post("/asset-requests", status_code=201)
+def create_asset_request(item: AssetRequestIn, db: Session = Depends(get_db), u: User = Depends(get_current_user)):
+    """Qualquer colaborador solicita o cadastro de um novo ativo digital de IA.
+    Entra como 'Pendente' para triagem/homologação do controlador."""
+    forb = check_forbidden(item.name, item.features, item.url, item.repo_url)
+    if forb:
+        raise HTTPException(status_code=422, detail={"regras": ["R1: conteúdo proibido — " + ", ".join(sorted(set(forb)))]})
+    scope = item.repo_scope if item.repo_scope in ("Público", "Institucional") else "Público"
+    obj = AssetRequest(
+        name=item.name.strip()[:200], features=item.features.strip(),
+        url=item.url.strip()[:300], repo_url=item.repo_url.strip()[:300], repo_scope=scope,
+        requester=(u.name or u.email), requester_email=u.email, status="Pendente",
+    )
+    db.add(obj); db.commit(); db.refresh(obj)
+    _audit(db, u, "CREATE", "asset_request", obj.id, {"name": obj.name, "scope": scope})
+    return _serialize(obj)
+
+
+@router.get("/asset-requests")
+def list_asset_requests(status: str = "", db: Session = Depends(get_db), u: User = Depends(get_current_manager_user)):
+    q = db.query(AssetRequest)
+    if status:
+        q = q.filter(AssetRequest.status == status)
+    return [_serialize(o) for o in q.order_by(AssetRequest.id.desc()).all()]
+
+
+@router.get("/asset-requests/mine")
+def my_asset_requests(db: Session = Depends(get_db), u: User = Depends(get_current_user)):
+    rows = (db.query(AssetRequest).filter(AssetRequest.requester_email == u.email)
+            .order_by(AssetRequest.id.desc()).all())
+    return [_serialize(o) for o in rows]
+
+
+@router.put("/asset-requests/{rid}")
+def review_asset_request(rid: int, item: AssetReviewIn, db: Session = Depends(get_db), u: User = Depends(get_current_manager_user)):
+    if item.decision not in ("Aprovado", "Reprovado", "Pendente"):
+        raise HTTPException(status_code=422, detail="decision deve ser 'Aprovado', 'Reprovado' ou 'Pendente'")
+    obj = db.query(AssetRequest).filter(AssetRequest.id == rid).first()
+    if not obj:
+        raise HTTPException(status_code=404, detail="Solicitação não encontrada")
+    obj.status = item.decision
+    if item.note is not None:
+        obj.review_note = item.note
+    obj.handled_by = u.name or u.email
+    obj.handled_at = _hoje_pt()
+    db.commit(); db.refresh(obj)
+    _audit(db, u, "APPROVE" if item.decision == "Aprovado" else ("REJECT" if item.decision == "Reprovado" else "UPDATE"),
+           "asset_request", obj.id, {"name": obj.name, "status": obj.status})
     return _serialize(obj)
 
 
