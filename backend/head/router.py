@@ -11,6 +11,7 @@ from database import get_db
 from auth.dependencies import get_current_user, get_current_manager_user
 from models import User
 from head import crud, schemas
+from head.prmo_snapshot import PRMO_SNAPSHOT
 
 router = APIRouter(prefix="/head", tags=["Gestão HEAD de IA"])
 
@@ -19,6 +20,12 @@ router = APIRouter(prefix="/head", tags=["Gestão HEAD de IA"])
 @router.get("/dashboard", response_model=schemas.HeadDashboard)
 def head_dashboard(db: Session = Depends(get_db), user: User = Depends(get_current_user)):
     return crud.get_dashboard(db)
+
+
+@router.get("/prmo", summary="Visão do PrMO (consultivo, somente leitura)")
+def prmo_view(user: User = Depends(get_current_user)):
+    """Retrato organizado dos dados de governança do PrMO. Consulta apenas."""
+    return PRMO_SNAPSHOT
 
 
 @router.get("/report/{period}", response_model=schemas.MonthlyReport)
