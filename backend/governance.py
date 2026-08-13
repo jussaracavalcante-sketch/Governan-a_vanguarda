@@ -133,6 +133,25 @@ class Incident(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
 
+class SupportTicket(Base):
+    """Suporte técnico / canal de comunicação: reportes de uso indevido da IA,
+    solicitações e canal dos embaixadores de IA."""
+    __tablename__ = "gov_support"
+    id = Column(Integer, primary_key=True, index=True)
+    kind = Column(String(30), default="Solicitação")     # Uso indevido | Solicitação | Embaixadores
+    subject = Column(String(200), nullable=False)
+    area = Column(String(120), default="")
+    severity = Column(String(20), default="Média")        # Baixa|Média|Alta|Crítica (uso indevido)
+    message = Column(Text, default="")
+    requester = Column(String(120), default="")           # nome do solicitante
+    requester_email = Column(String(120), default="", index=True)
+    status = Column(String(30), default="Aberto")         # Aberto|Em atendimento|Resolvido|Fechado
+    response = Column(Text, default="")
+    handled_by = Column(String(120), default="")
+    handled_at = Column(String(30), default="")
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+
 # ─────────────────────────── SCHEMAS ───────────────────────────
 class ORM(BaseModel):
     model_config = ConfigDict(from_attributes=True)
@@ -210,6 +229,19 @@ class IncidentIn(BaseModel):
     criticality: str = "Baixa"
     status: str = "Em análise"
     description: str = ""
+
+
+class SupportTicketIn(BaseModel):
+    kind: str = "Solicitação"          # Uso indevido | Solicitação | Embaixadores
+    subject: str
+    area: str = ""
+    severity: str = "Média"
+    message: str = ""
+
+
+class SupportUpdateIn(BaseModel):
+    status: str | None = None          # Aberto | Em atendimento | Resolvido | Fechado
+    response: str | None = None
 
 
 class HomologacaoIn(BaseModel):
@@ -500,6 +532,68 @@ def update_prompt(pid: int, item: PromptUpdateIn, db: Session = Depends(get_db),
 @router.get("/rules")
 def list_rules(u: User = Depends(get_current_user)):
     return {"regras": BUSINESS_RULES}
+
+
+# ---- Suporte técnico / canal de comunicação ----
+_SUPPORT_KINDS = ("Uso indevido", "Solicitação", "Embaixadores")
+
+
+@router.post("/support", status_code=201)
+def create_support(item: SupportTicketIn, db: Session = Depends(get_db), u: User = Depends(get_current_user)):
+    """Abre um chamado: reporte de uso indevido, solicitação ou mensagem de embaixador.
+    Aberto a qualquer colaborador autenticado."""
+    kind = item.kind if item.kind in _SUPPORT_KINDS else "Solicitação"
+    # R1 (LGPD/segurança): não permitir credenciais/segredos/PII no texto do chamado.
+    forb = check_forbidden(item.subject, item.message)
+    if forb:
+        raise HTTPException(status_code=422, detail={"regras": ["R1: conteúdo proibido — " + ", ".join(sorted(set(forb)))]})
+    obj = SupportTicket(
+        kind=kind, subject=item.subject.strip()[:200], area=item.area.strip()[:120],
+        severity=(item.severity or "Média"), message=item.message.strip(),
+        requester=(u.name or u.email), requester_email=u.email, status="Aberto",
+    )
+    db.add(obj); db.commit(); db.refresh(obj)
+    _audit(db, u, "CREATE", "support", obj.id, {"kind": kind, "subject": obj.subject})
+    return _serialize(obj)
+
+
+@router.get("/support")
+def list_support(kind: str = "", status: str = "", db: Session = Depends(get_db),
+                 u: User = Depends(get_current_manager_user)):
+    """Fila de atendimento (controlador): todos os chamados, com filtros opcionais."""
+    q = db.query(SupportTicket)
+    if kind:
+        q = q.filter(SupportTicket.kind == kind)
+    if status:
+        q = q.filter(SupportTicket.status == status)
+    return [_serialize(o) for o in q.order_by(SupportTicket.id.desc()).all()]
+
+
+@router.get("/support/mine")
+def my_support(db: Session = Depends(get_db), u: User = Depends(get_current_user)):
+    """Chamados abertos pelo próprio colaborador."""
+    rows = (db.query(SupportTicket)
+            .filter(SupportTicket.requester_email == u.email)
+            .order_by(SupportTicket.id.desc()).all())
+    return [_serialize(o) for o in rows]
+
+
+@router.put("/support/{sid}")
+def update_support(sid: int, item: SupportUpdateIn, db: Session = Depends(get_db),
+                   u: User = Depends(get_current_manager_user)):
+    """Atendimento do chamado (controlador): muda status e/ou registra resposta."""
+    obj = db.query(SupportTicket).filter(SupportTicket.id == sid).first()
+    if not obj:
+        raise HTTPException(status_code=404, detail="Chamado não encontrado")
+    if item.status is not None:
+        obj.status = item.status
+    if item.response is not None:
+        obj.response = item.response
+    obj.handled_by = u.name or u.email
+    obj.handled_at = _hoje_pt()
+    db.commit(); db.refresh(obj)
+    _audit(db, u, "UPDATE", "support", obj.id, {"status": obj.status})
+    return _serialize(obj)
 
 
 # ---- Política de custo (teto por chamada, controlado pelo PrMO) ----
@@ -876,4 +970,19 @@ def seed_governance(db: Session):
         Incident(title="Solicitação de ferramenta externa", area="Criação", criticality="Média", status="Em análise"),
         Incident(title="Uso de dados confidenciais fora do fluxo", area="Conta Nexo", criticality="Alta", status="Ação necessária"),
     ])
+    if not db.query(SupportTicket).first():
+        db.add_all([
+            SupportTicket(kind="Solicitação", subject="Homologação de nova ferramenta de vídeo",
+                          area="Criação", severity="Média", status="Em atendimento",
+                          message="Pedido de avaliação de ferramenta de geração de vídeo para a squad de criação.",
+                          requester="Diretoria de IA", requester_email="admin@vanguardian.com"),
+            SupportTicket(kind="Embaixadores", subject="Boa prática: prompt de brief que reduziu retrabalho",
+                          area="Atendimento", severity="Baixa", status="Aberto",
+                          message="Compartilhando um padrão de briefing que melhorou a taxa de aprovação. Sugiro incluir na Biblioteca.",
+                          requester="Embaixador de IA", requester_email="user@vanguardamartech.com.br"),
+            SupportTicket(kind="Uso indevido", subject="Uso de IA sem revisão humana em entrega a cliente",
+                          area="Social", severity="Alta", status="Aberto",
+                          message="Relato de conteúdo publicado sem a revisão obrigatória prevista na Política de IA.",
+                          requester="Colaborador", requester_email="user@vanguardamartech.com.br"),
+        ])
     db.commit()

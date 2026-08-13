@@ -106,6 +106,7 @@
       <button class="active ctrl-only" data-page="dashboard">◈ &nbsp; Visão executiva</button>
       <button class="ctrl-only" data-page="tools">◉ &nbsp; Stack & homologação</button>
       <button data-page="prompts">✦ &nbsp; Biblioteca de prompts</button>
+      <button data-page="support">🛟 &nbsp; Suporte & canal</button>
       <button class="ctrl-only" data-page="people">◌ &nbsp; Pessoas & skills</button>
       <button class="ctrl-only" data-page="compliance">◫ &nbsp; Compliance & auditoria</button>
       <button class="ctrl-only" data-page="registros">▤ &nbsp; Registros (30d)</button>
@@ -138,6 +139,33 @@
 
     <section id="prompts" class="page"><header class="top"><div><div class="eyebrow">Conhecimento que escala</div><h1>Biblioteca institucional de prompts</h1><p>Prompts reutilizáveis, versionados e alinhados à identidade da Vanguarda Martech e aos critérios de cada cliente.</p></div><div class="actions"><span id="costNote" class="sub"></span><button class="btn alt ctrl-only" onclick="openCostPolicy()">Teto de custo</button><button class="btn" onclick="openModal('prompt')">+ Novo prompt</button></div></header><div class="toolbar"><input placeholder="Buscar por objetivo, área ou cliente" oninput="filterRows(this.value,'promptRows')"><select onchange="void 0"><option>Todas as áreas</option><option>Criação</option><option>Atendimento</option><option>Planejamento</option><option>Mídia</option></select></div><div class="card"><table><thead><tr><th>Prompt / playbook</th><th>Área</th><th>Controle</th><th>Última revisão</th><th>Uso</th><th>Custo/chamada</th><th></th></tr></thead><tbody id="promptRows"></tbody></table></div></section>
 
+    <section id="support" class="page"><header class="top"><div><div class="eyebrow">Canal de comunicação</div><h1>Suporte & canal de IA</h1><p>Reporte uso indevido da IA, faça solicitações e comunique-se como embaixador de IA. Aberto a todos os colaboradores.</p></div></header>
+      <div class="two-col">
+        <div class="card">
+          <h3 class="section-title">Abrir chamado</h3>
+          <div class="form" id="supportForm">
+            <label>Tipo<select data-k="kind"><option>Uso indevido</option><option selected>Solicitação</option><option>Embaixadores</option></select></label>
+            <label>Assunto<input data-k="subject" placeholder="Resumo do chamado"></label>
+            <label>Área / conta<input data-k="area" placeholder="Sua área ou conta"></label>
+            <label>Severidade<select data-k="severity"><option>Baixa</option><option selected>Média</option><option>Alta</option><option>Crítica</option></select></label>
+            <label>Mensagem<textarea data-k="message" placeholder="Descreva o reporte, a solicitação ou a contribuição"></textarea></label>
+            <div class="err" id="supErr"></div>
+            <button class="btn" id="supBtn" onclick="submitSupport()">Enviar chamado</button>
+          </div>
+          <div class="notice" style="margin-top:12px">Não inclua senhas, tokens ou dados pessoais (CPF, cartão) — chamados com esse conteúdo são bloqueados (LGPD).</div>
+        </div>
+        <div class="card">
+          <h3 class="section-title">Meus chamados</h3>
+          <div class="list" id="mySupportList"><div class="sub">Sem chamados ainda.</div></div>
+        </div>
+      </div>
+      <div class="card ctrl-only" style="margin-top:18px">
+        <h3 class="section-title">Fila de atendimento</h3>
+        <div class="toolbar"><select id="supFilter" onchange="loadSupportQueue()"><option value="">Todos os tipos</option><option>Uso indevido</option><option>Solicitação</option><option>Embaixadores</option></select><input placeholder="Filtrar nesta fila" oninput="filterRows(this.value,'supportRows')"></div>
+        <table><thead><tr><th>Chamado</th><th>Tipo</th><th>Área</th><th>Sev.</th><th>Status</th><th></th></tr></thead><tbody id="supportRows"></tbody></table>
+      </div>
+    </section>
+
     <section id="people" class="page"><header class="top"><div><div class="eyebrow">Cultura IA</div><h1>Pessoas, times e competências</h1><p>Mapeie capacidade por área, trilhas de capacitação e embaixadores que sustentam a adoção responsável.</p></div><button class="btn ctrl-only" onclick="openModal('skill')">+ Mapear competência</button></header><div class="two-col"><div class="card"><h3 class="section-title">Capacidade por macroárea</h3><div class="list" id="skillsList"></div></div><div class="card"><h3 class="section-title">Ativos de conhecimento por tipo</h3><div id="trainingList"></div></div></div></section>
 
     <section id="compliance" class="page"><header class="top"><div><div class="eyebrow">Confiança por design</div><h1>Compliance, riscos e auditoria</h1><p>Monitore o cumprimento da Política Corporativa de IA, da LGPD e dos padrões de qualidade das entregas.</p></div><button class="btn ctrl-only" onclick="openModal('incident')">+ Registrar ocorrência</button></header>
@@ -162,6 +190,7 @@
 
 <div class="modal" id="modal"><div class="dialog"><h3 id="modalTitle">Registrar item</h3><div class="form" id="modalForm"></div><div class="modal-actions"><button class="btn alt" onclick="closeModal()">Cancelar</button><button class="btn" id="saveBtn" onclick="saveItem()">Salvar registro</button></div></div></div>
 <div class="modal" id="promptModal"><div class="dialog"><h3 id="pmTitle">Detalhe do prompt</h3><div class="form" id="promptForm"></div><div class="modal-actions"><button class="btn alt" onclick="closePromptModal()">Fechar</button><button class="btn" id="pmSave" style="display:none" onclick="savePromptEdit()">Salvar alterações</button></div></div></div>
+<div class="modal" id="supportModal"><div class="dialog"><h3 id="smTitle">Chamado</h3><div class="form" id="supportDetail"></div><div class="modal-actions"><button class="btn alt" onclick="closeSupportModal()">Fechar</button><button class="btn" id="smSave" style="display:none" onclick="saveSupport()">Salvar atendimento</button></div></div></div>
 
 <div id="login"><div class="box">
   <div class="eyebrow">PrMO · Prompt Management Office</div>
@@ -416,12 +445,14 @@ async function boot(){
       renderStackTop(ov.stack_top); renderCapacidade(ov.capacidade); renderKnowledgeTipos(ov.knowledge_tipos);
       renderRankingSetores(ov.ranking_setores); window.LAST_OVERVIEW=ov;
       renderRiscos(ov.riscos); renderAudit(audit); renderObs(obs);
+      loadSupportQueue(); loadMySupport();
     } else {
-      // Usuário comum: somente Biblioteca de prompts (leitura)
+      // Usuário comum: Biblioteca de prompts (leitura) + canal de suporte
       COST_POLICY=await api('/governance/cost-policy');
       renderPrompts(await api('/governance/prompts'));
+      loadMySupport();
       document.getElementById('obsDot').className='dot on';
-      document.getElementById('obsText').textContent='Acesso: leitura · Biblioteca de prompts';
+      document.getElementById('obsText').textContent='Acesso: leitura · Biblioteca + Suporte';
     }
   }catch(ex){if(ex.message!=='401')toast('Falha ao carregar: '+ex.message,false);}
   finally{ if(L)L.classList.remove('show'); }
@@ -513,6 +544,67 @@ async function savePromptEdit(){
     renderPrompts(await api('/governance/prompts'));
   }catch(ex){toast('Erro ao salvar: '+ex.message,false);}
   finally{btn.disabled=false;btn.textContent='Salvar alterações';}
+}
+
+// ---- Suporte técnico / canal de comunicação ----
+let LAST_SUPPORT=[], CURRENT_TICKET_ID=null;
+function supTone(s){return s==='Resolvido'?'ok':(s==='Aberto'?'red':(s==='Fechado'?'muted':'warn'));}
+async function submitSupport(){
+  const f=document.getElementById('supportForm'), err=document.getElementById('supErr'); err.textContent='';
+  const p={}; f.querySelectorAll('[data-k]').forEach(el=>p[el.dataset.k]=el.value);
+  if(!(p.subject||'').trim()){err.textContent='Informe o assunto.';return;}
+  const btn=document.getElementById('supBtn'); btn.disabled=true; btn.textContent='Enviando…';
+  try{
+    await api('/governance/support',{method:'POST',body:JSON.stringify(p)});
+    f.querySelector('[data-k="subject"]').value=''; f.querySelector('[data-k="message"]').value='';
+    toast('Chamado enviado ao suporte. Registrado na auditoria.');
+    loadMySupport(); if(isController())loadSupportQueue();
+  }catch(ex){err.textContent=ex.message;}
+  finally{btn.disabled=false; btn.textContent='Enviar chamado';}
+}
+async function loadMySupport(){
+  try{
+    const list=await api('/governance/support/mine');
+    document.getElementById('mySupportList').innerHTML=(list&&list.length)
+      ? list.map(t=>rowItem(esc(t.subject),esc(t.kind)+(t.area?' · '+esc(t.area):''),`<span class="badge ${supTone(t.status)}">${esc(t.status)}</span>`)).join('')
+      : '<div class="sub">Sem chamados ainda.</div>';
+  }catch(ex){/* usuário sem sessão */}
+}
+async function loadSupportQueue(){
+  if(!isController())return;
+  const kind=document.getElementById('supFilter')?.value||'';
+  const list=await api('/governance/support'+(kind?('?kind='+encodeURIComponent(kind)):''));
+  LAST_SUPPORT=list||[];
+  document.getElementById('supportRows').innerHTML=(list||[]).map(t=>{
+    const sev=t.kind==='Uso indevido'?`<span class="badge ${t.severity==='Crítica'||t.severity==='Alta'?'red':'warn'}">${esc(t.severity)}</span>`:'—';
+    return `<tr><td><b class="prompt-open" onclick="openSupport(${t.id})">${esc(t.subject)}</b><br><span class="muted">${esc(t.requester||'')}</span></td><td>${esc(t.kind)}</td><td>${esc(t.area||'—')}</td><td>${sev}</td><td><span class="badge ${supTone(t.status)}">${esc(t.status)}</span></td><td><button class="table-action" onclick="openSupport(${t.id})">Atender</button></td></tr>`;
+  }).join('')||'<tr><td colspan="6" class="sub">Fila vazia.</td></tr>';
+}
+function closeSupportModal(){document.getElementById('supportModal').classList.remove('open');CURRENT_TICKET_ID=null;}
+function openSupport(id){
+  const t=(LAST_SUPPORT||[]).find(x=>x.id===id); if(!t)return;
+  CURRENT_TICKET_ID=id;
+  document.getElementById('smTitle').textContent=t.kind+' · '+t.subject;
+  const opt=s=>['Aberto','Em atendimento','Resolvido','Fechado'].map(o=>`<option ${o===s?'selected':''}>${o}</option>`).join('');
+  document.getElementById('supportDetail').innerHTML=`
+    <div class="pdmeta" style="border:0;padding:0"><b>${esc(t.requester||'')}</b> · ${esc(t.requester_email||'')} · ${esc(t.area||'—')} · Sev. ${esc(t.severity||'—')}</div>
+    <label>Mensagem<textarea disabled>${esc(t.message||'')}</textarea></label>
+    <label>Status<select data-k="status">${opt(t.status)}</select></label>
+    <label>Resposta / parecer<textarea data-k="response" placeholder="Resposta ao colaborador">${esc(t.response||'')}</textarea></label>
+    ${t.handled_by?`<div class="pdmeta">Último atendimento: ${esc(t.handled_by)} · ${esc(t.handled_at||'')}</div>`:''}`;
+  document.getElementById('smSave').style.display=isController()?'':'none';
+  document.getElementById('supportModal').classList.add('open');
+}
+async function saveSupport(){
+  if(CURRENT_TICKET_ID==null)return;
+  const d=document.getElementById('supportDetail'), p={};
+  d.querySelectorAll('[data-k]').forEach(el=>p[el.dataset.k]=el.value);
+  const btn=document.getElementById('smSave'); btn.disabled=true; btn.textContent='Salvando…';
+  try{
+    await api('/governance/support/'+CURRENT_TICKET_ID,{method:'PUT',body:JSON.stringify(p)});
+    closeSupportModal(); toast('Atendimento registrado.'); loadSupportQueue();
+  }catch(ex){toast('Erro: '+ex.message,false);}
+  finally{btn.disabled=false; btn.textContent='Salvar atendimento';}
 }
 async function homologar(id,decision){
   try{ await api('/governance/prompts/'+id+'/homologar',{method:'POST',body:JSON.stringify({decision})});
