@@ -33,19 +33,19 @@ export default function Login() {
         <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
           <div
             style={{
-              width: 52,
-              height: 52,
-              borderRadius: 14,
+              width: 56,
+              height: 56,
+              borderRadius: 8,
               margin: '0 auto 0.75rem',
               display: 'grid',
               placeItems: 'center',
               fontWeight: 800,
-              fontSize: '1.5rem',
+              fontSize: '1.9rem',
               color: '#ffffff',
-              background: 'linear-gradient(135deg, var(--accent), var(--accent-2))',
+              background: 'var(--accent)',
             }}
           >
-            H
+            V
           </div>
           <h1 style={{ fontSize: '1.4rem' }}>HEAD de IA</h1>
           <p className="muted" style={{ fontSize: '0.85rem' }}>

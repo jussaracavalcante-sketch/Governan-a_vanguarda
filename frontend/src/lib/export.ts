@@ -3,8 +3,8 @@ import type { MonthlyReport } from '@/types'
 const money = (n: number) =>
   new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(n || 0)
 
-const ACCENT: [number, number, number] = [255, 31, 69]
-const ACCENT2: [number, number, number] = [255, 92, 122]
+const ACCENT: [number, number, number] = [176, 30, 36]
+const ACCENT2: [number, number, number] = [212, 44, 56]
 
 // ─────────────────────────────── PDF ───────────────────────────────
 export async function exportReportPDF(r: MonthlyReport) {
@@ -70,7 +70,7 @@ export async function exportReportPPTX(r: MonthlyReport) {
   const s1 = p.addSlide()
   s1.background = { color: '080708' }
   s1.addText('Gestão HEAD de IA', { x: 0.6, y: 1.8, w: 8.8, h: 1, fontSize: 40, bold: true, color: 'FFFFFF' })
-  s1.addText(`Relatório Mensal · ${r.period}`, { x: 0.6, y: 2.9, w: 8.8, h: 0.6, fontSize: 20, color: 'FF1F45' })
+  s1.addText(`Relatório Mensal · ${r.period}`, { x: 0.6, y: 2.9, w: 8.8, h: 0.6, fontSize: 20, color: 'B01E24' })
   s1.addText('Projeto Executivo Head de IA — Grupo Vanguarda', { x: 0.6, y: 3.5, w: 8.8, h: 0.5, fontSize: 14, color: 'AFA8B0' })
 
   // Slide 2 — indicadores executivos (KPIs em cartões)
@@ -97,10 +97,10 @@ export async function exportReportPPTX(r: MonthlyReport) {
   s3.addText('Indicadores de Sucesso', { x: 0.5, y: 0.3, w: 9, h: 0.6, fontSize: 24, bold: true, color: '080708' })
   const indRows = [
     [
-      { text: 'Indicador', options: { bold: true, color: 'FFFFFF', fill: { color: 'FF1F45' } } },
-      { text: 'Meta', options: { bold: true, color: 'FFFFFF', fill: { color: 'FF1F45' } } },
-      { text: 'Realizado', options: { bold: true, color: 'FFFFFF', fill: { color: 'FF1F45' } } },
-      { text: 'Tendência', options: { bold: true, color: 'FFFFFF', fill: { color: 'FF1F45' } } },
+      { text: 'Indicador', options: { bold: true, color: 'FFFFFF', fill: { color: 'B01E24' } } },
+      { text: 'Meta', options: { bold: true, color: 'FFFFFF', fill: { color: 'B01E24' } } },
+      { text: 'Realizado', options: { bold: true, color: 'FFFFFF', fill: { color: 'B01E24' } } },
+      { text: 'Tendência', options: { bold: true, color: 'FFFFFF', fill: { color: 'B01E24' } } },
     ],
     ...r.indicators.map((i) => [
       { text: i.name },

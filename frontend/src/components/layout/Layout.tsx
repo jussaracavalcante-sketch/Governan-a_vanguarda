@@ -55,7 +55,7 @@ export default function Layout() {
     <div className="app-shell">
       <aside className={`sidebar ${open ? 'open' : ''}`}>
         <div className="brand">
-          <div className="brand-mark">H</div>
+          <div className="brand-mark">V</div>
           <div>
             <div className="brand-name">HEAD de IA</div>
             <div className="brand-sub">Painel de Gestão</div>
