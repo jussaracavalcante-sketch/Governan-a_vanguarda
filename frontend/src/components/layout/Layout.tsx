@@ -79,6 +79,11 @@ export default function Layout() {
           </div>
         ))}
       </aside>
+      <div
+        className={`sidebar-backdrop ${open ? 'show' : ''}`}
+        onClick={() => setOpen(false)}
+        aria-hidden="true"
+      />
 
       <div className="main">
         <header className="topbar">
@@ -94,7 +99,7 @@ export default function Layout() {
             </button>
             <div className="row" style={{ gap: '0.5rem' }}>
               <div className="avatar" title={user?.email}>{initials}</div>
-              <div style={{ lineHeight: 1.1 }}>
+              <div className="user-meta" style={{ lineHeight: 1.1 }}>
                 <div style={{ fontSize: '0.85rem', fontWeight: 600 }}>{user?.name}</div>
                 <div style={{ fontSize: '0.72rem', color: 'var(--muted)' }}>{user?.role}</div>
               </div>
