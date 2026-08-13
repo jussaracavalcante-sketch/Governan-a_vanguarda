@@ -4,6 +4,25 @@ Registro cronológico do trabalho por sessão. Entrada mais recente no topo.
 
 ---
 
+## 2026-08-13 (sessão 10) — Suporte técnico, solicitação de ativos e "Sugestões e melhorias"
+
+### 🎯 Objetivo
+Abrir canais dos colaboradores (suporte/embaixadores de IA), permitir solicitação de novos ativos digitais de IA e reorganizar a Biblioteca separando os candidatos do mapeamento em um menu próprio.
+
+### ✅ Entregas
+- **Suporte técnico** (`gov_support`): reporte de uso indevido da IA, solicitações e canal dos embaixadores. Endpoints `/governance/support` (POST aberto, GET gestor, `/mine`, PUT triagem). Aba "🛟 Suporte" + modal.
+- **Solicitar ativo digital** (`gov_asset_requests`): campos nome completo, funcionalidades, URL e repositório (público/institucional). Endpoints `/governance/asset-requests` (POST aberto com regra R1, GET gestor, `/mine`, PUT análise Aprovado/Reprovado/Pendente) + fila de análise.
+- **Sugestões e melhorias** (`gov_suggestions`): novo modelo/endpoints `/governance/suggestions` (POST aberto R1, GET gestor com filtros, `/mine`, PUT triagem Nova|Em análise|Aceita|Recusada). Aba "💡 Sugestões e melhorias" com envio, "minhas sugestões" e quadro de triagem (gestor).
+- **Limpeza da Biblioteca**: os 52 candidatos do mapeamento KNOW saíram da Biblioteca e passaram a alimentar `gov_suggestions` (`source="Mapeamento"`). A Biblioteca mantém somente os prompts curados (`PROMPT-*`). Seed renomeado para `seed_suggestions_from_knowledge`.
+
+### 🧪 Validações
+- Backend local (Postgres): Biblioteca = 3 prompts curados; quadro de sugestões = 52 (mapeamento); envio de colaborador → 201; RBAC 403 para usuário comum no quadro; triagem "Aceita"; regra R1 bloqueia segredo/PII (422).
+- Migração Supabase: `gov_suggestions` criada com RLS; movimentação `INSERT … SELECT … WHERE title LIKE '%[KNOW-%'` + `DELETE` → biblioteca=3, sugestoes=52.
+- UI (Playwright/`file://` com mock): **10/10 PASS** (Biblioteca sem KNOW; menu Sugestões ativo; formulário; quadro; modal de triagem; salvar; usuário vê envio, não vê o quadro).
+
+### ⏳ Pendências
+- Sincronizar a produção na Vercel após esta mudança (repo git-connected, mas Production Branch = `main`).
+
 ## 2026-08-13 (sessão 9) — Nova infra: frontend na Vercel
 
 ### 🎯 Objetivo
