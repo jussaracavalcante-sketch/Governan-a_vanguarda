@@ -14,14 +14,22 @@ Abrir canais dos colaboradores (suporte/embaixadores de IA), permitir solicitaç
 - **Solicitar ativo digital** (`gov_asset_requests`): campos nome completo, funcionalidades, URL e repositório (público/institucional). Endpoints `/governance/asset-requests` (POST aberto com regra R1, GET gestor, `/mine`, PUT análise Aprovado/Reprovado/Pendente) + fila de análise.
 - **Sugestões e melhorias** (`gov_suggestions`): novo modelo/endpoints `/governance/suggestions` (POST aberto R1, GET gestor com filtros, `/mine`, PUT triagem Nova|Em análise|Aceita|Recusada). Aba "💡 Sugestões e melhorias" com envio, "minhas sugestões" e quadro de triagem (gestor).
 - **Limpeza da Biblioteca**: os 52 candidatos do mapeamento KNOW saíram da Biblioteca e passaram a alimentar `gov_suggestions` (`source="Mapeamento"`). A Biblioteca mantém somente os prompts curados (`PROMPT-*`). Seed renomeado para `seed_suggestions_from_knowledge`.
+- **Deploy**: dois commits na branch; GitHub Pages redeployado; backend `prmo-api` (Render) redeployado.
+- **Sincronização da produção na Vercel** (via CLI, `vercel deploy --prod`) — produção atualizada em **https://prmo-frontend.vercel.app** com o novo menu.
+- **Correção `vercel.json`**: o rewrite apontava para `/frontend/index.html`, que o `cleanUrls` normalizava para `/frontend`, deixando a raiz `/` em 404. Rewrite ajustado para `/frontend` → raiz volta a servir o app (HTTP 200). `.gitignore` passa a ignorar `.vercel`/`.env.local`.
 
 ### 🧪 Validações
 - Backend local (Postgres): Biblioteca = 3 prompts curados; quadro de sugestões = 52 (mapeamento); envio de colaborador → 201; RBAC 403 para usuário comum no quadro; triagem "Aceita"; regra R1 bloqueia segredo/PII (422).
 - Migração Supabase: `gov_suggestions` criada com RLS; movimentação `INSERT … SELECT … WHERE title LIKE '%[KNOW-%'` + `DELETE` → biblioteca=3, sugestoes=52.
 - UI (Playwright/`file://` com mock): **10/10 PASS** (Biblioteca sem KNOW; menu Sugestões ativo; formulário; quadro; modal de triagem; salvar; usuário vê envio, não vê o quadro).
+- Produção pós-deploy: `prmo-frontend.vercel.app` e GitHub Pages em **HTTP 200** com "Sugestões e melhorias" e apontando para `prmo-api`; backend `/governance/suggestions` respondendo (401 = rota exige auth).
+
+### 🔐 Segurança
+- Token da Vercel usado de forma pontual (arquivo temporário `600`, sem log/commit) e **removido com `shred`** ao final, junto de `.vercel`/`.env.local`. Recomendada a revogação do token em vercel.com/account/tokens.
 
 ### ⏳ Pendências
-- Sincronizar a produção na Vercel após esta mudança (repo git-connected, mas Production Branch = `main`).
+- **Revogar o token da Vercel** exposto no chat.
+- Definir a Production Branch da Vercel para `claude/prompts-repo-infrastructure-08dmf1` (ou promover a branch a padrão do repo) para deploy automático a cada push — hoje a sincronização de produção é manual via CLI.
 
 ## 2026-08-13 (sessão 9) — Nova infra: frontend na Vercel
 
