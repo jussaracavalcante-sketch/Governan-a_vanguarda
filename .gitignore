@@ -61,3 +61,5 @@ credentials/
 # Backup
 *.bak
 *.backup
+.vercel
+.env.local
