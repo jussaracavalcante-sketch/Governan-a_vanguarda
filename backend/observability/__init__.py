@@ -1,1 +1,1 @@
-# VANGUARDIAN - Observability Module
+# Gestão HEAD de IA - Observability Module

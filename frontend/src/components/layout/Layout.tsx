@@ -8,46 +8,29 @@ type NavItem = { to: string; label: string; icon: string; end?: boolean; roles?:
 
 const NAV_GROUPS: { title: string; items: NavItem[] }[] = [
   {
-    title: 'Plataforma',
-    items: [
-      { to: '/', label: 'Dashboard', icon: '📊', end: true },
-      { to: '/prompts', label: 'Biblioteca de Prompts', icon: '📚' },
-      { to: '/ferramentas', label: 'Stack & Ferramentas', icon: '🧰' },
-      { to: '/skills', label: 'Pessoas & Skills', icon: '🎯' },
-      { to: '/acessos', label: 'Controle de Acessos', icon: '🔐', roles: ['Admin', 'Manager'] },
-      { to: '/admin', label: 'Administração', icon: '⚙️', roles: ['Admin'] },
-    ],
-  },
-  {
     title: 'Gestão HEAD de IA',
     items: [
-      { to: '/head', label: 'Visão do HEAD', icon: '🧠', end: true },
-      { to: '/head/ativos', label: 'Controle de Ativos', icon: '🗂️' },
-      { to: '/head/tarefas', label: 'Tarefas do Dia a Dia', icon: '✅' },
-      { to: '/head/indicadores', label: 'Indicadores & KPIs', icon: '📈' },
-      { to: '/head/relatorios', label: 'Relatórios Mensais', icon: '🗓️' },
-      { to: '/head/licencas', label: 'Controle de Licenças', icon: '🔑' },
-      { to: '/head/processos', label: 'Otimização de Processos', icon: '⚙️' },
-      { to: '/head/conhecimento', label: 'Base de Conhecimento', icon: '📖' },
+      { to: '/', label: 'Visão Geral', icon: '🧠', end: true },
+      { to: '/ativos', label: 'Controle de Ativos', icon: '🗂️' },
+      { to: '/tarefas', label: 'Tarefas do Dia a Dia', icon: '✅' },
+      { to: '/indicadores', label: 'Indicadores & KPIs', icon: '📈' },
+      { to: '/relatorios', label: 'Relatórios Mensais', icon: '🗓️' },
+      { to: '/licencas', label: 'Controle de Licenças', icon: '🔑' },
+      { to: '/processos', label: 'Otimização de Processos', icon: '⚙️' },
+      { to: '/conhecimento', label: 'Base de Conhecimento', icon: '📖' },
     ],
   },
 ]
 
 const TITLES: Record<string, string> = {
-  '/': 'Dashboard',
-  '/prompts': 'Biblioteca de Prompts',
-  '/ferramentas': 'Stack & Ferramentas',
-  '/skills': 'Pessoas & Skills',
-  '/acessos': 'Controle de Acessos',
-  '/admin': 'Administração',
-  '/head': 'Gestão HEAD de IA',
-  '/head/ativos': 'Controle de Ativos',
-  '/head/tarefas': 'Tarefas do Dia a Dia',
-  '/head/indicadores': 'Indicadores & KPIs',
-  '/head/relatorios': 'Relatórios Mensais',
-  '/head/licencas': 'Controle de Licenças',
-  '/head/processos': 'Otimização de Processos',
-  '/head/conhecimento': 'Base de Conhecimento',
+  '/': 'Visão Geral',
+  '/ativos': 'Controle de Ativos',
+  '/tarefas': 'Tarefas do Dia a Dia',
+  '/indicadores': 'Indicadores & KPIs',
+  '/relatorios': 'Relatórios Mensais',
+  '/licencas': 'Controle de Licenças',
+  '/processos': 'Otimização de Processos',
+  '/conhecimento': 'Base de Conhecimento',
 }
 
 export default function Layout() {
@@ -55,7 +38,7 @@ export default function Layout() {
   const { theme, toggle } = useTheme()
   const [open, setOpen] = useState(false)
   const loc = useLocation()
-  const title = TITLES[loc.pathname] || 'PRMO'
+  const title = TITLES[loc.pathname] || 'HEAD de IA'
   const initials = (user?.name || '?')
     .split(' ')
     .map((p) => p[0])
@@ -72,10 +55,10 @@ export default function Layout() {
     <div className="app-shell">
       <aside className={`sidebar ${open ? 'open' : ''}`}>
         <div className="brand">
-          <div className="brand-mark">P</div>
+          <div className="brand-mark">H</div>
           <div>
-            <div className="brand-name">PRMO</div>
-            <div className="brand-sub">Governança de IA</div>
+            <div className="brand-name">HEAD de IA</div>
+            <div className="brand-sub">Painel de Gestão</div>
           </div>
         </div>
         {groups.map((g) => (

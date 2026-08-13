@@ -1,1 +1,0 @@
-# VANGUARDIAN - Iclips Module

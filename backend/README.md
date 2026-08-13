@@ -1,19 +1,21 @@
-# VANGUARDIAN — Backend API
+# Gestão HEAD de IA — Backend API
 
-API RESTful em **Python + FastAPI + SQLAlchemy + SQLite** para governança digital.
+API RESTful em **Python + FastAPI + SQLAlchemy** para o app Gestão HEAD de IA.
+Banco próprio; **consulta** ao PrMO é somente leitura.
 
 ## Módulos
 
 | Módulo | Descrição | Endpoint |
 |---|---|---|
-| Auth | Login JWT, refresh, logout, me | `/auth` |
-| Usuários | Controle de acessos e perfis | `/users` |
-| Ferramentas | Catálogo de ferramentas digitais | `/tools` |
-| Skills | Matriz de competências por time | `/skills` |
-| Prompts | Biblioteca institucional de prompts | `/prompts` |
-| Dashboard | Estatísticas consolidadas | `/dashboard` |
-| Admin | Gestão, auditoria, métricas | `/admin` |
-| Integrações | RD Station, ICLIPS, VJOB | `/integrations` |
+| Auth | Login JWT, refresh, me | `/auth` |
+| Visão / Dashboard | Indicadores do HEAD + Visão do PrMO | `/head/dashboard` |
+| Ativos | Controle de ativos digitais | `/head/assets` |
+| Tarefas | Tarefas do dia a dia | `/head/tasks` |
+| Indicadores | KPIs (meta vs. realizado) | `/head/indicators` |
+| Relatórios | Consolidação mensal | `/head/report/{period}` |
+| Licenças | Controle de licenças | `/head/licenses` |
+| Processos | Otimização de processos (PDCA) | `/head/processes` |
+| Conhecimento | Base de conhecimento | `/head/knowledge` |
 | Health | Liveness / readiness / metrics | `/health` |
 
 ## Instalação
@@ -26,29 +28,27 @@ pip install -r requirements.txt
 uvicorn main:app --reload
 ```
 
-Servidor: `http://localhost:8000`  
-Swagger: `http://localhost:8000/docs`
+Servidor: `http://localhost:8000` · Swagger: `http://localhost:8000/docs`
 
-## Credenciais demo (seed)
+## Credencial inicial (seed)
 
-- **Admin:** admin@vanguardian.local / admin123
-- **Manager:** ana.souza@empresa.com / 123456
+- **Admin:** `admin@headia.app` / `admin123` (troque em produção)
 
 ## Variáveis de Ambiente
 
 ```env
-APP_NAME=VANGUARDIAN API
+APP_NAME=Gestão HEAD de IA API
 DEBUG=True
-DATABASE_URL=sqlite:///./vanguardian.db
+DATABASE_URL=sqlite:///./head_ia.db
 CORS_ORIGINS=["*"]
 SECRET_KEY=change-me-in-production
+PRMO_BASE_URL=
+ADMIN_EMAIL=admin@headia.app
+ADMIN_PASSWORD=admin123
 ```
 
-## Frontend
+## Testes
 
-Abra `/workspace/index.html` ou acesse a versão publicada.  
-A UI funciona standalone (localStorage) e está preparada para integração com a API.
-
-## Autor
-
-JUSSARA NONATA CAVALCANTE
+```bash
+pytest -v
+```

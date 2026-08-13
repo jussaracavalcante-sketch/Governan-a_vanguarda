@@ -1,6 +1,8 @@
 """
-VANGUARDIAN - Main Application
-FastAPI entrypoint with auth, admin, observability and core routers.
+Gestão HEAD de IA - Main Application
+FastAPI entrypoint: autenticação, observabilidade e o app do HEAD de IA
+(ativos, tarefas, licenças, indicadores/KPIs, relatórios, processos,
+base de conhecimento) + Visão do PrMO (somente consulta).
 """
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
@@ -8,14 +10,11 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from database import engine, Base, SessionLocal
 from config import get_settings
-import routes_users, routes_tools, routes_skills, routes_prompts, routes_dashboard
+from crud import seed_admin
 from auth.router import router as auth_router
-from admin.router import router as admin_router
 from observability.health import router as health_router
 from observability.logging import configure_logging, get_logger
-from observability.middleware import RequestLoggingMiddleware, AuditMiddleware
-from integrations.router import router as integrations_router
-from crud import seed_initial_data
+from observability.middleware import RequestLoggingMiddleware
 import head.models  # noqa: F401  (registra as tabelas do módulo HEAD de IA no metadata)
 from head.router import router as head_router
 from head.seed import seed_head_data
@@ -31,7 +30,7 @@ async def lifespan(app: FastAPI):
     Base.metadata.create_all(bind=engine)
     db = SessionLocal()
     try:
-        seed_initial_data(db)
+        seed_admin(db)
         seed_head_data(db)
     except Exception as exc:
         logger.error("seed_failed", error=str(exc))
@@ -44,10 +43,9 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title=settings.app_name,
     description=(
-        "API da plataforma PRMO: governança digital, controle de acessos, "
-        "ferramentas, skills, prompts, autenticação, admin, observabilidade, "
-        "integrações (RD Station, ICLIPS, VJOB) e o app Gestão HEAD de IA "
-        "(ativos, tarefas, licenças, indicadores/KPIs, relatórios e base de conhecimento)."
+        "API do app Gestão HEAD de IA: controle de ativos, tarefas do dia a dia, "
+        "indicadores/KPIs, relatórios mensais, controle de licenças, otimização de "
+        "processos e base de conhecimento. Inclui a Visão do PrMO (somente consulta)."
     ),
     version=settings.version,
     lifespan=lifespan,
@@ -60,18 +58,10 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-app.add_middleware(AuditMiddleware)
 app.add_middleware(RequestLoggingMiddleware)
 
 app.include_router(auth_router)
-app.include_router(admin_router)
 app.include_router(health_router)
-app.include_router(integrations_router)
-app.include_router(routes_users.router)
-app.include_router(routes_tools.router)
-app.include_router(routes_skills.router)
-app.include_router(routes_prompts.router)
-app.include_router(routes_dashboard.router)
 app.include_router(head_router)
 
 

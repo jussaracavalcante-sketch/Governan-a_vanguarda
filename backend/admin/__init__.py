@@ -1,1 +1,0 @@
-# VANGUARDIAN - Admin Module

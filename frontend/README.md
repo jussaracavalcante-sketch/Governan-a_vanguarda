@@ -1,4 +1,4 @@
-# VANGUARDIAN — Frontend
+# Gestão HEAD de IA — Frontend
 
 SPA em **React + TypeScript + Vite** que consome a API FastAPI do backend.
 
@@ -18,7 +18,7 @@ npm run lint       # ESLint
 A URL da API vem de `VITE_API_BASE_URL` (ver `.env.example`):
 
 - **Dev**: deixe vazio — o Vite faz proxy de `/api` → `http://localhost:8000`.
-- **Prod**: aponte para o backend publicado, ex.: `https://vanguardian-api.onrender.com`.
+- **Prod**: aponte para o backend publicado, ex.: `https://head_ia-api.onrender.com`.
 
 ## Estrutura
 

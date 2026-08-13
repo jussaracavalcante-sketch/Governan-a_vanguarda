@@ -1,4 +1,4 @@
-# VANGUARDIAN API — imagem de produção
+# Gestão HEAD de IA API — imagem de produção
 FROM python:3.11-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1 \

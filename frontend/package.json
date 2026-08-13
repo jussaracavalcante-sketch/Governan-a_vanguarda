@@ -1,9 +1,9 @@
 {
-  "name": "vanguardian-frontend",
+  "name": "app-head-ia-frontend",
   "private": true,
   "version": "1.0.0",
   "type": "module",
-  "description": "Frontend da plataforma VANGUARDIAN — governança de IA, prompts e PI",
+  "description": "Frontend do app Gestão HEAD de IA — ativos, tarefas, KPIs, licenças, relatórios e base de conhecimento",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",

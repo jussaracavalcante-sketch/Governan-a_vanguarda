@@ -1,5 +1,5 @@
 """
-VANGUARDIAN - Configuration Settings
+Gestão HEAD de IA - Configuration Settings
 Centralized configuration management using Pydantic Settings.
 """
 from typing import List
@@ -9,18 +9,18 @@ from functools import lru_cache
 
 class Settings(BaseSettings):
     # Application
-    app_name: str = "PRMO API"
+    app_name: str = "Gestão HEAD de IA API"
     debug: bool = True
     version: str = "1.0.0"
 
     # Security
-    secret_key: str = "vanguardian-super-secret-key-change-in-production-min-32-chars"
+    secret_key: str = "head-ia-super-secret-key-change-in-production-min-32-chars"
     algorithm: str = "HS256"
     access_token_expire_minutes: int = 30
     refresh_token_expire_days: int = 7
 
     # Database
-    database_url: str = "sqlite:///./vanguardian.db"
+    database_url: str = "sqlite:///./head_ia.db"
 
     # CORS
     cors_origins: List[str] = ["*"]
@@ -31,27 +31,13 @@ class Settings(BaseSettings):
     enable_metrics: bool = True
     metrics_port: int = 9090
 
-    # RD Station Integration
-    rd_station_client_id: str = ""
-    rd_station_client_secret: str = ""
-    rd_station_redirect_uri: str = ""
-    rd_station_base_url: str = "https://api.rd.services"
+    # PrMO (somente leitura/consulta) — base da ferramenta de governança PrMO.
+    # O app Gestão HEAD de IA apenas CONSULTA o PrMO; não grava nada nele.
+    prmo_base_url: str = ""
 
-    # ICLIPS Integration
-    iclips_base_url: str = ""
-    iclips_api_key: str = ""
-    iclips_client_id: str = ""
-    iclips_client_secret: str = ""
-
-    # VJOB Integration
-    vjob_base_url: str = ""
-    vjob_api_key: str = ""
-    vjob_client_id: str = ""
-    vjob_client_secret: str = ""
-
-    # Admin
-    admin_email: str = "admin@prmo.com.br"
-    admin_password: str = "admin123"  # Change in production!
+    # Admin (usuário inicial de acesso ao painel)
+    admin_email: str = "admin@headia.app"
+    admin_password: str = "admin123"  # Troque em produção!
 
     class Config:
         env_file = ".env"

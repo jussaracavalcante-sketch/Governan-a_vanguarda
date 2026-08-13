@@ -3,21 +3,21 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: vanguardian-api
+    container_name: head_ia-api
     ports:
       - "8000:8000"
     env_file:
       - .env
     environment:
       # Fallbacks caso .env não exista (dev local com SQLite)
-      - DATABASE_URL=${DATABASE_URL:-sqlite:///./vanguardian.db}
+      - DATABASE_URL=${DATABASE_URL:-sqlite:///./head_ia.db}
       - DEBUG=${DEBUG:-False}
     restart: unless-stopped
 
   # Frontend estático servido via nginx (opcional)
   web:
     image: nginx:alpine
-    container_name: vanguardian-web
+    container_name: head_ia-web
     ports:
       - "8080:80"
     volumes:

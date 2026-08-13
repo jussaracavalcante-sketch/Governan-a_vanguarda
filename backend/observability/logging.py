@@ -1,5 +1,5 @@
 """
-VANGUARDIAN - Observability Logging
+Gestão HEAD de IA - Observability Logging
 Structured logging configuration using structlog.
 """
 import sys

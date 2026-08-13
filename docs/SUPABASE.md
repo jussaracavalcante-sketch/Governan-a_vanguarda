@@ -1,6 +1,6 @@
 # Banco de Dados — Supabase (infraestrutura externa)
 
-> O banco de dados de produção do VANGUARDIAN é provisionado no **Supabase**, tratado
+> O banco de dados de produção do Gestão HEAD de IA é provisionado no **Supabase**, tratado
 > como **infraestrutura externa** a este repositório. O código é agnóstico: usa
 > **SQLite** por padrão (dev) e qualquer `DATABASE_URL` PostgreSQL em produção.
 

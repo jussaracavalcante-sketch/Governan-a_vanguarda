@@ -1,4 +1,4 @@
-"""Testes smoke da API VANGUARDIAN."""
+"""Testes smoke da API Gestão HEAD de IA."""
 from fastapi.testclient import TestClient
 
 from main import app
@@ -20,8 +20,8 @@ def test_health_live():
         assert resp.status_code == 200
 
 
-def test_prompts_requires_auth():
-    # Sem token, o endpoint protegido deve negar o acesso.
+def test_head_assets_requires_auth():
+    # Sem token, o endpoint protegido do HEAD deve negar o acesso.
     with TestClient(app) as client:
-        resp = client.get("/prompts")
+        resp = client.get("/head/assets")
         assert resp.status_code in (401, 403)

@@ -1,8 +1,8 @@
-// Cliente de API para o backend FastAPI do VANGUARDIAN.
+// Cliente de API para o backend FastAPI do Gestão HEAD de IA.
 // Base: VITE_API_BASE_URL em produção; em dev, o proxy /api do Vite → :8000.
 
 const BASE = import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, '') || '/api'
-const TOKEN_KEY = 'vanguardian.token'
+const TOKEN_KEY = 'head_ia.token'
 
 export function getToken(): string | null {
   return localStorage.getItem(TOKEN_KEY)

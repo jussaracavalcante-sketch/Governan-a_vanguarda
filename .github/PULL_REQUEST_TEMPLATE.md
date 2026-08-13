@@ -1,31 +1,17 @@
-## Descrição
-
-<!-- O que este PR faz e por quê. -->
+# Pull Request — Gestão HEAD de IA
 
 ## Tipo de mudança
+- [ ] ✨ Nova funcionalidade (feat)
+- [ ] 🐛 Correção (fix)
+- [ ] 📝 Documentação (docs)
+- [ ] ♻️ Refatoração (refactor)
+- [ ] 🎨 UI / estilo
 
-- [ ] 📚 Novo prompt (biblioteca)
-- [ ] ♻️ Alteração de prompt existente (versão atualizada)
-- [ ] 💻 Código (backend/frontend)
-- [ ] 📝 Documentação / governança
-- [ ] 🔧 Infra / CI
+## Descrição
+<!-- O quê e por quê. -->
 
-## Checklist geral
-
-- [ ] Segui o [CONTRIBUTING.md](../CONTRIBUTING.md)
-- [ ] Não incluí segredos nem dados confidenciais
-- [ ] CI passou
-
-## Se for PROMPT (NIA-001)
-
-- [ ] Arquivo em `prompts/<area>/` com nomenclatura `<AREA>-<NNN>-<slug>.md`
-- [ ] Front matter completo e válido
-- [ ] `classificacao_dados` correta
-- [ ] Estrutura padrão (papel, contexto, tarefa, restrições, formato)
-- [ ] Exemplo de saída e riscos documentados
-- [ ] `status` e `versao` (SemVer) coerentes
-- [ ] Índice em `prompts/README.md` atualizado (se homologado)
-
-## Revisão / homologação
-
-- [ ] Revisado por responsável da área (CODEOWNERS)
+## Checklist
+- [ ] Backend: `pytest -v` passa
+- [ ] Frontend: `npm run build` passa
+- [ ] Sem segredos/credenciais no diff
+- [ ] Documentação atualizada (se necessário)

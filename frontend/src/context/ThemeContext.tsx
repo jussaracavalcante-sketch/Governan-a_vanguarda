@@ -7,7 +7,7 @@ interface ThemeCtx {
 }
 
 const Ctx = createContext<ThemeCtx | undefined>(undefined)
-const STORAGE_KEY = 'vanguardian.theme'
+const STORAGE_KEY = 'head_ia.theme'
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setTheme] = useState<Theme>(

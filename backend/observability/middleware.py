@@ -1,5 +1,5 @@
 """
-VANGUARDIAN - Observability Middleware
+Gestão HEAD de IA - Observability Middleware
 Request/response logging and metrics middleware.
 """
 import time

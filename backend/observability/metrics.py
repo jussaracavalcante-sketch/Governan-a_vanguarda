@@ -1,5 +1,5 @@
 """
-VANGUARDIAN - Observability Metrics
+Gestão HEAD de IA - Observability Metrics
 Prometheus metrics collection and exposition.
 """
 from prometheus_client import Counter, Histogram, Gauge, Info, generate_latest, CONTENT_TYPE_LATEST
@@ -9,143 +9,143 @@ from config import get_settings
 settings = get_settings()
 
 # Application info
-app_info = Info("vanguardian_app", "VANGUARDIAN Application Information")
-app_info.info({"version": "1.0.0", "name": "VANGUARDIAN API"})
+app_info = Info("head_ia_app", "Gestão HEAD de IA Application Information")
+app_info.info({"version": "1.0.0", "name": "Gestão HEAD de IA API"})
 
 # HTTP Metrics
 http_requests_total = Counter(
-    "vanguardian_http_requests_total",
+    "head_ia_http_requests_total",
     "Total HTTP requests",
     ["method", "endpoint", "status_code"],
 )
 
 http_request_duration_seconds = Histogram(
-    "vanguardian_http_request_duration_seconds",
+    "head_ia_http_request_duration_seconds",
     "HTTP request duration in seconds",
     ["method", "endpoint"],
     buckets=[0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1.0, 2.5, 5.0, 10.0],
 )
 
 http_requests_in_progress = Gauge(
-    "vanguardian_http_requests_in_progress",
+    "head_ia_http_requests_in_progress",
     "HTTP requests currently in progress",
     ["method", "endpoint"],
 )
 
 # Authentication Metrics
 auth_login_total = Counter(
-    "vanguardian_auth_login_total",
+    "head_ia_auth_login_total",
     "Total login attempts",
     ["status"],  # success, failure
 )
 
 auth_token_refresh_total = Counter(
-    "vanguardian_auth_token_refresh_total",
+    "head_ia_auth_token_refresh_total",
     "Total token refresh attempts",
     ["status"],  # success, failure
 )
 
 auth_active_users = Gauge(
-    "vanguardian_auth_active_users",
+    "head_ia_auth_active_users",
     "Currently active users (with valid tokens)",
 )
 
 # Database Metrics
 db_queries_total = Counter(
-    "vanguardian_db_queries_total",
+    "head_ia_db_queries_total",
     "Total database queries",
     ["operation", "table", "status"],  # status: success, error
 )
 
 db_query_duration_seconds = Histogram(
-    "vanguardian_db_query_duration_seconds",
+    "head_ia_db_query_duration_seconds",
     "Database query duration in seconds",
     ["operation", "table"],
     buckets=[0.001, 0.005, 0.01, 0.025, 0.05, 0.1, 0.25, 0.5, 1.0],
 )
 
 db_connections_active = Gauge(
-    "vanguardian_db_connections_active",
+    "head_ia_db_connections_active",
     "Active database connections",
 )
 
 # Business Metrics
 business_users_total = Gauge(
-    "vanguardian_business_users_total",
+    "head_ia_business_users_total",
     "Total users by role",
     ["role", "status"],
 )
 
 business_tools_total = Gauge(
-    "vanguardian_business_tools_total",
+    "head_ia_business_tools_total",
     "Total tools by status",
     ["status"],
 )
 
 business_skills_total = Gauge(
-    "vanguardian_business_skills_total",
+    "head_ia_business_skills_total",
     "Total skills by level",
     ["level"],
 )
 
 business_prompts_total = Gauge(
-    "vanguardian_business_prompts_total",
+    "head_ia_business_prompts_total",
     "Total prompts",
 )
 
 # Integration Metrics
 integration_sync_total = Counter(
-    "vanguardian_integration_sync_total",
+    "head_ia_integration_sync_total",
     "Total integration sync operations",
     ["integration", "sync_type", "status"],
 )
 
 integration_sync_duration_seconds = Histogram(
-    "vanguardian_integration_sync_duration_seconds",
+    "head_ia_integration_sync_duration_seconds",
     "Integration sync duration in seconds",
     ["integration", "sync_type"],
     buckets=[1, 5, 10, 30, 60, 120, 300, 600],
 )
 
 integration_records_processed = Counter(
-    "vanguardian_integration_records_processed_total",
+    "head_ia_integration_records_processed_total",
     "Total records processed by integrations",
     ["integration", "type"],  # type: created, updated, failed
 )
 
 integration_last_sync_timestamp = Gauge(
-    "vanguardian_integration_last_sync_timestamp",
+    "head_ia_integration_last_sync_timestamp",
     "Timestamp of last successful sync",
     ["integration"],
 )
 
 integration_enabled = Gauge(
-    "vanguardian_integration_enabled",
+    "head_ia_integration_enabled",
     "Integration enabled status (1=enabled, 0=disabled)",
     ["integration"],
 )
 
 # Audit Metrics
 audit_events_total = Counter(
-    "vanguardian_audit_events_total",
+    "head_ia_audit_events_total",
     "Total audit events",
     ["action", "resource_type", "success"],
 )
 
 # System Metrics
 system_uptime_seconds = Gauge(
-    "vanguardian_system_uptime_seconds",
+    "head_ia_system_uptime_seconds",
     "Application uptime in seconds",
 )
 
 system_memory_usage_bytes = Gauge(
-    "vanguardian_system_memory_usage_bytes",
+    "head_ia_system_memory_usage_bytes",
     "Memory usage in bytes",
     ["type"],  # rss, vms
 )
 
 system_cpu_usage_percent = Gauge(
-    "vanguardian_system_cpu_usage_percent",
+    "head_ia_system_cpu_usage_percent",
     "CPU usage percentage",
 )
 

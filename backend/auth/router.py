@@ -1,5 +1,5 @@
 """
-VANGUARDIAN - Authentication Router
+Gestão HEAD de IA - Authentication Router
 Login, register, token refresh, and password reset endpoints.
 """
 from datetime import timedelta

@@ -1,4 +1,4 @@
-# Política de Segurança — VANGUARDIAN
+# Política de Segurança — Gestão HEAD de IA
 
 ## Reporte de vulnerabilidades
 
@@ -8,7 +8,7 @@ Reporte de forma privada à **Diretoria de Inteligência Artificial · Vanguarda
 com:
 - Descrição do problema e impacto potencial;
 - Passos para reproduzir;
-- Componente afetado (`prompts/`, `backend/`, `frontend/`).
+- Componente afetado (`backend/`, `frontend/`).
 
 ## Dados sensíveis
 

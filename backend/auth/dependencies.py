@@ -1,5 +1,5 @@
 """
-VANGUARDIAN - Authentication Dependencies
+Gestão HEAD de IA - Authentication Dependencies
 FastAPI dependency injection for auth, roles, and permissions.
 """
 from typing import Optional

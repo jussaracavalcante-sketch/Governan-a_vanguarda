@@ -1,5 +1,5 @@
 """
-VANGUARDIAN - Authentication Security Module
+Gestão HEAD de IA - Authentication Security Module
 JWT token handling, password hashing, and security utilities.
 """
 from datetime import datetime, timedelta
@@ -15,7 +15,7 @@ settings = get_settings()
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 # JWT Configuration
-SECRET_KEY = getattr(settings, 'secret_key', 'vanguardian-super-secret-key-change-in-production')
+SECRET_KEY = getattr(settings, 'secret_key', 'head_ia-super-secret-key-change-in-production')
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 REFRESH_TOKEN_EXPIRE_DAYS = 7

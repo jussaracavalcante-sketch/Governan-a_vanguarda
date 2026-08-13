@@ -10,7 +10,7 @@ interface AuthCtx {
 }
 
 const Ctx = createContext<AuthCtx | undefined>(undefined)
-const USER_KEY = 'vanguardian.user'
+const USER_KEY = 'head_ia.user'
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(() => {
