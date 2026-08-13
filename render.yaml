@@ -15,13 +15,12 @@ services:
         value: "False"
       - key: VERSION
         value: "1.0.0"
-      # SQLite efêmero por padrão — deploy funciona out-of-the-box no free tier.
-      # Para persistência, sobrescreva no painel do Render (Environment) com a
-      # URL do Supabase/PostgreSQL:
-      # postgresql://postgres.<ref>:<SENHA>@aws-1-sa-east-1.pooler.supabase.com:5432/postgres?sslmode=require
-      # Ver docs/SUPABASE.md.
+      # Definido no painel do Render (Environment) — não versionado.
+      # Cole a URL do Supabase/PostgreSQL (session pooler), ex.:
+      # postgresql://postgres.<ref>:<SENHA-URL-ENCODED>@aws-0-sa-east-1.pooler.supabase.com:5432/postgres?sslmode=require
+      # Se ficar vazio, o backend usa SQLite efêmero (config.py). Ver docs/SUPABASE.md.
       - key: DATABASE_URL
-        value: sqlite:///./head_ia.db
+        sync: false
       - key: SECRET_KEY
         generateValue: true
       - key: LOG_LEVEL
@@ -33,5 +32,6 @@ services:
         value: ""
       - key: ADMIN_EMAIL
         value: admin@headia.app
+      # Definido no painel do Render (Environment) — não versionado.
       - key: ADMIN_PASSWORD
-        value: admin123
+        sync: false
