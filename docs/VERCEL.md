@@ -1,8 +1,23 @@
 # Deploy do frontend na Vercel
 
 O frontend do PrMO é um site **estático de arquivo único** (`frontend/index.html`) que consome a
-API em `https://prmo-api.onrender.com`. Não requer build. Pode ser hospedado na Vercel em paralelo
+API em `https://prmo-api.onrender.com`. Não requer build. Está hospedado na Vercel em paralelo
 ao GitHub Pages.
+
+## Serviço em produção (Vercel)
+| Item | Valor |
+|------|-------|
+| URL de produção | **https://prmo-frontend.vercel.app** |
+| Alias | `prmo-frontend-vanguardaos-projetos.vercel.app` |
+| Projeto | `prmo-frontend` |
+| Equipe/scope | `vanguardaos-projetos` |
+| Origem | `frontend/index.html` (estático, sem build) |
+| API consumida | `https://prmo-api.onrender.com` (CORS `*`) |
+| Deployment Protection | **Desabilitada** (acesso público) |
+
+> Deploy feito via CLI (`vercel deploy --prod --scope vanguardaos-projetos`). O token de deploy é
+> de uso pontual e **não** é versionado — rotacione/revogue em https://vercel.com/account/tokens.
+> Redeploys manuais: rode a CLI a partir de uma cópia de `frontend/` ou conecte o repositório ao projeto.
 
 ## Opção A — Importar o repositório (recomendado)
 1. Acesse https://vercel.com/new e **importe** o repositório `jussaracavalcante-sketch/Governan-a_vanguarda`.

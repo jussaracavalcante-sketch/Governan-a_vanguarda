@@ -4,6 +4,33 @@ Registro cronológico do trabalho por sessão. Entrada mais recente no topo.
 
 ---
 
+## 2026-08-13 (sessão 9) — Nova infra: frontend na Vercel
+
+### 🎯 Objetivo
+Publicar o frontend do PrMO como um **novo serviço/infra na Vercel**, reusando a API existente (`prmo-api`).
+
+### ✅ Entregas
+- **Repositório preparado para a Vercel**: `vercel.json` (reescreve `/` → `frontend/index.html`), `.vercelignore` (exclui backend/docs/db/workflows) e guia `docs/VERCEL.md`.
+- **Deploy em produção via CLI** (`vercel deploy --prod --scope vanguardaos-projetos`):
+  - Projeto **`prmo-frontend`** (equipe `vanguardaos-projetos`).
+  - URL de produção: **https://prmo-frontend.vercel.app** (alias `prmo-frontend-vanguardaos-projetos.vercel.app`).
+  - Publica o app atual (estático, sem build), apontando para `https://prmo-api.onrender.com`.
+- **Deployment Protection desligada** (via API `ssoProtection: null`) para acesso público.
+- Token de deploy usado de forma pontual (env/arquivo temporário 600), sem log/commit, e removido do scratchpad ao final.
+
+### 🧪 Validações
+- `https://prmo-frontend.vercel.app` → **HTTP 200**, 57 KB; título correto; `const API` = `prmo-api`; features presentes (ranking de setores, exportação, cadastro corporativo, barra de usuário, navegação).
+
+### 🧭 Decisões / notas
+- Sem integração VanguardIA por ora (a pedido) — os serviços VanguardIA no Render (`vanguarda-ia-api`=Bíblia da Marca, `-orchestrator`=`/v1/generate`, `-rag`=`/ask`) não expõem catálogo de prompts; integração reavaliada quando/for desejada.
+- Frontend agora em **duas infra**: GitHub Pages + Vercel, ambos consumindo o mesmo `prmo-api`/Supabase.
+
+### ⏳ Pendências
+- **Revogar o token da Vercel** em vercel.com/account/tokens.
+- Opcional: domínio customizado (ex.: `prmo.vanguardamartech.com.br`); conectar o repo ao projeto Vercel para deploy automático no push.
+
+---
+
 ## 2026-08-12 (sessão 8) — Autocadastro, UX, edição de prompt, ranking de setores e exportação
 
 ### 🎯 Objetivo
