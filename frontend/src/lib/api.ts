@@ -1,7 +1,12 @@
 // Cliente de API para o backend FastAPI do Gestão HEAD de IA.
-// Base: VITE_API_BASE_URL em produção; em dev, o proxy /api do Vite → :8000.
-
-const BASE = import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, '') || '/api'
+// Resolução da base:
+//  1) VITE_API_BASE_URL (variável de build) tem prioridade;
+//  2) em produção (build), usa a URL padrão do backend no Render;
+//  3) em desenvolvimento, usa o proxy /api do Vite → http://localhost:8000.
+const DEFAULT_PROD_API = 'https://app-head-ia-api.onrender.com'
+const BASE =
+  import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, '') ||
+  (import.meta.env.PROD ? DEFAULT_PROD_API : '/api')
 const TOKEN_KEY = 'head_ia.token'
 
 export function getToken(): string | null {
