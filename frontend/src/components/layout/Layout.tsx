@@ -2,22 +2,23 @@ import { useState } from 'react'
 import { NavLink, Outlet, useLocation } from 'react-router-dom'
 import { useAuth } from '@/context/AuthContext'
 import { useTheme } from '@/context/ThemeContext'
+import { Icon, type IconName } from '@/components/icons'
 import './layout.css'
 
-type NavItem = { to: string; label: string; icon: string; end?: boolean; roles?: string[] }
+type NavItem = { to: string; label: string; icon: IconName; end?: boolean; roles?: string[] }
 
 const NAV_GROUPS: { title: string; items: NavItem[] }[] = [
   {
     title: 'Gestão HEAD de IA',
     items: [
-      { to: '/', label: 'Visão Geral', icon: '🧠', end: true },
-      { to: '/ativos', label: 'Controle de Ativos', icon: '🗂️' },
-      { to: '/tarefas', label: 'Tarefas do Dia a Dia', icon: '✅' },
-      { to: '/indicadores', label: 'Indicadores & KPIs', icon: '📈' },
-      { to: '/relatorios', label: 'Relatórios Mensais', icon: '🗓️' },
-      { to: '/licencas', label: 'Controle de Licenças', icon: '🔑' },
-      { to: '/processos', label: 'Otimização de Processos', icon: '⚙️' },
-      { to: '/conhecimento', label: 'Base de Conhecimento', icon: '📖' },
+      { to: '/', label: 'Visão Geral', icon: 'dashboard', end: true },
+      { to: '/ativos', label: 'Controle de Ativos', icon: 'assets' },
+      { to: '/tarefas', label: 'Tarefas do Dia a Dia', icon: 'tasks' },
+      { to: '/indicadores', label: 'Indicadores & KPIs', icon: 'indicators' },
+      { to: '/relatorios', label: 'Relatórios Mensais', icon: 'reports' },
+      { to: '/licencas', label: 'Controle de Licenças', icon: 'licenses' },
+      { to: '/processos', label: 'Otimização de Processos', icon: 'processes' },
+      { to: '/conhecimento', label: 'Base de Conhecimento', icon: 'knowledge' },
     ],
   },
 ]
@@ -72,7 +73,7 @@ export default function Layout() {
                 className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
                 onClick={() => setOpen(false)}
               >
-                <span className="nav-icon">{n.icon}</span>
+                <span className="nav-icon"><Icon name={n.icon} /></span>
                 {n.label}
               </NavLink>
             ))}

@@ -34,7 +34,8 @@
 }
 .nav-item:hover { background: var(--surface-2); color: var(--text); text-decoration: none; }
 .nav-item.active { background: rgba(176, 30, 36, 0.14); color: var(--accent); }
-.nav-icon { width: 16px; text-align: center; font-size: 0.85rem; flex-shrink: 0; }
+.nav-icon { display: inline-flex; align-items: center; justify-content: center; width: 18px; color: var(--accent); flex-shrink: 0; }
+.nav-icon svg { display: block; }
 .nav-sep { font-size: 0.66rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; padding: 1rem 0.7rem 0.35rem; }
 
 .main { flex: 1; display: flex; flex-direction: column; min-width: 0; }
