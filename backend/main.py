@@ -27,15 +27,19 @@ logger = get_logger("main")
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     logger.info("startup", app=settings.app_name, version=settings.version)
-    Base.metadata.create_all(bind=engine)
-    db = SessionLocal()
+    # Init de banco resiliente: uma falha de conexão não derruba o app —
+    # fica logada e o estado real aparece em /health/ready.
     try:
-        seed_admin(db)
-        seed_head_data(db)
+        Base.metadata.create_all(bind=engine)
+        db = SessionLocal()
+        try:
+            seed_admin(db)
+            seed_head_data(db)
+        finally:
+            db.close()
+        logger.info("db_ready")
     except Exception as exc:
-        logger.error("seed_failed", error=str(exc))
-    finally:
-        db.close()
+        logger.error("db_init_failed", error=str(exc))
     yield
     logger.info("shutdown", app=settings.app_name)
 
