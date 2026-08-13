@@ -12,7 +12,7 @@ class BaseSchema(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
-ASSET_TYPE = "^(Modelo LLM|Agente|Automação|Integração|Dataset|Infraestrutura)$"
+ASSET_TYPE = "^(Modelo LLM|Agente|Automação|Integração|Dataset|Infraestrutura|Plataforma)$"
 ASSET_STATUS = "^(Ativo|Em avaliação|Descontinuado)$"
 ENVIRONMENT = "^(Produção|Homologação|Desenvolvimento)$"
 CRITICALITY = "^(Baixa|Média|Alta|Crítica)$"
@@ -20,10 +20,10 @@ TASK_STATUS = "^(Pendente|Em andamento|Concluída|Bloqueada)$"
 PRIORITY = "^(Baixa|Média|Alta|Crítica)$"
 LICENSE_STATUS = "^(Ativa|Em renovação|Expirada|Cancelada)$"
 INDICATOR_CATEGORY = "^(Operacional|Financeiro|Adoção|Qualidade|Risco)$"
-TREND = "^(Subindo|Estável|Caindo)$"
+TREND = "^(Subindo|Estável|Caindo|Concluído|Planejado)$"
 KNOWLEDGE_STATUS = "^(Rascunho|Publicado|Arquivado)$"
 PROCESS_STAGE = "^(Mapeamento|Diagnóstico|Priorização|Redesenho|Implementação|Medição|Padronizado)$"
-PROCESS_STATUS = "^(Em andamento|Concluído|Pausado)$"
+PROCESS_STATUS = "^(Pendente|Em andamento|Concluído|Pausado)$"
 LEVEL3 = "^(Baixo|Médio|Alto)$"
 AI_AUTOMATION = "^(Não|Parcial|Total)$"
 
@@ -138,7 +138,7 @@ class LicenseResponse(LicenseBase):
 # ─── Indicator / KPI ───
 class IndicatorBase(BaseSchema):
     name: str = Field(..., min_length=1, max_length=150)
-    category: str = Field(default="Operacional", pattern=INDICATOR_CATEGORY)
+    category: str = Field(default="Operacional", max_length=60)
     period: str = Field(default="", max_length=7)  # YYYY-MM
     unit: str = Field(default="", max_length=20)
     target: float = Field(default=0.0)
@@ -153,7 +153,7 @@ class IndicatorCreate(IndicatorBase):
 
 class IndicatorUpdate(BaseSchema):
     name: Optional[str] = Field(None, min_length=1, max_length=150)
-    category: Optional[str] = Field(None, pattern=INDICATOR_CATEGORY)
+    category: Optional[str] = Field(None, max_length=60)
     period: Optional[str] = Field(None, max_length=7)
     unit: Optional[str] = Field(None, max_length=20)
     target: Optional[float] = None
