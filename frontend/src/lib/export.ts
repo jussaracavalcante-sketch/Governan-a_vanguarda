@@ -3,8 +3,8 @@ import type { MonthlyReport } from '@/types'
 const money = (n: number) =>
   new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(n || 0)
 
-const ACCENT: [number, number, number] = [56, 189, 248]
-const ACCENT2: [number, number, number] = [129, 140, 248]
+const ACCENT: [number, number, number] = [255, 31, 69]
+const ACCENT2: [number, number, number] = [255, 92, 122]
 
 // ─────────────────────────────── PDF ───────────────────────────────
 export async function exportReportPDF(r: MonthlyReport) {
@@ -68,15 +68,15 @@ export async function exportReportPPTX(r: MonthlyReport) {
 
   // Slide 1 — capa
   const s1 = p.addSlide()
-  s1.background = { color: '0F172A' }
+  s1.background = { color: '080708' }
   s1.addText('Gestão HEAD de IA', { x: 0.6, y: 1.8, w: 8.8, h: 1, fontSize: 40, bold: true, color: 'FFFFFF' })
-  s1.addText(`Relatório Mensal · ${r.period}`, { x: 0.6, y: 2.9, w: 8.8, h: 0.6, fontSize: 20, color: '38BDF8' })
-  s1.addText('Projeto Executivo Head de IA — Grupo Vanguarda', { x: 0.6, y: 3.5, w: 8.8, h: 0.5, fontSize: 14, color: '94A3B8' })
+  s1.addText(`Relatório Mensal · ${r.period}`, { x: 0.6, y: 2.9, w: 8.8, h: 0.6, fontSize: 20, color: 'FF1F45' })
+  s1.addText('Projeto Executivo Head de IA — Grupo Vanguarda', { x: 0.6, y: 3.5, w: 8.8, h: 0.5, fontSize: 14, color: 'AFA8B0' })
 
   // Slide 2 — indicadores executivos (KPIs em cartões)
   const s2 = p.addSlide()
-  s2.background = { color: 'F1F5F9' }
-  s2.addText('Resumo executivo', { x: 0.5, y: 0.3, w: 9, h: 0.6, fontSize: 24, bold: true, color: '0F172A' })
+  s2.background = { color: 'F4F1F5' }
+  s2.addText('Resumo executivo', { x: 0.5, y: 0.3, w: 9, h: 0.6, fontSize: 24, bold: true, color: '080708' })
   const cards: [string, string][] = [
     ['Tarefas concluídas', `${r.tasks_done}/${r.tasks_total}`],
     ['Horas registradas', `${r.tasks_hours}h`],
@@ -86,21 +86,21 @@ export async function exportReportPPTX(r: MonthlyReport) {
   cards.forEach((c, idx) => {
     const x = 0.5 + (idx % 2) * 4.7
     const yy = 1.2 + Math.floor(idx / 2) * 1.9
-    s2.addShape(p.ShapeType.roundRect, { x, y: yy, w: 4.3, h: 1.6, fill: { color: 'FFFFFF' }, line: { color: 'E2E8F0' }, rectRadius: 0.1 })
-    s2.addText(c[0], { x: x + 0.2, y: yy + 0.2, w: 3.9, h: 0.4, fontSize: 12, color: '64748B' })
-    s2.addText(c[1], { x: x + 0.2, y: yy + 0.6, w: 3.9, h: 0.8, fontSize: 30, bold: true, color: '0F172A' })
+    s2.addShape(p.ShapeType.roundRect, { x, y: yy, w: 4.3, h: 1.6, fill: { color: 'FFFFFF' }, line: { color: 'E2DBE5' }, rectRadius: 0.1 })
+    s2.addText(c[0], { x: x + 0.2, y: yy + 0.2, w: 3.9, h: 0.4, fontSize: 12, color: '6B6470' })
+    s2.addText(c[1], { x: x + 0.2, y: yy + 0.6, w: 3.9, h: 0.8, fontSize: 30, bold: true, color: '080708' })
   })
 
   // Slide 3 — indicadores (tabela)
   const s3 = p.addSlide()
   s3.background = { color: 'FFFFFF' }
-  s3.addText('Indicadores de Sucesso', { x: 0.5, y: 0.3, w: 9, h: 0.6, fontSize: 24, bold: true, color: '0F172A' })
+  s3.addText('Indicadores de Sucesso', { x: 0.5, y: 0.3, w: 9, h: 0.6, fontSize: 24, bold: true, color: '080708' })
   const indRows = [
     [
-      { text: 'Indicador', options: { bold: true, color: 'FFFFFF', fill: { color: '38BDF8' } } },
-      { text: 'Meta', options: { bold: true, color: 'FFFFFF', fill: { color: '38BDF8' } } },
-      { text: 'Realizado', options: { bold: true, color: 'FFFFFF', fill: { color: '38BDF8' } } },
-      { text: 'Tendência', options: { bold: true, color: 'FFFFFF', fill: { color: '38BDF8' } } },
+      { text: 'Indicador', options: { bold: true, color: 'FFFFFF', fill: { color: 'FF1F45' } } },
+      { text: 'Meta', options: { bold: true, color: 'FFFFFF', fill: { color: 'FF1F45' } } },
+      { text: 'Realizado', options: { bold: true, color: 'FFFFFF', fill: { color: 'FF1F45' } } },
+      { text: 'Tendência', options: { bold: true, color: 'FFFFFF', fill: { color: 'FF1F45' } } },
     ],
     ...r.indicators.map((i) => [
       { text: i.name },
@@ -109,7 +109,7 @@ export async function exportReportPPTX(r: MonthlyReport) {
       { text: i.trend || '—' },
     ]),
   ]
-  s3.addTable(indRows as never, { x: 0.5, y: 1.1, w: 9, colW: [4.5, 1.5, 1.5, 1.5], fontSize: 11, border: { pt: 1, color: 'E2E8F0' }, valign: 'middle' })
+  s3.addTable(indRows as never, { x: 0.5, y: 1.1, w: 9, colW: [4.5, 1.5, 1.5, 1.5], fontSize: 11, border: { pt: 1, color: 'E2DBE5' }, valign: 'middle' })
 
   await p.writeFile({ fileName: `relatorio-head-ia-${r.period}.pptx` })
 }

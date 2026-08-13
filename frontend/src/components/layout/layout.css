@@ -18,7 +18,7 @@
 .brand-mark {
   width: 30px; height: 30px; border-radius: 8px;
   background: linear-gradient(135deg, var(--accent), var(--accent-2));
-  display: grid; place-items: center; font-weight: 800; color: #06263a;
+  display: grid; place-items: center; font-weight: 800; color: #ffffff;
   font-size: 0.9rem;
 }
 .brand-name { font-weight: 700; letter-spacing: 0.02em; font-size: 0.95rem; }
@@ -33,7 +33,7 @@
   transition: background 0.15s ease, color 0.15s ease;
 }
 .nav-item:hover { background: var(--surface-2); color: var(--text); text-decoration: none; }
-.nav-item.active { background: rgba(56, 189, 248, 0.14); color: var(--accent); }
+.nav-item.active { background: rgba(255, 31, 69, 0.14); color: var(--accent); }
 .nav-icon { width: 16px; text-align: center; font-size: 0.85rem; flex-shrink: 0; }
 .nav-sep { font-size: 0.66rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; padding: 1rem 0.7rem 0.35rem; }
 
@@ -50,7 +50,7 @@
 .topbar-actions { display: flex; align-items: center; gap: 0.6rem; flex-shrink: 0; }
 .avatar {
   width: 30px; height: 30px; border-radius: 50%;
-  background: var(--accent-2); color: #12103a;
+  background: var(--accent-2); color: #ffffff;
   display: grid; place-items: center; font-weight: 700; font-size: 0.8rem;
   flex-shrink: 0;
 }

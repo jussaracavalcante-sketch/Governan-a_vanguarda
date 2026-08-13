@@ -41,7 +41,7 @@ export default function Login() {
               placeItems: 'center',
               fontWeight: 800,
               fontSize: '1.5rem',
-              color: '#06263a',
+              color: '#ffffff',
               background: 'linear-gradient(135deg, var(--accent), var(--accent-2))',
             }}
           >
