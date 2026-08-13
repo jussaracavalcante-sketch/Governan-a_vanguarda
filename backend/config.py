@@ -31,6 +31,11 @@ class Settings(BaseSettings):
     enable_metrics: bool = True
     metrics_port: int = 9090
 
+    # Senha do banco em variável separada (opcional). Quando definida, é injetada
+    # com segurança na URL, evitando problemas de URL-encoding com caracteres
+    # especiais (@, *, #, etc.). Cole o valor CRU, sem codificar.
+    db_password: str = ""
+
     # PrMO (somente leitura/consulta) — base da ferramenta de governança PrMO.
     # O app Gestão HEAD de IA apenas CONSULTA o PrMO; não grava nada nele.
     prmo_base_url: str = ""
