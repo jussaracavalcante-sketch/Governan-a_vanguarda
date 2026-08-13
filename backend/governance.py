@@ -170,6 +170,26 @@ class AssetRequest(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
 
+class Suggestion(Base):
+    """Sugestões e melhorias: contribuições dos colaboradores e insumos do
+    mapeamento de campo (ex.: tarefas que gostariam de delegar a um Agente)."""
+    __tablename__ = "gov_suggestions"
+    id = Column(Integer, primary_key=True, index=True)
+    code = Column(String(40), default="")                 # ex.: KNOW-001 (origem mapeamento)
+    title = Column(String(200), nullable=False)
+    area = Column(String(120), default="")
+    ptype = Column(String(1), default="")                 # A–E (herdado do mapeamento)
+    message = Column(Text, default="")                    # texto da sugestão/melhoria
+    source = Column(String(30), default="Colaborador")    # Colaborador | Mapeamento
+    author = Column(String(120), default="")
+    requester_email = Column(String(120), default="", index=True)
+    status = Column(String(20), default="Nova")           # Nova | Em análise | Aceita | Recusada
+    note = Column(Text, default="")
+    handled_by = Column(String(120), default="")
+    handled_at = Column(String(30), default="")
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+
 # ─────────────────────────── SCHEMAS ───────────────────────────
 class ORM(BaseModel):
     model_config = ConfigDict(from_attributes=True)
@@ -272,6 +292,17 @@ class AssetRequestIn(BaseModel):
 
 class AssetReviewIn(BaseModel):
     decision: str                       # Aprovado | Reprovado
+
+
+class SuggestionIn(BaseModel):
+    title: str
+    area: str = ""
+    message: str = ""
+
+
+class SuggestionReviewIn(BaseModel):
+    status: str | None = None           # Nova | Em análise | Aceita | Recusada
+    note: str | None = None
     note: str | None = None
 
 
@@ -679,6 +710,57 @@ def review_asset_request(rid: int, item: AssetReviewIn, db: Session = Depends(ge
     return _serialize(obj)
 
 
+# ---- Sugestões e melhorias ----
+@router.post("/suggestions", status_code=201)
+def create_suggestion(item: SuggestionIn, db: Session = Depends(get_db), u: User = Depends(get_current_user)):
+    """Qualquer colaborador envia uma sugestão ou melhoria."""
+    forb = check_forbidden(item.title, item.message)
+    if forb:
+        raise HTTPException(status_code=422, detail={"regras": ["R1: conteúdo proibido — " + ", ".join(sorted(set(forb)))]})
+    obj = Suggestion(
+        title=item.title.strip()[:200], area=item.area.strip()[:120], message=item.message.strip(),
+        source="Colaborador", author=(u.name or u.email), requester_email=u.email, status="Nova",
+    )
+    db.add(obj); db.commit(); db.refresh(obj)
+    _audit(db, u, "CREATE", "suggestion", obj.id, {"title": obj.title})
+    return _serialize(obj)
+
+
+@router.get("/suggestions")
+def list_suggestions(status: str = "", source: str = "", db: Session = Depends(get_db),
+                     u: User = Depends(get_current_manager_user)):
+    q = db.query(Suggestion)
+    if status:
+        q = q.filter(Suggestion.status == status)
+    if source:
+        q = q.filter(Suggestion.source == source)
+    return [_serialize(o) for o in q.order_by(Suggestion.id.desc()).all()]
+
+
+@router.get("/suggestions/mine")
+def my_suggestions(db: Session = Depends(get_db), u: User = Depends(get_current_user)):
+    rows = (db.query(Suggestion).filter(Suggestion.requester_email == u.email)
+            .order_by(Suggestion.id.desc()).all())
+    return [_serialize(o) for o in rows]
+
+
+@router.put("/suggestions/{sid}")
+def review_suggestion(sid: int, item: SuggestionReviewIn, db: Session = Depends(get_db),
+                      u: User = Depends(get_current_manager_user)):
+    obj = db.query(Suggestion).filter(Suggestion.id == sid).first()
+    if not obj:
+        raise HTTPException(status_code=404, detail="Sugestão não encontrada")
+    if item.status is not None:
+        obj.status = item.status
+    if item.note is not None:
+        obj.note = item.note
+    obj.handled_by = u.name or u.email
+    obj.handled_at = _hoje_pt()
+    db.commit(); db.refresh(obj)
+    _audit(db, u, "UPDATE", "suggestion", obj.id, {"status": obj.status})
+    return _serialize(obj)
+
+
 # ---- Política de custo (teto por chamada, controlado pelo PrMO) ----
 @router.get("/cost-policy")
 def get_cost_policy(db: Session = Depends(get_db), u: User = Depends(get_current_user)):
@@ -952,12 +1034,11 @@ def seed_registros(db: Session):
     db.commit()
 
 
-def seed_prompts_from_knowledge(db: Session):
-    """Importa os ativos do Knowledge Registry para a Biblioteca como candidatos
-    (status 'Revisão pendente') — a triar/homologar pelo administrador."""
-    if db.query(PromptItem).filter(PromptItem.title.like("%[KNOW-%")).first():
+def seed_suggestions_from_knowledge(db: Session):
+    """Importa os insumos do mapeamento (Knowledge Registry) para o canal de
+    'Sugestões e melhorias' — a Biblioteca fica só com prompts curados/reais."""
+    if db.query(Suggestion).filter(Suggestion.source == "Mapeamento").first():
         return
-    seq: dict[str, int] = {}
     for r in db.query(RegistryRecord).filter(RegistryRecord.registry == "knowledge").order_by(RegistryRecord.id).all():
         try:
             rec = json.loads(r.data)
@@ -968,25 +1049,20 @@ def seed_prompts_from_knowledge(db: Session):
         area = rec.get("Macroárea") or ""
         tarefa = (rec.get("Tarefa que gostaria de delegar a um Agente Vanguarda")
                   or rec.get("Ativo declarado (prompt/fluxo/automação)") or "")
-        desc = (str(tarefa).strip() or "Candidato do mapeamento — conteúdo a preencher na homologação.")[:380]
         title = (f"{tipo} · {area} [{know_id}]" if area else f"{tipo} [{know_id}]")[:200]
-        # Metadados NIA-001: código de nomenclatura, tipo (A–E), autoria da origem.
-        pref = _area_prefix(area or tipo)
-        seq[pref] = seq.get(pref, 0) + 1
-        db.add(PromptItem(
-            title=title, description=desc, area=(area or tipo),
-            control="Revisão pendente", content=str(tarefa),
-            last_review="", uses=0, cost_per_call=0.0,
-            code=f"PROMPT-{pref}-{seq[pref]:03d}",
-            version="1.0", ptype=_ptype_from(f"{tipo} {area} {tarefa}"),
-            tool="", author="Mapeamento de Governança", data_class="Uso interno",
+        db.add(Suggestion(
+            code=str(know_id), title=title, area=(area or tipo),
+            ptype=_ptype_from(f"{tipo} {area} {tarefa}"),
+            message=str(tarefa).strip() or "(sem descrição no mapeamento)",
+            source="Mapeamento", author="Mapeamento de Governança",
+            requester_email="", status="Nova",
         ))
     db.commit()
 
 
 def seed_governance(db: Session):
     seed_registros(db)
-    seed_prompts_from_knowledge(db)
+    seed_suggestions_from_knowledge(db)
     if db.query(Client).first():
         return
     db.add_all([

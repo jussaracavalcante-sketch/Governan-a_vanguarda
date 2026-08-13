@@ -107,6 +107,7 @@
       <button class="ctrl-only" data-page="tools">◉ &nbsp; Stack & homologação</button>
       <button data-page="prompts">✦ &nbsp; Biblioteca de prompts</button>
       <button data-page="support">🛟 &nbsp; Suporte & canal</button>
+      <button data-page="suggestions">💡 &nbsp; Sugestões e melhorias</button>
       <button class="ctrl-only" data-page="people">◌ &nbsp; Pessoas & skills</button>
       <button class="ctrl-only" data-page="compliance">◫ &nbsp; Compliance & auditoria</button>
       <button class="ctrl-only" data-page="registros">▤ &nbsp; Registros (30d)</button>
@@ -169,6 +170,31 @@
       </div>
     </section>
 
+    <section id="suggestions" class="page"><header class="top"><div><div class="eyebrow">Melhoria contínua</div><h1>Sugestões e melhorias</h1><p>Contribuições dos colaboradores e insumos do mapeamento de campo para evoluir a governança, os agentes e a Biblioteca.</p></div></header>
+      <div class="two-col">
+        <div class="card">
+          <h3 class="section-title">Enviar sugestão</h3>
+          <div class="form" id="suggForm">
+            <label>Título<input data-k="title" placeholder="Resumo da sugestão / melhoria"></label>
+            <label>Área<input data-k="area" placeholder="Sua área"></label>
+            <label>Descrição<textarea data-k="message" placeholder="Descreva a sugestão ou melhoria"></textarea></label>
+            <div class="err" id="suggErr"></div>
+            <button class="btn" id="suggBtn" onclick="submitSuggestion()">Enviar sugestão</button>
+          </div>
+          <div class="notice" style="margin-top:12px">Não inclua senhas, tokens ou dados pessoais (LGPD).</div>
+        </div>
+        <div class="card">
+          <h3 class="section-title">Minhas sugestões</h3>
+          <div class="list" id="mySuggList"><div class="sub">Nenhuma sugestão ainda.</div></div>
+        </div>
+      </div>
+      <div class="card ctrl-only" style="margin-top:18px">
+        <h3 class="section-title">Quadro de sugestões (triagem)</h3>
+        <div class="toolbar"><select id="suggFilter" onchange="loadSuggBoard()"><option value="">Todas as origens</option><option>Colaborador</option><option>Mapeamento</option></select><input placeholder="Filtrar no quadro" oninput="filterRows(this.value,'suggRows')"></div>
+        <div class="table-wrap"><table><thead><tr><th>Sugestão</th><th>Área</th><th>Origem</th><th>Status</th><th></th></tr></thead><tbody id="suggRows"></tbody></table></div>
+      </div>
+    </section>
+
     <section id="people" class="page"><header class="top"><div><div class="eyebrow">Cultura IA</div><h1>Pessoas, times e competências</h1><p>Mapeie capacidade por área, trilhas de capacitação e embaixadores que sustentam a adoção responsável.</p></div><button class="btn ctrl-only" onclick="openModal('skill')">+ Mapear competência</button></header><div class="two-col"><div class="card"><h3 class="section-title">Capacidade por macroárea</h3><div class="list" id="skillsList"></div></div><div class="card"><h3 class="section-title">Ativos de conhecimento por tipo</h3><div id="trainingList"></div></div></div></section>
 
     <section id="compliance" class="page"><header class="top"><div><div class="eyebrow">Confiança por design</div><h1>Compliance, riscos e auditoria</h1><p>Monitore o cumprimento da Política Corporativa de IA, da LGPD e dos padrões de qualidade das entregas.</p></div><button class="btn ctrl-only" onclick="openModal('incident')">+ Registrar ocorrência</button></header>
@@ -194,6 +220,7 @@
 <div class="modal" id="modal"><div class="dialog"><h3 id="modalTitle">Registrar item</h3><div class="form" id="modalForm"></div><div class="modal-actions"><button class="btn alt" onclick="closeModal()">Cancelar</button><button class="btn" id="saveBtn" onclick="saveItem()">Salvar registro</button></div></div></div>
 <div class="modal" id="promptModal"><div class="dialog"><h3 id="pmTitle">Detalhe do prompt</h3><div class="form" id="promptForm"></div><div class="modal-actions"><button class="btn alt" onclick="closePromptModal()">Fechar</button><button class="btn" id="pmSave" style="display:none" onclick="savePromptEdit()">Salvar alterações</button></div></div></div>
 <div class="modal" id="supportModal"><div class="dialog"><h3 id="smTitle">Chamado</h3><div class="form" id="supportDetail"></div><div class="modal-actions"><button class="btn alt" onclick="closeSupportModal()">Fechar</button><button class="btn" id="smSave" style="display:none" onclick="saveSupport()">Salvar atendimento</button></div></div></div>
+<div class="modal" id="suggModal"><div class="dialog"><h3 id="sgTitle">Sugestão</h3><div class="form" id="suggDetail"></div><div class="modal-actions"><button class="btn alt" onclick="closeSuggModal()">Fechar</button><button class="btn" id="sgSave" style="display:none" onclick="saveSugg()">Salvar triagem</button></div></div></div>
 
 <div id="login"><div class="box">
   <div class="eyebrow">PrMO · Prompt Management Office</div>
@@ -450,11 +477,12 @@ async function boot(){
       renderRiscos(ov.riscos); renderAudit(audit); renderObs(obs);
       loadSupportQueue(); loadMySupport();
       loadAssetReqQueue(); loadMyAssetReq();
+      loadSuggBoard(); loadMySugg();
     } else {
-      // Usuário comum: Biblioteca de prompts (leitura) + canal de suporte
+      // Usuário comum: Biblioteca de prompts (leitura) + canal de suporte + sugestões
       COST_POLICY=await api('/governance/cost-policy');
       renderPrompts(await api('/governance/prompts'));
-      loadMySupport(); loadMyAssetReq();
+      loadMySupport(); loadMyAssetReq(); loadMySugg();
       document.getElementById('obsDot').className='dot on';
       document.getElementById('obsText').textContent='Acesso: leitura · Biblioteca + Suporte';
     }
@@ -639,6 +667,63 @@ async function reviewAsset(id,decision){
   try{ await api('/governance/asset-requests/'+id,{method:'PUT',body:JSON.stringify({decision})});
     toast('Solicitação: '+decision+'.'); loadAssetReqQueue();
   }catch(ex){toast('Erro: '+ex.message,false);}
+}
+
+// ---- Sugestões e melhorias ----
+let LAST_SUGG=[], CURRENT_SUGG_ID=null;
+function suggTone(s){return s==='Aceita'?'ok':(s==='Recusada'?'red':'warn');}
+async function submitSuggestion(){
+  const f=document.getElementById('suggForm'), err=document.getElementById('suggErr'); err.textContent='';
+  const p={}; f.querySelectorAll('[data-k]').forEach(el=>p[el.dataset.k]=el.value);
+  if(!(p.title||'').trim()){err.textContent='Informe o título.';return;}
+  const btn=document.getElementById('suggBtn'); btn.disabled=true; btn.textContent='Enviando…';
+  try{
+    await api('/governance/suggestions',{method:'POST',body:JSON.stringify(p)});
+    f.querySelector('[data-k="title"]').value=''; f.querySelector('[data-k="message"]').value='';
+    toast('Sugestão enviada. Obrigado por contribuir!');
+    loadMySugg(); if(isController())loadSuggBoard();
+  }catch(ex){err.textContent=ex.message;}
+  finally{btn.disabled=false; btn.textContent='Enviar sugestão';}
+}
+async function loadMySugg(){
+  try{
+    const list=await api('/governance/suggestions/mine');
+    document.getElementById('mySuggList').innerHTML=(list&&list.length)
+      ? list.map(s=>rowItem(esc(s.title),esc(s.area||s.source||''),`<span class="badge ${suggTone(s.status)}">${esc(s.status)}</span>`)).join('')
+      : '<div class="sub">Nenhuma sugestão ainda.</div>';
+  }catch(ex){}
+}
+async function loadSuggBoard(){
+  if(!isController())return;
+  const src=document.getElementById('suggFilter')?.value||'';
+  const list=await api('/governance/suggestions'+(src?('?source='+encodeURIComponent(src)):'')); LAST_SUGG=list||[];
+  document.getElementById('suggRows').innerHTML=(list&&list.length)?list.map(s=>{
+    return `<tr><td><b class="prompt-open" onclick="openSugg(${s.id})">${esc(s.title)}</b><br><span class="muted">${esc((s.message||'').slice(0,90))}</span></td><td>${esc(s.area||'—')}</td><td>${esc(s.source||'')}</td><td><span class="badge ${suggTone(s.status)}">${esc(s.status)}</span></td><td><button class="table-action" onclick="openSugg(${s.id})">Triar</button></td></tr>`;
+  }).join(''):'<tr><td colspan="5" class="sub">Sem sugestões.</td></tr>';
+}
+function closeSuggModal(){document.getElementById('suggModal').classList.remove('open');CURRENT_SUGG_ID=null;}
+function openSugg(id){
+  const s=(LAST_SUGG||[]).find(x=>x.id===id); if(!s)return;
+  CURRENT_SUGG_ID=id;
+  document.getElementById('sgTitle').textContent=s.title;
+  const opt=v=>['Nova','Em análise','Aceita','Recusada'].map(o=>`<option ${o===v?'selected':''}>${o}</option>`).join('');
+  document.getElementById('suggDetail').innerHTML=`
+    <div class="pdmeta" style="border:0;padding:0">${esc(s.source||'')}${s.code?(' · '+esc(s.code)):''} · ${esc(s.area||'—')} · ${esc(s.author||'')}</div>
+    <label>Descrição<textarea disabled>${esc(s.message||'')}</textarea></label>
+    <label>Status<select data-k="status">${opt(s.status)}</select></label>
+    <label>Parecer<textarea data-k="note" placeholder="Comentário da triagem">${esc(s.note||'')}</textarea></label>
+    ${s.handled_by?`<div class="pdmeta">Triado por: ${esc(s.handled_by)} · ${esc(s.handled_at||'')}</div>`:''}`;
+  document.getElementById('sgSave').style.display=isController()?'':'none';
+  document.getElementById('suggModal').classList.add('open');
+}
+async function saveSugg(){
+  if(CURRENT_SUGG_ID==null)return;
+  const d=document.getElementById('suggDetail'), p={}; d.querySelectorAll('[data-k]').forEach(el=>p[el.dataset.k]=el.value);
+  const btn=document.getElementById('sgSave'); btn.disabled=true; btn.textContent='Salvando…';
+  try{ await api('/governance/suggestions/'+CURRENT_SUGG_ID,{method:'PUT',body:JSON.stringify(p)});
+    closeSuggModal(); toast('Triagem salva.'); loadSuggBoard();
+  }catch(ex){toast('Erro: '+ex.message,false);}
+  finally{btn.disabled=false; btn.textContent='Salvar triagem';}
 }
 async function homologar(id,decision){
   try{ await api('/governance/prompts/'+id+'/homologar',{method:'POST',body:JSON.stringify({decision})});
