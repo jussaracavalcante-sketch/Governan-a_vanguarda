@@ -91,6 +91,36 @@
     .dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#5b535c;margin-right:6px;vertical-align:middle}.dot.on{background:var(--green)}.dot.off{background:var(--red)}
     .linkbtn{background:none;border:0;color:#ff7189;font-weight:800;cursor:pointer;padding:0;font-size:11px}
     #toast{position:fixed;right:20px;bottom:20px;background:#17151c;border:1px solid #453442;border-left:3px solid var(--green);border-radius:10px;padding:12px 16px;font-size:13px;color:#e9e3ea;z-index:30;opacity:0;transform:translateY(10px);transition:.25s;pointer-events:none;max-width:340px}#toast.show{opacity:1;transform:none}
+    /* ---- Base de conhecimento (Academy) ---- */
+    .chips{display:flex;gap:8px;flex-wrap:wrap}
+    .chip{background:#17151c;border:1px solid var(--line);color:#cbc3cc;border-radius:999px;padding:8px 14px;font-size:12px;font-weight:800;cursor:pointer;transition:transform .12s ease,background .15s ease,border-color .15s ease}
+    .chip:hover{transform:translateY(-2px);border-color:rgba(255,31,69,.4)}
+    .chip.active{background:linear-gradient(135deg,#ff1f45,#c81038);color:#fff;border-color:transparent}
+    .course-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:16px}
+    .course-rail{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(240px,280px);gap:14px;overflow-x:auto;padding-bottom:6px}
+    .cc{background:linear-gradient(145deg,rgba(24,21,28,.98),rgba(13,12,15,.98));border:1px solid var(--line);border-radius:14px;overflow:hidden;cursor:pointer;display:flex;flex-direction:column;transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease;will-change:transform}
+    .cc:hover{transform:translateY(-5px);box-shadow:0 16px 38px rgba(0,0,0,.55);border-color:rgba(255,31,69,.4)}
+    .cc-cover{height:104px;display:flex;align-items:center;justify-content:center;font-size:44px;position:relative}
+    .cc-cat{position:absolute;top:10px;left:10px;background:rgba(0,0,0,.42);backdrop-filter:blur(3px);color:#fff;font-size:10px;font-weight:800;letter-spacing:.4px;padding:4px 9px;border-radius:999px}
+    .cc-done{position:absolute;top:10px;right:10px;background:var(--green);color:#06210f;font-size:10px;font-weight:900;padding:4px 8px;border-radius:999px}
+    .cc-body{padding:13px 14px 15px;display:flex;flex-direction:column;gap:8px;flex:1}
+    .cc-title{font-size:14px;font-weight:900;line-height:1.25;margin:0}
+    .cc-meta{font-size:11px;color:var(--muted);display:flex;gap:8px;flex-wrap:wrap;margin-top:auto}
+    .cc-meta .lvl{color:#e9e3ea;font-weight:800}
+    .pbar{height:7px;background:#241f28;border-radius:999px;overflow:hidden}
+    .pbar>i{display:block;height:100%;background:linear-gradient(90deg,#22c55e,#16a34a);border-radius:999px;transition:width .3s ease}
+    .pbar.zero>i{background:#453442}
+    .ppct{font-size:10px;color:var(--muted);font-weight:800}
+    /* course detail modal */
+    .cd-head{display:flex;gap:14px;align-items:center;margin-bottom:12px}
+    .cd-cover{width:66px;height:66px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:34px;flex:0 0 auto}
+    .lesson{display:flex;align-items:center;gap:11px;padding:11px 12px;border:1px solid var(--line);border-radius:10px;margin-bottom:8px;transition:border-color .15s ease,background .15s ease}
+    .lesson:hover{border-color:rgba(255,31,69,.32);background:rgba(255,255,255,.02)}
+    .lesson .lck{width:22px;height:22px;border-radius:50%;border:2px solid #5b535c;flex:0 0 auto;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:13px;color:transparent;transition:.15s}
+    .lesson .lck.done{background:var(--green);border-color:var(--green);color:#06210f}
+    .lesson .ltitle{font-size:13px;font-weight:700;flex:1}
+    .lesson .lmeta{font-size:11px;color:var(--muted)}
+    .lesson a.lwatch{font-size:11px;font-weight:800;color:#ff7189;text-decoration:none}
   </style>
 </head>
 <body>
@@ -106,6 +136,7 @@
       <button class="active ctrl-only" data-page="dashboard">◈ &nbsp; Visão executiva</button>
       <button class="ctrl-only" data-page="tools">◉ &nbsp; Stack & homologação</button>
       <button data-page="prompts">✦ &nbsp; Biblioteca de prompts</button>
+      <button data-page="academy">🎓 &nbsp; Base de conhecimento</button>
       <button data-page="support">🛟 &nbsp; Suporte & canal</button>
       <button data-page="suggestions">💡 &nbsp; Sugestões e melhorias</button>
       <button class="ctrl-only" data-page="people">◌ &nbsp; Pessoas & skills</button>
@@ -195,6 +226,24 @@
       </div>
     </section>
 
+    <section id="academy" class="page"><header class="top"><div><div class="eyebrow">Capacitação contínua</div><h1>Base de conhecimento</h1><p>Trilhas e cursos de IA, Compliance e Segurança da Informação. Assista, acompanhe seu progresso e conclua as capacitações obrigatórias.</p></div><button class="btn ctrl-only" onclick="openCourseForm()">+ Novo curso</button></header>
+      <div id="continueWrap" style="display:none;margin-bottom:18px">
+        <h3 class="section-title">Continue de onde parou</h3>
+        <div class="course-rail" id="continueRail"></div>
+      </div>
+      <div class="toolbar" style="flex-wrap:wrap;gap:8px">
+        <div class="chips" id="catChips">
+          <button class="chip active" data-cat="" onclick="setCat('')">Todos</button>
+          <button class="chip" data-cat="IA" onclick="setCat('IA')">🤖 IA</button>
+          <button class="chip" data-cat="Compliance" onclick="setCat('Compliance')">⚖️ Compliance</button>
+          <button class="chip" data-cat="Segurança da Informação" onclick="setCat('Segurança da Informação')">🔐 Segurança da Informação</button>
+        </div>
+        <select id="lvlFilter" onchange="loadCourses()"><option value="">Todos os níveis</option><option>Iniciante</option><option>Intermediário</option><option>Avançado</option></select>
+        <input id="courseSearch" placeholder="Buscar curso, tema, tag…" oninput="debouncedCourses()">
+      </div>
+      <div class="course-grid" id="courseGrid"><div class="sub">Carregando cursos…</div></div>
+    </section>
+
     <section id="people" class="page"><header class="top"><div><div class="eyebrow">Cultura IA</div><h1>Pessoas, times e competências</h1><p>Mapeie capacidade por área, trilhas de capacitação e embaixadores que sustentam a adoção responsável.</p></div><button class="btn ctrl-only" onclick="openModal('skill')">+ Mapear competência</button></header><div class="two-col"><div class="card"><h3 class="section-title">Capacidade por macroárea</h3><div class="list" id="skillsList"></div></div><div class="card"><h3 class="section-title">Ativos de conhecimento por tipo</h3><div id="trainingList"></div></div></div></section>
 
     <section id="compliance" class="page"><header class="top"><div><div class="eyebrow">Confiança por design</div><h1>Compliance, riscos e auditoria</h1><p>Monitore o cumprimento da Política Corporativa de IA, da LGPD e dos padrões de qualidade das entregas.</p></div><button class="btn ctrl-only" onclick="openModal('incident')">+ Registrar ocorrência</button></header>
@@ -221,6 +270,18 @@
 <div class="modal" id="promptModal"><div class="dialog"><h3 id="pmTitle">Detalhe do prompt</h3><div class="form" id="promptForm"></div><div class="modal-actions"><button class="btn alt" onclick="closePromptModal()">Fechar</button><button class="btn" id="pmSave" style="display:none" onclick="savePromptEdit()">Salvar alterações</button></div></div></div>
 <div class="modal" id="supportModal"><div class="dialog"><h3 id="smTitle">Chamado</h3><div class="form" id="supportDetail"></div><div class="modal-actions"><button class="btn alt" onclick="closeSupportModal()">Fechar</button><button class="btn" id="smSave" style="display:none" onclick="saveSupport()">Salvar atendimento</button></div></div></div>
 <div class="modal" id="suggModal"><div class="dialog"><h3 id="sgTitle">Sugestão</h3><div class="form" id="suggDetail"></div><div class="modal-actions"><button class="btn alt" onclick="closeSuggModal()">Fechar</button><button class="btn" id="sgSave" style="display:none" onclick="saveSugg()">Salvar triagem</button></div></div></div>
+<div class="modal" id="courseModal"><div class="dialog" style="max-width:640px"><div id="courseDetail"></div><div class="modal-actions"><button class="btn alt" onclick="closeCourseModal()">Fechar</button></div></div></div>
+<div class="modal" id="courseFormModal"><div class="dialog"><h3>Novo curso</h3><div class="form" id="courseForm">
+  <label>Título<input data-k="title" placeholder="Ex.: Fundamentos de IA Generativa"></label>
+  <label>Categoria<select data-k="category"><option>IA</option><option>Compliance</option><option>Segurança da Informação</option></select></label>
+  <label>Nível<select data-k="level"><option>Iniciante</option><option>Intermediário</option><option>Avançado</option></select></label>
+  <label>Instrutor<input data-k="instructor" placeholder="Ex.: Diretoria de IA"></label>
+  <label>Ícone da capa (emoji)<input data-k="cover" placeholder="🎓" maxlength="4"></label>
+  <label>Descrição<textarea data-k="description" placeholder="O que o aluno aprende neste curso"></textarea></label>
+  <label>Tags (separadas por vírgula)<input data-k="tags" placeholder="ia, lgpd, segurança"></label>
+  <label>Aulas (uma por linha — <span class="muted">Título | tipo | minutos | link</span>)<textarea data-k="lessons" rows="6" placeholder="Boas-vindas | Vídeo | 8 | https://…&#10;Conceitos essenciais | Leitura | 12"></textarea></label>
+  <div class="err" id="courseErr"></div>
+</div><div class="modal-actions"><button class="btn alt" onclick="closeCourseForm()">Cancelar</button><button class="btn" id="courseSaveBtn" onclick="saveCourse()">Publicar curso</button></div></div></div>
 
 <div id="login"><div class="box">
   <div class="eyebrow">PrMO · Prompt Management Office</div>
@@ -291,6 +352,7 @@ function navigate(pageid, record=true){
   document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
   const btn=document.querySelector('.nav button[data-page="'+pageid+'"]'); if(btn) btn.classList.add('active');
   const pg=document.getElementById(pageid); if(pg){ pg.classList.add('active'); placeBackBtn(pg); }
+  if(pageid==='academy' && CURRENT && typeof loadCourses==='function'){ loadCourses(); }
   updateBackBtn();
 }
 function homePage(){return isController()?'dashboard':'prompts';}
@@ -478,11 +540,13 @@ async function boot(){
       loadSupportQueue(); loadMySupport();
       loadAssetReqQueue(); loadMyAssetReq();
       loadSuggBoard(); loadMySugg();
+      loadCourses();
     } else {
       // Usuário comum: Biblioteca de prompts (leitura) + canal de suporte + sugestões
       COST_POLICY=await api('/governance/cost-policy');
       renderPrompts(await api('/governance/prompts'));
       loadMySupport(); loadMyAssetReq(); loadMySugg();
+      loadCourses();
       document.getElementById('obsDot').className='dot on';
       document.getElementById('obsText').textContent='Acesso: leitura · Biblioteca + Suporte';
     }
@@ -730,6 +794,115 @@ async function homologar(id,decision){
     toast('Prompt '+(decision==='Aprovado'?'aprovado':'reprovado')+'. Registrado na trilha de auditoria.');
     boot();
   }catch(ex){ toast('Erro ao homologar: '+ex.message,false); }
+}
+
+// ---- Base de conhecimento (Academy) ----
+let ACADEMY_CAT='', LAST_COURSES=[], CURRENT_COURSE=null, _courseTimer=null;
+const CAT_SHORT={'IA':'IA','Compliance':'COMPLIANCE','Segurança da Informação':'SEG. INFORMAÇÃO'};
+function fmtDur(m){m=+m||0;if(m<60)return m+' min';const h=Math.floor(m/60),r=m%60;return h+'h'+(r?(' '+r+'m'):'');}
+function setCat(c){ACADEMY_CAT=c;document.querySelectorAll('#catChips .chip').forEach(b=>b.classList.toggle('active',b.dataset.cat===c));loadCourses();}
+function debouncedCourses(){clearTimeout(_courseTimer);_courseTimer=setTimeout(loadCourses,250);}
+function courseCard(c){
+  const pct=c.my_percent||0, done=c.my_status==='Concluído';
+  return `<article class="cc" onclick="openCourse(${c.id})">
+    <div class="cc-cover" style="background:linear-gradient(135deg,${esc(c.accent||'#6d28d9')},#0d0c0f)">
+      <span>${esc(c.cover||'🎓')}</span>
+      <span class="cc-cat">${esc(CAT_SHORT[c.category]||c.category)}</span>
+      ${done?'<span class="cc-done">✓ CONCLUÍDO</span>':''}
+      ${(!c.published)?'<span class="cc-done" style="background:#f59e0b;color:#3a2a00;right:auto;left:10px;top:auto;bottom:10px">RASCUNHO</span>':''}
+    </div>
+    <div class="cc-body">
+      <h4 class="cc-title">${esc(c.title)}</h4>
+      <div class="cc-meta"><span class="lvl">${esc(c.level)}</span><span>· ${c.lessons_count} aulas</span><span>· ${fmtDur(c.duration_min)}</span></div>
+      <div class="cc-meta" style="margin-top:0">${esc(c.instructor||'Vanguarda')}</div>
+      <div class="pbar ${pct?'':'zero'}"><i style="width:${pct}%"></i></div>
+      <div class="ppct">${pct?('Progresso '+pct+'%'):'Não iniciado'}</div>
+    </div>
+  </article>`;
+}
+async function loadCourses(){
+  const grid=document.getElementById('courseGrid'); if(!grid)return;
+  const q=(document.getElementById('courseSearch')?.value||'').trim();
+  const lvl=document.getElementById('lvlFilter')?.value||'';
+  const qs=new URLSearchParams();
+  if(ACADEMY_CAT)qs.set('category',ACADEMY_CAT);
+  if(lvl)qs.set('level',lvl);
+  if(q)qs.set('q',q);
+  try{
+    const list=await api('/governance/courses'+(qs.toString()?('?'+qs.toString()):'')); LAST_COURSES=list||[];
+    grid.innerHTML=(list&&list.length)?list.map(courseCard).join(''):'<div class="empty">Nenhum curso encontrado com esse filtro.</div>';
+    renderContinue();
+  }catch(ex){grid.innerHTML='<div class="empty">Falha ao carregar cursos.</div>';}
+}
+async function renderContinue(){
+  try{
+    const mine=await api('/governance/courses/mine');
+    const wip=(mine||[]).filter(c=>c.my_status==='Em andamento'&&c.my_percent>0);
+    const wrap=document.getElementById('continueWrap');
+    if(!wip.length){wrap.style.display='none';return;}
+    wrap.style.display='';
+    document.getElementById('continueRail').innerHTML=wip.map(courseCard).join('');
+  }catch(ex){}
+}
+function closeCourseModal(){document.getElementById('courseModal').classList.remove('open');CURRENT_COURSE=null;}
+async function openCourse(id){
+  try{ CURRENT_COURSE=await api('/governance/courses/'+id); renderCourseDetail(); document.getElementById('courseModal').classList.add('open'); }
+  catch(ex){toast('Erro ao abrir curso: '+ex.message,false);}
+}
+function renderCourseDetail(){
+  const c=CURRENT_COURSE; if(!c)return;
+  const done=new Set(c.my_completed||[]);
+  const lessons=(c.lessons||[]).map((l,i)=>{
+    const isDone=done.has(i);
+    return `<div class="lesson">
+      <div class="lck ${isDone?'done':''}" title="Marcar como concluída" onclick="toggleLesson(${i},${!isDone})">✓</div>
+      <div style="flex:1"><div class="ltitle">${esc(l.title)}</div><div class="lmeta">${esc(l.type||'Aula')}${l.duration_min?(' · '+fmtDur(l.duration_min)):''}</div></div>
+      ${l.url?`<a class="lwatch" href="${esc(l.url)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">Assistir ›</a>`:''}
+    </div>`;
+  }).join('');
+  const pct=c.my_percent||0;
+  document.getElementById('courseDetail').innerHTML=`
+    <div class="cd-head">
+      <div class="cd-cover" style="background:linear-gradient(135deg,${esc(c.accent||'#6d28d9')},#0d0c0f)">${esc(c.cover||'🎓')}</div>
+      <div><div class="eyebrow">${esc(c.category)} · ${esc(c.level)}</div><h3 style="margin:2px 0">${esc(c.title)}</h3>
+      <div class="sub">${esc(c.instructor||'Vanguarda')} · ${c.lessons_count} aulas · ${fmtDur(c.duration_min)}</div></div>
+    </div>
+    ${c.description?`<p class="sub" style="margin:0 0 12px">${esc(c.description)}</p>`:''}
+    <div class="pbar ${pct?'':'zero'}" style="margin-bottom:4px"><i style="width:${pct}%"></i></div>
+    <div class="ppct" style="margin-bottom:14px">${c.my_status==='Concluído'?'✓ Curso concluído':('Progresso '+pct+'%')}</div>
+    <h3 class="section-title" style="margin-bottom:10px">Conteúdo do curso</h3>
+    ${lessons||'<div class="sub">Sem aulas cadastradas.</div>'}`;
+}
+async function toggleLesson(idx,done){
+  if(!CURRENT_COURSE)return;
+  try{
+    const updated=await api('/governance/courses/'+CURRENT_COURSE.id+'/progress',{method:'POST',body:JSON.stringify({lesson_index:idx,done})});
+    CURRENT_COURSE=updated; renderCourseDetail();
+    if(updated.my_status==='Concluído')toast('Parabéns! Curso concluído 🎉');
+    loadCourses();
+  }catch(ex){toast('Erro: '+ex.message,false);}
+}
+function openCourseForm(){document.getElementById('courseErr').textContent='';document.getElementById('courseFormModal').classList.add('open');}
+function closeCourseForm(){document.getElementById('courseFormModal').classList.remove('open');}
+function parseLessons(txt){
+  return (txt||'').split('\n').map(l=>l.trim()).filter(Boolean).map(line=>{
+    const p=line.split('|').map(x=>x.trim());
+    return {title:p[0]||'Aula', type:p[1]||'Vídeo', duration_min:parseInt(p[2]||'0',10)||0, url:p[3]||''};
+  });
+}
+async function saveCourse(){
+  const f=document.getElementById('courseForm'), err=document.getElementById('courseErr'); err.textContent='';
+  const p={}; f.querySelectorAll('[data-k]').forEach(el=>p[el.dataset.k]=el.value);
+  if(!(p.title||'').trim()){err.textContent='Informe o título do curso.';return;}
+  const body={title:p.title,category:p.category,level:p.level,instructor:p.instructor,cover:p.cover||'🎓',description:p.description,tags:p.tags,lessons:parseLessons(p.lessons)};
+  const btn=document.getElementById('courseSaveBtn'); btn.disabled=true; btn.textContent='Publicando…';
+  try{
+    await api('/governance/courses',{method:'POST',body:JSON.stringify(body)});
+    closeCourseForm(); toast('Curso publicado na Base de conhecimento.');
+    f.querySelectorAll('[data-k]').forEach(el=>{if(el.tagName!=='SELECT')el.value='';});
+    loadCourses();
+  }catch(ex){err.textContent=ex.message;}
+  finally{btn.disabled=false; btn.textContent='Publicar curso';}
 }
 const REG_LABELS={asset:'AI Asset Registry',risk:'AI Risk Register',knowledge:'AI Knowledge Registry',opportunity:'Opportunity Backlog',diagnostic:'Diagnóstico',plan30:'Plano 30 dias'};
 function buildRegistrySelect(sum){

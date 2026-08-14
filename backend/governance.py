@@ -190,6 +190,40 @@ class Suggestion(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
 
+class Course(Base):
+    """Base de Conhecimento — trilha/curso de capacitação (estilo Udemy) em
+    IA, Compliance e Segurança da Informação. As aulas ficam em `lessons`
+    (JSON: título, tipo, duração e link) e o progresso por aluno em
+    CourseProgress."""
+    __tablename__ = "gov_courses"
+    id = Column(Integer, primary_key=True, index=True)
+    code = Column(String(40), default="")                 # CURSO-NNN
+    title = Column(String(200), nullable=False)
+    description = Column(Text, default="")
+    category = Column(String(40), default="IA")           # IA | Compliance | Segurança da Informação
+    level = Column(String(20), default="Iniciante")       # Iniciante | Intermediário | Avançado
+    instructor = Column(String(120), default="")
+    cover = Column(String(8), default="🎓")                # emoji para a capa
+    accent = Column(String(9), default="#6d28d9")         # cor de destaque da capa
+    duration_min = Column(Integer, default=0)             # duração total (min)
+    tags = Column(String(240), default="")                # csv
+    lessons = Column(Text, default="[]")                  # JSON: [{title,type,duration_min,url}]
+    published = Column(Boolean, default=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+
+class CourseProgress(Base):
+    """Progresso de um aluno em um curso (aulas concluídas + status)."""
+    __tablename__ = "gov_course_progress"
+    id = Column(Integer, primary_key=True, index=True)
+    course_id = Column(Integer, index=True, nullable=False)
+    user_email = Column(String(120), default="", index=True)
+    completed = Column(Text, default="[]")                # JSON: lista de índices de aulas concluídas
+    status = Column(String(20), default="Em andamento")   # Em andamento | Concluído
+    updated_at = Column(String(30), default="")
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+
 # ─────────────────────────── SCHEMAS ───────────────────────────
 class ORM(BaseModel):
     model_config = ConfigDict(from_attributes=True)
@@ -303,7 +337,44 @@ class SuggestionIn(BaseModel):
 class SuggestionReviewIn(BaseModel):
     status: str | None = None           # Nova | Em análise | Aceita | Recusada
     note: str | None = None
-    note: str | None = None
+
+
+class LessonIn(BaseModel):
+    title: str
+    type: str = "Vídeo"                  # Vídeo | Leitura | Quiz | Prática
+    duration_min: int = 0
+    url: str = ""
+
+
+class CourseIn(BaseModel):
+    title: str
+    description: str = ""
+    category: str = "IA"                 # IA | Compliance | Segurança da Informação
+    level: str = "Iniciante"
+    instructor: str = ""
+    cover: str = "🎓"
+    accent: str = "#6d28d9"
+    tags: str = ""
+    published: bool = True
+    lessons: list[LessonIn] = []
+
+
+class CourseUpdateIn(BaseModel):
+    title: str | None = None
+    description: str | None = None
+    category: str | None = None
+    level: str | None = None
+    instructor: str | None = None
+    cover: str | None = None
+    accent: str | None = None
+    tags: str | None = None
+    published: bool | None = None
+    lessons: list[LessonIn] | None = None
+
+
+class ProgressIn(BaseModel):
+    lesson_index: int
+    done: bool = True
 
 
 class HomologacaoIn(BaseModel):
@@ -761,6 +832,191 @@ def review_suggestion(sid: int, item: SuggestionReviewIn, db: Session = Depends(
     return _serialize(obj)
 
 
+# ---- Base de Conhecimento (cursos e trilhas de capacitação) ----
+COURSE_CATEGORIES = ("IA", "Compliance", "Segurança da Informação")
+COURSE_LEVELS = ("Iniciante", "Intermediário", "Avançado")
+
+
+def _next_course_code(db: Session) -> str:
+    n = db.query(Course).count() + 1
+    while db.query(Course).filter(Course.code == f"CURSO-{n:03d}").first():
+        n += 1
+    return f"CURSO-{n:03d}"
+
+
+def _lessons_list(obj: Course) -> list:
+    try:
+        data = json.loads(obj.lessons or "[]")
+        return data if isinstance(data, list) else []
+    except Exception:
+        return []
+
+
+def _course_public(obj: Course, prog: "CourseProgress | None") -> dict:
+    lessons = _lessons_list(obj)
+    total = len(lessons)
+    done = []
+    if prog:
+        try:
+            done = [i for i in json.loads(prog.completed or "[]") if isinstance(i, int)]
+        except Exception:
+            done = []
+    done = sorted(set(i for i in done if 0 <= i < total))
+    pct = round(100 * len(done) / total) if total else 0
+    status = "Não iniciado"
+    if prog:
+        status = "Concluído" if (total and len(done) >= total) else "Em andamento"
+    return {
+        "id": obj.id, "code": obj.code, "title": obj.title, "description": obj.description,
+        "category": obj.category, "level": obj.level, "instructor": obj.instructor,
+        "cover": obj.cover, "accent": obj.accent, "tags": obj.tags,
+        "duration_min": obj.duration_min, "published": obj.published,
+        "lessons": lessons, "lessons_count": total,
+        "my_completed": done, "my_percent": pct, "my_status": status,
+    }
+
+
+def _progress_for(db: Session, email: str, course_ids: list[int]) -> dict:
+    if not course_ids:
+        return {}
+    rows = (db.query(CourseProgress)
+            .filter(CourseProgress.user_email == email, CourseProgress.course_id.in_(course_ids)).all())
+    return {r.course_id: r for r in rows}
+
+
+@router.get("/courses")
+def list_courses(category: str = "", level: str = "", q: str = "",
+                 db: Session = Depends(get_db), u: User = Depends(get_current_user)):
+    """Catálogo da Base de Conhecimento. Colaboradores veem cursos publicados;
+    gestores veem também rascunhos (não publicados)."""
+    query = db.query(Course)
+    if u.role not in ("Admin", "Manager"):
+        query = query.filter(Course.published == True)  # noqa: E712
+    if category:
+        query = query.filter(Course.category == category)
+    if level:
+        query = query.filter(Course.level == level)
+    rows = query.order_by(Course.id).all()
+    if q:
+        ql = q.lower()
+        rows = [c for c in rows if ql in (c.title or "").lower()
+                or ql in (c.description or "").lower() or ql in (c.tags or "").lower()]
+    progs = _progress_for(db, u.email, [c.id for c in rows])
+    return [_course_public(c, progs.get(c.id)) for c in rows]
+
+
+@router.get("/courses/mine")
+def my_learning(db: Session = Depends(get_db), u: User = Depends(get_current_user)):
+    """Cursos em que o aluno tem progresso registrado (meus aprendizados)."""
+    rows = (db.query(CourseProgress).filter(CourseProgress.user_email == u.email)
+            .order_by(CourseProgress.updated_at.desc()).all())
+    out = []
+    for p in rows:
+        c = db.query(Course).filter(Course.id == p.course_id).first()
+        if c:
+            out.append(_course_public(c, p))
+    return out
+
+
+@router.get("/courses/{cid}")
+def get_course(cid: int, db: Session = Depends(get_db), u: User = Depends(get_current_user)):
+    obj = db.query(Course).filter(Course.id == cid).first()
+    if not obj or (not obj.published and u.role not in ("Admin", "Manager")):
+        raise HTTPException(status_code=404, detail="Curso não encontrado")
+    prog = db.query(CourseProgress).filter(
+        CourseProgress.user_email == u.email, CourseProgress.course_id == cid).first()
+    return _course_public(obj, prog)
+
+
+def _apply_course(obj: Course, lessons: list) -> None:
+    clean = []
+    for ls in lessons:
+        d = ls.model_dump() if hasattr(ls, "model_dump") else dict(ls)
+        clean.append({
+            "title": str(d.get("title", "")).strip()[:200],
+            "type": (d.get("type") or "Vídeo"),
+            "duration_min": max(0, int(d.get("duration_min") or 0)),
+            "url": str(d.get("url", "")).strip()[:400],
+        })
+    obj.lessons = json.dumps(clean, ensure_ascii=False)
+    obj.duration_min = sum(l["duration_min"] for l in clean)
+
+
+@router.post("/courses", status_code=201)
+def create_course(item: CourseIn, db: Session = Depends(get_db), u: User = Depends(get_current_manager_user)):
+    if item.category not in COURSE_CATEGORIES:
+        raise HTTPException(status_code=422, detail={"regras": [f"Categoria inválida (use: {', '.join(COURSE_CATEGORIES)})"]})
+    forb = check_forbidden(item.title, item.description)
+    if forb:
+        raise HTTPException(status_code=422, detail={"regras": ["R1: conteúdo proibido — " + ", ".join(sorted(set(forb)))]})
+    obj = Course(
+        code=_next_course_code(db), title=item.title.strip()[:200], description=item.description.strip(),
+        category=item.category, level=(item.level if item.level in COURSE_LEVELS else "Iniciante"),
+        instructor=(item.instructor.strip() or (u.name or u.email))[:120],
+        cover=(item.cover or "🎓")[:8], accent=(item.accent or "#6d28d9")[:9],
+        tags=item.tags.strip()[:240], published=bool(item.published),
+    )
+    _apply_course(obj, item.lessons)
+    db.add(obj); db.commit(); db.refresh(obj)
+    _audit(db, u, "CREATE", "course", obj.id, {"title": obj.title, "category": obj.category})
+    return _course_public(obj, None)
+
+
+@router.put("/courses/{cid}")
+def update_course(cid: int, item: CourseUpdateIn, db: Session = Depends(get_db), u: User = Depends(get_current_manager_user)):
+    obj = db.query(Course).filter(Course.id == cid).first()
+    if not obj:
+        raise HTTPException(status_code=404, detail="Curso não encontrado")
+    data = item.model_dump(exclude_unset=True)
+    if "category" in data and data["category"] not in COURSE_CATEGORIES:
+        raise HTTPException(status_code=422, detail={"regras": [f"Categoria inválida (use: {', '.join(COURSE_CATEGORIES)})"]})
+    if "level" in data and data["level"] not in COURSE_LEVELS:
+        data.pop("level")
+    forb = check_forbidden(data.get("title", ""), data.get("description", ""))
+    if forb:
+        raise HTTPException(status_code=422, detail={"regras": ["R1: conteúdo proibido — " + ", ".join(sorted(set(forb)))]})
+    lessons = data.pop("lessons", None)
+    for k, v in data.items():
+        setattr(obj, k, v)
+    if lessons is not None:
+        _apply_course(obj, item.lessons)
+    db.commit(); db.refresh(obj)
+    _audit(db, u, "UPDATE", "course", obj.id, {"title": obj.title})
+    return _course_public(obj, None)
+
+
+@router.post("/courses/{cid}/progress")
+def set_progress(cid: int, item: ProgressIn, db: Session = Depends(get_db), u: User = Depends(get_current_user)):
+    """Marca/desmarca uma aula como concluída para o aluno atual."""
+    obj = db.query(Course).filter(Course.id == cid).first()
+    if not obj or (not obj.published and u.role not in ("Admin", "Manager")):
+        raise HTTPException(status_code=404, detail="Curso não encontrado")
+    total = len(_lessons_list(obj))
+    if not (0 <= item.lesson_index < total):
+        raise HTTPException(status_code=422, detail="Índice de aula inválido")
+    prog = db.query(CourseProgress).filter(
+        CourseProgress.user_email == u.email, CourseProgress.course_id == cid).first()
+    if not prog:
+        prog = CourseProgress(course_id=cid, user_email=u.email, completed="[]")
+        db.add(prog)
+    try:
+        done = set(i for i in json.loads(prog.completed or "[]") if isinstance(i, int))
+    except Exception:
+        done = set()
+    if item.done:
+        done.add(item.lesson_index)
+    else:
+        done.discard(item.lesson_index)
+    done = sorted(i for i in done if 0 <= i < total)
+    prog.completed = json.dumps(done, ensure_ascii=False)
+    prog.status = "Concluído" if (total and len(done) >= total) else "Em andamento"
+    prog.updated_at = _hoje_pt()
+    db.commit(); db.refresh(prog)
+    if prog.status == "Concluído":
+        _audit(db, u, "COMPLETE", "course", cid, {"course": obj.title})
+    return _course_public(obj, prog)
+
+
 # ---- Política de custo (teto por chamada, controlado pelo PrMO) ----
 @router.get("/cost-policy")
 def get_cost_policy(db: Session = Depends(get_db), u: User = Depends(get_current_user)):
@@ -1060,9 +1316,88 @@ def seed_suggestions_from_knowledge(db: Session):
     db.commit()
 
 
+def seed_courses(db: Session):
+    """Cursos iniciais da Base de Conhecimento (IA, Compliance e Segurança da Informação)."""
+    if db.query(Course).first():
+        return
+    catalogo = [
+        dict(title="Fundamentos de IA Generativa no trabalho", category="IA", level="Iniciante",
+             instructor="Diretoria de IA", cover="🤖", accent="#6d28d9",
+             description="O que é IA generativa, onde ela ajuda no dia a dia da Vanguarda e como usar com responsabilidade.",
+             tags="ia,generativa,fundamentos,produtividade",
+             lessons=[
+                 dict(title="Boas-vindas e panorama da IA na Vanguarda", type="Vídeo", duration_min=8),
+                 dict(title="Como os modelos de linguagem funcionam (sem jargão)", type="Vídeo", duration_min=14),
+                 dict(title="Casos de uso por área", type="Leitura", duration_min=10),
+                 dict(title="Limites e riscos (alucinação, viés)", type="Vídeo", duration_min=12),
+                 dict(title="Quiz de fixação", type="Quiz", duration_min=6),
+             ]),
+        dict(title="Engenharia de Prompts (padrão NIA-001)", category="IA", level="Intermediário",
+             instructor="Diretoria de IA", cover="✍️", accent="#2563eb",
+             description="Escreva prompts consistentes e versionáveis seguindo o padrão corporativo NIA-001.",
+             tags="prompt,nia-001,versionamento,qualidade",
+             lessons=[
+                 dict(title="Anatomia de um bom prompt", type="Vídeo", duration_min=11),
+                 dict(title="Padrão NIA-001: código, versão e classificação", type="Leitura", duration_min=15),
+                 dict(title="Contexto, restrições e critérios de saída", type="Vídeo", duration_min=13),
+                 dict(title="Prática: transformando um brief em prompt", type="Prática", duration_min=20),
+             ]),
+        dict(title="Política de IA e uso responsável", category="Compliance", level="Iniciante",
+             instructor="Compliance & Governança", cover="⚖️", accent="#059669",
+             description="Regras da Política de IA da Vanguarda: revisão humana, ferramentas homologadas e classificação da informação.",
+             tags="politica,compliance,uso-responsavel,governanca",
+             lessons=[
+                 dict(title="Princípios da Política de IA", type="Leitura", duration_min=12),
+                 dict(title="Revisão humana obrigatória", type="Vídeo", duration_min=9),
+                 dict(title="Ferramentas homologadas x não homologadas", type="Vídeo", duration_min=10),
+                 dict(title="Fluxo de reporte de uso indevido", type="Leitura", duration_min=7),
+                 dict(title="Quiz de conformidade", type="Quiz", duration_min=6),
+             ]),
+        dict(title="LGPD na prática para agências", category="Compliance", level="Intermediário",
+             instructor="Compliance & Governança", cover="🛡️", accent="#0d9488",
+             description="Bases legais, dados pessoais de clientes e cuidados ao usar IA com informação sensível.",
+             tags="lgpd,dados-pessoais,privacidade,clientes",
+             lessons=[
+                 dict(title="Conceitos: dado pessoal e dado sensível", type="Vídeo", duration_min=12),
+                 dict(title="Bases legais e consentimento", type="Leitura", duration_min=14),
+                 dict(title="IA + dados de cliente: o que pode e o que não pode", type="Vídeo", duration_min=13),
+                 dict(title="Incidentes e notificação", type="Leitura", duration_min=9),
+             ]),
+        dict(title="Segurança da Informação: o essencial", category="Segurança da Informação", level="Iniciante",
+             instructor="Segurança da Informação", cover="🔐", accent="#dc2626",
+             description="Higiene digital para o time: senhas, MFA, phishing e classificação de dados.",
+             tags="seguranca,senhas,mfa,phishing",
+             lessons=[
+                 dict(title="Senhas fortes e gerenciadores", type="Vídeo", duration_min=8),
+                 dict(title="MFA: por que e como ativar", type="Vídeo", duration_min=7),
+                 dict(title="Reconhecendo phishing e engenharia social", type="Vídeo", duration_min=12),
+                 dict(title="Classificação da informação (público/interno/restrito)", type="Leitura", duration_min=10),
+                 dict(title="Quiz de segurança", type="Quiz", duration_min=6),
+             ]),
+        dict(title="Uso seguro de IA e proteção de segredos", category="Segurança da Informação", level="Avançado",
+             instructor="Segurança da Informação", cover="🕵️", accent="#b91c1c",
+             description="Como evitar vazamento de dados e segredos ao usar ferramentas de IA e integrações.",
+             tags="seguranca,ia,segredos,vazamento,api",
+             lessons=[
+                 dict(title="O que nunca colar em uma IA", type="Vídeo", duration_min=10),
+                 dict(title="Chaves, tokens e credenciais", type="Leitura", duration_min=12),
+                 dict(title="Ambientes homologados e retenção de dados", type="Vídeo", duration_min=13),
+                 dict(title="Prática: revisando um prompt de risco", type="Prática", duration_min=18),
+             ]),
+    ]
+    for c in catalogo:
+        lessons = c.pop("lessons")
+        obj = Course(code=_next_course_code(db), published=True, **c)
+        obj.lessons = json.dumps(lessons, ensure_ascii=False)
+        obj.duration_min = sum(int(l.get("duration_min") or 0) for l in lessons)
+        db.add(obj); db.flush()
+    db.commit()
+
+
 def seed_governance(db: Session):
     seed_registros(db)
     seed_suggestions_from_knowledge(db)
+    seed_courses(db)
     if db.query(Client).first():
         return
     db.add_all([
