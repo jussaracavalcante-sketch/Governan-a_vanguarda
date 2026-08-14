@@ -179,6 +179,9 @@
     .mand-pend{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
     .pend-chip{font-size:11px;font-weight:700;padding:4px 9px;border-radius:999px;background:rgba(239,68,68,.12);color:#ff9a9a;border:1px solid rgba(239,68,68,.32)}
     .pend-chip.started{background:rgba(245,158,11,.14);color:#ffd591;border-color:rgba(245,158,11,.4)}
+    .panel-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+    .panel-actions{display:flex;gap:8px}
+    .btn.small{padding:7px 12px;font-size:12px}
   </style>
 </head>
 <body>
@@ -287,7 +290,8 @@
     <section id="academy" class="page"><header class="top"><div><div class="eyebrow">Capacitação contínua</div><h1>Base de conhecimento</h1><p>Trilhas e cursos de IA, Compliance e Segurança da Informação. Assista, acompanhe seu progresso e conclua as capacitações obrigatórias.</p></div><button class="btn ctrl-only" onclick="openCourseForm()">+ Novo curso</button></header>
       <div id="academyReminders"></div>
       <div class="card ctrl-only" id="mandatoryPanelWrap" style="margin-bottom:18px">
-        <h3 class="section-title">📋 Treinamentos obrigatórios — status da equipe</h3>
+        <div class="panel-head"><h3 class="section-title" style="margin:0">📋 Treinamentos obrigatórios — status da equipe</h3>
+          <div class="panel-actions"><button class="btn alt small" onclick="exportMandatory('xlsx')">⬇ XLSX</button><button class="btn alt small" onclick="exportMandatory('pdf')">⬇ PDF</button></div></div>
         <div id="mandatoryPanel"><div class="sub">Carregando…</div></div>
       </div>
       <div id="continueWrap" style="display:none;margin-bottom:18px">
@@ -344,7 +348,7 @@
 <div class="modal" id="supportModal"><div class="dialog"><h3 id="smTitle">Chamado</h3><div class="form" id="supportDetail"></div><div class="modal-actions"><button class="btn alt" onclick="closeSupportModal()">Fechar</button><button class="btn" id="smSave" style="display:none" onclick="saveSupport()">Salvar atendimento</button></div></div></div>
 <div class="modal" id="suggModal"><div class="dialog"><h3 id="sgTitle">Sugestão</h3><div class="form" id="suggDetail"></div><div class="modal-actions"><button class="btn alt" onclick="closeSuggModal()">Fechar</button><button class="btn" id="sgSave" style="display:none" onclick="saveSugg()">Salvar triagem</button></div></div></div>
 <div class="modal" id="courseModal"><div class="dialog" style="max-width:640px"><div id="courseDetail"></div><div class="modal-actions"><button class="btn alt" onclick="closeCourseModal()">Fechar</button></div></div></div>
-<div class="modal" id="certModal"><div class="dialog" style="max-width:720px"><div id="certBody"></div><div class="modal-actions no-print"><button class="btn alt" onclick="closeCertModal()">Fechar</button><button class="btn" onclick="printCertificate()">🖨️ Imprimir / Salvar PDF</button></div></div></div>
+<div class="modal" id="certModal"><div class="dialog" style="max-width:720px"><div id="certBody"></div><div class="modal-actions no-print"><button class="btn alt" onclick="closeCertModal()">Fechar</button><button class="btn alt" onclick="downloadCertPng()">🖼️ Baixar PNG</button><button class="btn" onclick="printCertificate()">🖨️ Imprimir / Salvar PDF</button></div></div></div>
 <div class="modal" id="courseFormModal"><div class="dialog"><h3>Novo curso</h3><div class="form" id="courseForm">
   <label>Título<input data-k="title" placeholder="Ex.: Fundamentos de IA Generativa"></label>
   <label>Categoria<select data-k="category"><option>IA</option><option>Compliance</option><option>Segurança da Informação</option></select></label>
@@ -1074,10 +1078,11 @@ async function loadAcademyMe(){
     }
   }catch(ex){ if(card)card.innerHTML=''; if(rem)rem.innerHTML=''; }
 }
+let LAST_MANDATORY=[];
 async function loadMandatoryPanel(){
   const el=document.getElementById('mandatoryPanel'); if(!el||!isController())return;
   try{
-    const rows=await api('/governance/academy/mandatory-status');
+    const rows=await api('/governance/academy/mandatory-status'); LAST_MANDATORY=rows||[];
     if(!rows||!rows.length){el.innerHTML='<div class="sub">Nenhum treinamento obrigatório cadastrado.</div>';return;}
     el.innerHTML=rows.map(r=>{
       const tag=r.overdue?'<span class="dl red">Prazo vencido</span>':(r.days_left!=null?`<span class="dl ${r.days_left<=7?'warn':'ok'}">vence em ${r.days_left}d</span>`:'');
@@ -1159,7 +1164,8 @@ const CDN={
 const _loaded={};
 function loadScript(src){return new Promise((res,rej)=>{const s=document.createElement('script');s.src=src;s.onload=()=>res();s.onerror=()=>rej(new Error('Falha ao carregar biblioteca de exportação'));document.head.appendChild(s);});}
 async function ensureLib(name){ if(_loaded[name])return; await loadScript(CDN[name]); _loaded[name]=true; }
-function fname(ext){const d=new Date();const p=n=>String(n).padStart(2,'0');return `PrMO-relatorio-${d.getFullYear()}${p(d.getMonth()+1)}${p(d.getDate())}.${ext}`;}
+function fname(ext){return fnameFor('relatorio',ext);}
+function fnameFor(base,ext){const d=new Date();const p=n=>String(n).padStart(2,'0');return `PrMO-${base}-${d.getFullYear()}${p(d.getMonth()+1)}${p(d.getDate())}.${ext}`;}
 function downloadBlob(blob,name){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},1500);}
 function toggleExportMenu(e){if(e)e.stopPropagation();const m=document.getElementById('exportMenu');if(m)m.style.display=m.style.display==='none'?'flex':'none';}
 document.addEventListener('click',e=>{const m=document.getElementById('exportMenu');if(m&&m.style.display!=='none'&&!e.target.closest('.exp-wrap'))m.style.display='none';});
@@ -1213,6 +1219,56 @@ async function exportCanvas(fmt){
   }
 }
 function exportView(){toggleExportMenu();}
+
+// ---- Exportar relatório de treinamentos obrigatórios ----
+async function exportMandatory(fmt){
+  const L=document.getElementById('loading'); if(L)L.classList.add('show');
+  try{
+    const rows=LAST_MANDATORY||[];
+    if(!rows.length){toast('Nada para exportar.',false);return;}
+    if(fmt==='xlsx'){
+      await ensureLib('xlsx');
+      const wb=XLSX.utils.book_new();
+      const resumo=[['Treinamento','Categoria','Prazo','Concluídos','Total','% conclusão','Pendentes','Status']]
+        .concat(rows.map(r=>[r.title,r.category,r.due_date||'—',r.completed,r.total_users,r.completion_pct+'%',r.pending,r.overdue?'ATRASADO':'No prazo']));
+      XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(resumo),'Resumo');
+      const pend=[['Treinamento','Colaborador','E-mail','Situação']];
+      rows.forEach(r=>(r.pending_users||[]).forEach(p=>pend.push([r.title,p.name,p.email,p.started?'Em andamento':'Não iniciou'])));
+      XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(pend),'Pendentes');
+      XLSX.writeFile(wb,fnameFor('obrigatorios',fmt));
+    } else {
+      await ensureLib('html2canvas');
+      const el=document.getElementById('mandatoryPanelWrap');
+      const canvas=await html2canvas(el,{backgroundColor:'#0d0c0f',scale:2,useCORS:true,windowWidth:el.scrollWidth});
+      await ensureLib('jspdf');
+      const {jsPDF}=window.jspdf;
+      const pdf=new jsPDF({orientation:'portrait',unit:'pt',format:'a4'});
+      const pw=pdf.internal.pageSize.getWidth(), phg=pdf.internal.pageSize.getHeight();
+      const imgW=pw, imgH=canvas.height*pw/canvas.width;
+      const img=canvas.toDataURL('image/jpeg',0.95);
+      let left=imgH, pos=0;
+      pdf.addImage(img,'JPEG',0,pos,imgW,imgH); left-=phg;
+      while(left>0){ pos-=phg; pdf.addPage(); pdf.addImage(img,'JPEG',0,pos,imgW,imgH); left-=phg; }
+      pdf.save(fnameFor('obrigatorios','pdf'));
+    }
+    toast('Relatório de obrigatórios exportado ('+fmt.toUpperCase()+').');
+  }catch(ex){toast('Erro ao exportar: '+ex.message,false);}
+  finally{ if(L)L.classList.remove('show'); }
+}
+
+// ---- Baixar certificado em PNG ----
+async function downloadCertPng(){
+  const el=document.getElementById('certCanvas'); if(!el){toast('Abra um certificado primeiro.',false);return;}
+  const L=document.getElementById('loading'); if(L)L.classList.add('show');
+  try{
+    await ensureLib('html2canvas');
+    const canvas=await html2canvas(el,{backgroundColor:'#ffffff',scale:2,useCORS:true});
+    const code=(el.querySelector('.cert-code')?.textContent||'').replace(/[^A-Za-z0-9-]/g,'')||'certificado';
+    await new Promise(res=>canvas.toBlob(bl=>{downloadBlob(bl,'PrMO-'+code+'.png');res();},'image/png'));
+    toast('Certificado salvo em PNG.');
+  }catch(ex){toast('Erro ao gerar PNG: '+ex.message,false);}
+  finally{ if(L)L.classList.remove('show'); }
+}
 
 // ---- start ----
 if(localStorage.getItem(TKEY)){document.getElementById('login').style.display='none';boot();}
