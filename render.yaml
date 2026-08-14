@@ -35,3 +35,10 @@ services:
       # Definido no painel do Render (Environment) — não versionado.
       - key: ADMIN_PASSWORD
         sync: false
+      # Leitura AO VIVO do banco do PrMO (somente leitura) — definir no painel.
+      # postgresql://head_reader.<ref>:<senha>@aws-0-sa-east-1.pooler.supabase.com:5432/postgres?sslmode=require
+      - key: PRMO_DATABASE_URL
+        sync: false
+      # Senha do banco próprio do HEAD (persistência), se usada — definir no painel.
+      - key: DB_PASSWORD
+        sync: false
