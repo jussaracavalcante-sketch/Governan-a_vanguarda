@@ -9,6 +9,11 @@ Registro cronológico do trabalho por sessão. Entrada mais recente no topo.
 ### 🎯 Objetivo
 Criar uma aba de capacitação (estilo Udemy) para treinamentos de IA, Compliance e Segurança da Informação, com progresso do aluno — e, na sequência, a camada estilo **Hacker Rangers**: cursos **obrigatórios com prazo**, **quiz com nota**, **certificado** ao concluir e **ranking** por pontos.
 
+### ✅ Entregas — Exportação e certificado em PNG
+- **Relatório de obrigatórios exportável** no painel do gestor: **XLSX** (aba "Resumo" por curso — prazo, % conclusão, concluídos, pendentes, status — e aba "Pendentes" com colaborador/e-mail/situação) e **PDF** (captura do painel). Reaproveita o exportador existente (SheetJS/html2canvas/jsPDF via CDN sob demanda).
+- **Certificado com download em PNG** (html2canvas), além do Imprimir/Salvar PDF.
+- Validação Playwright com stubs das libs de CDN: **10/10 PASS** (frontend only).
+
 ### ✅ Entregas — Engajamento (níveis, painel e lembretes)
 - **Níveis por pontuação**: Aprendiz → Bronze (100) → Prata (250) → Ouro (500) → Platina (1000); card "Meu progresso" com barra até o próximo nível.
 - **Medalhas**: primeiro curso, maratonista (3+), nota máxima (quiz 100%), "em dia" (todos os obrigatórios), e trilha completa por categoria (IA/Compliance/Segurança).
