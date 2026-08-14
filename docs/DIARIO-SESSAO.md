@@ -9,6 +9,13 @@ Registro cronológico do trabalho por sessão. Entrada mais recente no topo.
 ### 🎯 Objetivo
 Criar uma aba de capacitação (estilo Udemy) para treinamentos de IA, Compliance e Segurança da Informação, com progresso do aluno — e, na sequência, a camada estilo **Hacker Rangers**: cursos **obrigatórios com prazo**, **quiz com nota**, **certificado** ao concluir e **ranking** por pontos.
 
+### ✅ Entregas — Engajamento (níveis, painel e lembretes)
+- **Níveis por pontuação**: Aprendiz → Bronze (100) → Prata (250) → Ouro (500) → Platina (1000); card "Meu progresso" com barra até o próximo nível.
+- **Medalhas**: primeiro curso, maratonista (3+), nota máxima (quiz 100%), "em dia" (todos os obrigatórios), e trilha completa por categoria (IA/Compliance/Segurança).
+- **Painel do gestor** (`GET /academy/mandatory-status`): por treinamento obrigatório, % de conclusão da equipe e lista de pendentes (com flag "em andamento").
+- **Lembretes automáticos de prazo** (`GET /academy/me`): banner exibido ao abrir a aba com os obrigatórios pendentes e status do prazo (vence em Nd / atrasado). In-app; envio por e-mail requer SMTP (pode ser plugado no mesmo endpoint).
+- Ranking passou a exibir nível + ícone. Validações: TestClient (níveis, medalhas, painel, RBAC 403) e Playwright **13/13** (v3), sem regressão em v1 (14/14) e v2 (13/13).
+
 ### ✅ Entregas — Gamificação (Hacker Rangers)
 - **Obrigatórios com prazo**: `Course.mandatory` + `due_date`; cards com selo "Obrigatório" e chip de prazo (no prazo / vence em Nd / atrasado). Seed marca *Política de IA* (30d) e *Segurança da Informação* (45d).
 - **Quiz com nota**: `Course.quiz` (JSON com gabarito, nunca exposto no GET) + `pass_score`. `POST /courses/{id}/quiz` corrige e grava `quiz_score`/`quiz_passed`. O quiz só libera após as aulas; a conclusão exige aulas **e** aprovação na nota mínima.
