@@ -32,8 +32,27 @@ def _engine(url: str):
     )
 
 
+def _swap_pooler_host(url: str) -> str | None:
+    """Alterna o nó do pooler (aws-0 <-> aws-1) para tolerar variação por projeto."""
+    if "aws-0-" in url:
+        return url.replace("aws-0-", "aws-1-")
+    if "aws-1-" in url:
+        return url.replace("aws-1-", "aws-0-")
+    return None
+
+
 def get_prmo_live(url: str) -> dict:
-    """Lê o PrMO ao vivo e retorna o retrato consultivo. Levanta em caso de falha."""
+    """Lê o PrMO ao vivo. Tenta o host informado e, se falhar, o nó alternativo."""
+    try:
+        return _query(url)
+    except Exception:
+        alt = _swap_pooler_host(url)
+        if alt:
+            return _query(alt)
+        raise
+
+
+def _query(url: str) -> dict:
     eng = _engine(url)
     with eng.connect() as c:
         reg = c.execute(text("select registry, count(*) as n from gov_registry group by registry")).fetchall()
