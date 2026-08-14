@@ -30,7 +30,8 @@ function PrmoView() {
     <div className="stack">
       <Card
         title="🛡️ Visão do PrMO · consultivo"
-        subtitle={`${p.source} · snapshot de ${p.as_of} (somente leitura)`}
+        subtitle={`${p.source} · ${p.live ? 'atualizado' : 'snapshot de'} ${p.as_of} · somente leitura`}
+        actions={<Badge tone={p.live ? 'success' : 'warning'}>{p.live ? '● AO VIVO' : 'snapshot'}</Badge>}
       >
         <div className="grid" style={{ gridTemplateColumns: 'repeat(3, 1fr)' }}>
           {p.registry.by_type.map((r: { label: string; count: number }) => (

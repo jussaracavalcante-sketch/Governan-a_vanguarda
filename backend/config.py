@@ -40,6 +40,10 @@ class Settings(BaseSettings):
     # O app Gestão HEAD de IA apenas CONSULTA o PrMO; não grava nada nele.
     prmo_base_url: str = ""
 
+    # Conexão de LEITURA ao banco do PrMO (Postgres). Quando definida, a Visão
+    # do PrMO passa a consultar os dados AO VIVO; sem ela, usa o snapshot fixo.
+    prmo_database_url: str = ""
+
     # Contas institucionais — apenas e-mails deste domínio podem ser criados.
     allowed_email_domain: str = "vanguardamartech.com.br"
 

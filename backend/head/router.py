@@ -24,8 +24,23 @@ def head_dashboard(db: Session = Depends(get_db), user: User = Depends(get_curre
 
 @router.get("/prmo", summary="Visão do PrMO (consultivo, somente leitura)")
 def prmo_view(user: User = Depends(get_current_user)):
-    """Retrato organizado dos dados de governança do PrMO. Consulta apenas."""
-    return PRMO_SNAPSHOT
+    """Retrato de governança do PrMO. Ao vivo se PRMO_DATABASE_URL estiver
+    configurado; caso contrário, usa o snapshot fixo. Somente leitura."""
+    from config import get_settings
+
+    settings = get_settings()
+    if settings.prmo_database_url:
+        try:
+            from head.prmo_live import get_prmo_live
+            return get_prmo_live(settings.prmo_database_url)
+        except Exception:
+            # Falha na leitura ao vivo → cai para o snapshot (não quebra a tela).
+            data = dict(PRMO_SNAPSHOT)
+            data["live"] = False
+            return data
+    data = dict(PRMO_SNAPSHOT)
+    data["live"] = False
+    return data
 
 
 @router.get("/report/{period}", response_model=schemas.MonthlyReport)
