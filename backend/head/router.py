@@ -33,13 +33,15 @@ def prmo_view(user: User = Depends(get_current_user)):
         try:
             from head.prmo_live import get_prmo_live
             return get_prmo_live(settings.prmo_database_url)
-        except Exception:
+        except Exception as exc:
             # Falha na leitura ao vivo → cai para o snapshot (não quebra a tela).
             data = dict(PRMO_SNAPSHOT)
             data["live"] = False
+            data["_diag"] = f"configured=1 err={type(exc).__name__}: {str(exc)[:180]}"
             return data
     data = dict(PRMO_SNAPSHOT)
     data["live"] = False
+    data["_diag"] = "configured=0 (PRMO_DATABASE_URL vazio no ambiente)"
     return data
 
 
