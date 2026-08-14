@@ -53,6 +53,11 @@ class Settings(BaseSettings):
     vanguardia_base_url: str = ""
     vanguardia_api_key: str = ""
 
+    # Supabase Storage (upload de materiais dos cursos)
+    supabase_url: str = ""              # ex.: https://ubixfcoigwpjdrioymdq.supabase.co
+    supabase_service_key: str = ""      # service_role key (defina no Render; NUNCA commitar)
+    supabase_bucket: str = "course-materials"
+
     # Admin
     admin_email: str = "admin@vanguardian.com"
     admin_password: str = "admin123"  # Change in production!

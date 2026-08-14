@@ -9,6 +9,14 @@ Registro cronológico do trabalho por sessão. Entrada mais recente no topo.
 ### 🎯 Objetivo
 Criar uma aba de capacitação (estilo Udemy) para treinamentos de IA, Compliance e Segurança da Informação, com progresso do aluno — e, na sequência, a camada estilo **Hacker Rangers**: cursos **obrigatórios com prazo**, **quiz com nota**, **certificado** ao concluir e **ranking** por pontos.
 
+### ✅ Entregas — Upload real de arquivos (Supabase Storage)
+- **Bucket `course-materials`** criado no Supabase Storage (público, limite 50 MB).
+- **Endpoint** `POST /governance/courses/upload` (gestor): recebe o arquivo (multipart), envia ao Storage via chave de serviço e devolve a URL pública + tipo inferido (video/pdf/slide/doc/link). Degrada com **HTTP 503** e mensagem clara caso as variáveis não estejam configuradas; **413** acima de 50 MB.
+- **Config**: `supabase_url`, `supabase_service_key`, `supabase_bucket` em `config.py` (lidas do ambiente).
+- **Frontend**: no formulário de curso, botão **⬆ Enviar arquivo** — faz upload e anexa automaticamente a linha `Título | tipo | URL` na lista de materiais.
+- Validações: TestClient (503 sem config, 403 RBAC) e Playwright (anexa no sucesso, mostra aviso no 503).
+- ⚠️ **Ação necessária no Render** para ativar o upload: definir `SUPABASE_URL=https://ubixfcoigwpjdrioymdq.supabase.co` e `SUPABASE_SERVICE_KEY=<service_role key do painel Supabase>` no serviço `prmo-api`. Enquanto não configurado, a anexação por link/incorporado continua funcionando normalmente.
+
 ### ✅ Entregas — Materiais de apoio nos cursos
 - **Campo de materiais por curso** (`Course.materials`): título, tipo (video/pdf/slide/doc/link) e URL. No curso, os **vídeos do YouTube/Vimeo tocam incorporados** (iframe responsivo) e PDFs/slides/docs/links abrem por botão (Baixar/Abrir/Assistir). Formulário de novo curso ganhou o campo "Materiais (Título | tipo | URL)".
 - Anexação **por link/incorporado** (decisão do usuário) — sem upload de arquivo; upload real via Supabase Storage fica como evolução futura.

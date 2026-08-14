@@ -190,6 +190,9 @@
     .mat-cap{font-size:12px;font-weight:800;padding:9px 12px;background:#17151c}
     .mat-frame{position:relative;width:100%;padding-top:56.25%;background:#000}
     .mat-frame iframe{position:absolute;inset:0;width:100%;height:100%}
+    .upl-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:-4px 0 4px}
+    .upl-row input[type=file]{font-size:12px;color:#cbc3cc;max-width:100%}
+    .upl-row input[type=file]::file-selector-button{background:#17151c;border:1px solid var(--line);color:#e9e3ea;border-radius:8px;padding:7px 11px;font-weight:700;cursor:pointer;margin-right:8px}
   </style>
 </head>
 <body>
@@ -376,6 +379,7 @@
   <label>Aulas (uma por linha — <span class="muted">Título | tipo | minutos | link</span>)<textarea data-k="lessons" rows="5" placeholder="Boas-vindas | Vídeo | 8 | https://…&#10;Conceitos essenciais | Leitura | 12"></textarea></label>
   <label>Quiz (uma questão por linha — <span class="muted">Pergunta | alt1 ; alt2 ; alt3 | nº da alternativa correta</span>)<textarea data-k="quiz" rows="4" placeholder="Devo revisar conteúdo de IA? | Sim ; Não ; Depende | 1"></textarea></label>
   <label>Materiais de apoio (um por linha — <span class="muted">Título | tipo (video/pdf/slide/doc/link) | URL</span>)<textarea data-k="materials" rows="3" placeholder="Aula gravada | video | https://youtu.be/…&#10;Apostila | pdf | https://drive.google.com/…"></textarea></label>
+  <div class="upl-row"><input type="file" id="matFile"><button type="button" class="btn alt small" id="matUplBtn" onclick="uploadMatFile()">⬆ Enviar arquivo</button><span id="matUplMsg" class="sub"></span></div>
   <div class="err" id="courseErr"></div>
 </div><div class="modal-actions"><button class="btn alt" onclick="closeCourseForm()">Cancelar</button><button class="btn" id="courseSaveBtn" onclick="saveCourse()">Publicar curso</button></div></div></div>
 
@@ -1136,7 +1140,26 @@ async function toggleLesson(idx,done){
     loadCourses(); loadRanking(); loadAcademyMe(); loadMandatoryPanel();
   }catch(ex){toast('Erro: '+ex.message,false);}
 }
-function openCourseForm(){document.getElementById('courseErr').textContent='';document.getElementById('courseFormModal').classList.add('open');}
+async function uploadMatFile(){
+  const inp=document.getElementById('matFile'), msg=document.getElementById('matUplMsg'), btn=document.getElementById('matUplBtn');
+  const f=inp&&inp.files&&inp.files[0];
+  if(!f){msg.textContent='Escolha um arquivo primeiro.';return;}
+  msg.textContent='Enviando '+f.name+'…'; btn.disabled=true;
+  try{
+    const fd=new FormData(); fd.append('file',f);
+    const t=localStorage.getItem(TKEY);
+    const r=await fetch(API+'/governance/courses/upload',{method:'POST',headers:t?{Authorization:'Bearer '+t}:{},body:fd});
+    if(!r.ok){let d='HTTP '+r.status;try{const j=await r.json();if(j&&j.detail)d=(typeof j.detail==='string'?j.detail:JSON.stringify(j.detail));}catch(e){}
+      throw new Error(d);}
+    const m=await r.json();
+    const ta=document.querySelector('#courseForm [data-k="materials"]');
+    const line=`${m.title} | ${m.kind} | ${m.url}`;
+    ta.value=(ta.value.trim()?ta.value.replace(/\s*$/,'')+'\n':'')+line;
+    msg.textContent='✓ Anexado: '+m.title; inp.value='';
+  }catch(ex){ msg.textContent='⚠ '+ex.message; }
+  finally{ btn.disabled=false; }
+}
+function openCourseForm(){document.getElementById('courseErr').textContent='';const m=document.getElementById('matUplMsg');if(m)m.textContent='';document.getElementById('courseFormModal').classList.add('open');}
 function closeCourseForm(){document.getElementById('courseFormModal').classList.remove('open');}
 function parseLessons(txt){
   return (txt||'').split('\n').map(l=>l.trim()).filter(Boolean).map(line=>{

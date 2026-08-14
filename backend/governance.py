@@ -9,7 +9,7 @@ from datetime import datetime, timedelta, timezone
 import json
 import os
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 from pydantic import BaseModel, ConfigDict
 from sqlalchemy import Column, Integer, String, Boolean, Text, DateTime, Float, func
 from sqlalchemy.orm import Session
@@ -1200,6 +1200,63 @@ def update_course(cid: int, item: CourseUpdateIn, db: Session = Depends(get_db),
     db.commit(); db.refresh(obj)
     _audit(db, u, "UPDATE", "course", obj.id, {"title": obj.title})
     return _course_public(obj, None)
+
+
+_UPLOAD_MAX = 50 * 1024 * 1024  # 50 MB
+_KIND_BY_EXT = {
+    "pdf": "pdf", "ppt": "slide", "pptx": "slide", "key": "slide",
+    "doc": "doc", "docx": "doc", "odt": "doc", "txt": "doc",
+    "mp4": "video", "mov": "video", "webm": "video", "m4v": "video", "avi": "video",
+    "png": "link", "jpg": "link", "jpeg": "link", "gif": "link", "zip": "link",
+}
+
+
+def _safe_name(name: str) -> str:
+    name = os.path.basename(name or "arquivo")
+    keep = "".join(c if (c.isalnum() or c in "-_.") else "-" for c in name).strip("-.") or "arquivo"
+    return keep[:80]
+
+
+@router.post("/courses/upload", status_code=201)
+async def upload_material(file: UploadFile = File(...), u: User = Depends(get_current_manager_user)):
+    """Upload de material de curso para o Supabase Storage (bucket público).
+    Requer SUPABASE_URL e SUPABASE_SERVICE_KEY configurados no ambiente."""
+    from config import settings
+    base = (settings.supabase_url or "").rstrip("/")
+    key = settings.supabase_service_key or ""
+    bucket = settings.supabase_bucket or "course-materials"
+    if not base or not key:
+        raise HTTPException(status_code=503, detail=(
+            "Upload de arquivos ainda não configurado. Defina SUPABASE_URL e "
+            "SUPABASE_SERVICE_KEY no ambiente do backend (Render). Enquanto isso, "
+            "anexe materiais por link/URL."))
+    data = await file.read()
+    if len(data) > _UPLOAD_MAX:
+        raise HTTPException(status_code=413, detail="Arquivo excede o limite de 50 MB.")
+    if not data:
+        raise HTTPException(status_code=422, detail="Arquivo vazio.")
+    fname = _safe_name(file.filename or "arquivo")
+    ext = fname.rsplit(".", 1)[-1].lower() if "." in fname else ""
+    kind = _KIND_BY_EXT.get(ext, "link")
+    # caminho único e estável (sem depender de random global)
+    import uuid
+    path = f"{u.id or 'x'}/{uuid.uuid4().hex[:12]}-{fname}"
+    url = f"{base}/storage/v1/object/{bucket}/{path}"
+    import httpx
+    headers = {
+        "Authorization": f"Bearer {key}",
+        "Content-Type": file.content_type or "application/octet-stream",
+        "x-upsert": "true",
+    }
+    try:
+        with httpx.Client(timeout=60) as client:
+            r = client.post(url, content=data, headers=headers)
+    except Exception as ex:
+        raise HTTPException(status_code=502, detail=f"Falha ao enviar ao Storage: {ex}")
+    if r.status_code not in (200, 201):
+        raise HTTPException(status_code=502, detail=f"Storage recusou o upload (HTTP {r.status_code}).")
+    public_url = f"{base}/storage/v1/object/public/{bucket}/{path}"
+    return {"url": public_url, "kind": kind, "title": fname, "size": len(data)}
 
 
 def _get_or_create_prog(db: Session, cid: int, email: str) -> CourseProgress:
