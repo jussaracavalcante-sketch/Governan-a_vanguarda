@@ -1,0 +1,147 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1160" height="900" viewBox="0 0 1160 900" font-family="Segoe UI, Roboto, Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="arw" markerWidth="10" markerHeight="10" refX="7" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L7,3 L0,6 Z" fill="#8a8391"/>
+    </marker>
+    <style>
+      .title{font-size:26px;font-weight:800;fill:#1a1526}
+      .sub{font-size:13px;fill:#6b647e}
+      .layer{font-size:12px;font-weight:800;fill:#8a8391;letter-spacing:1px}
+      .box{fill:#ffffff;stroke:#d9d3e0;stroke-width:1.5;rx:12}
+      .bt{font-size:14px;font-weight:800;fill:#1a1526}
+      .bd{font-size:11.5px;fill:#4b4560}
+      .chip{font-size:11px;font-weight:700;fill:#2d2838}
+      .flow{font-size:13px;font-weight:800;fill:#1a1526}
+      .flowsub{font-size:10.5px;fill:#5a5468}
+      .edge{stroke:#8a8391;stroke-width:1.6;fill:none}
+    </style>
+  </defs>
+
+  <rect x="0" y="0" width="1160" height="900" fill="#f6f4fb"/>
+  <rect x="0" y="0" width="1160" height="70" fill="#17151c"/>
+  <text x="40" y="34" class="title" style="fill:#ffffff">PrMO — Prompt Management Office</text>
+  <text x="40" y="55" class="sub" style="fill:#cbc3cc">Arquitetura e fluxo · Governança de IA + Base de Conhecimento · Vanguarda Martech</text>
+  <text x="1120" y="44" text-anchor="end" font-size="13" font-weight="800" fill="#ff5d78">2026-08-14</text>
+
+  <!-- ===== Layer 1: Users ===== -->
+  <text x="40" y="104" class="layer">USUÁRIOS</text>
+  <rect x="40" y="112" width="250" height="72" class="box" rx="12"/>
+  <text x="60" y="140" class="bt">👤 Colaborador</text>
+  <text x="60" y="160" class="bd">Login/Cadastro @vanguardamartech.com.br</text>
+  <text x="60" y="176" class="bd">Estuda cursos · quiz · certificado</text>
+  <rect x="310" y="112" width="250" height="72" class="box" rx="12"/>
+  <text x="330" y="140" class="bt">🛡️ Gestor / Admin</text>
+  <text x="330" y="160" class="bd">Publica cursos · triagem · painéis</text>
+  <text x="330" y="176" class="bd">Relatórios · homologação · auditoria</text>
+
+  <!-- ===== Layer 2: Frontend ===== -->
+  <text x="40" y="224" class="layer">FRONTEND (app estático · single-file index.html)</text>
+  <rect x="40" y="232" width="520" height="92" class="box" rx="12"/>
+  <text x="60" y="260" class="bt">🌐 SPA estática (HTML/CSS/JS)</text>
+  <text x="60" y="281" class="bd">Aba 🎓 Base de conhecimento · Biblioteca · Suporte · Sugestões</text>
+  <text x="60" y="299" class="bd">Visão executiva · Compliance · Pessoas · Registros</text>
+  <text x="60" y="317" class="chip">Hospedagem: Vercel (prmo-frontend.vercel.app) + GitHub Pages</text>
+
+  <!-- ===== Layer 3: Backend ===== -->
+  <text x="40" y="364" class="layer">BACKEND — FastAPI @ Render (prmo-api.onrender.com)</text>
+  <rect x="40" y="372" width="250" height="118" class="box" rx="12"/>
+  <text x="60" y="400" class="bt">🔐 Auth &amp; RBAC</text>
+  <text x="60" y="421" class="bd">JWT (jose) + bcrypt</text>
+  <text x="60" y="438" class="bd">Domínio corporativo</text>
+  <text x="60" y="455" class="bd">User / Manager / Admin</text>
+  <text x="60" y="478" class="chip">/auth/login · /signup · /me</text>
+
+  <rect x="310" y="372" width="250" height="118" class="box" rx="12"/>
+  <text x="330" y="400" class="bt">⚖️ Governança + Regras</text>
+  <text x="330" y="421" class="bd">Prompts (NIA-001) · Clientes</text>
+  <text x="330" y="438" class="bd">Stack · Pessoas · Compliance</text>
+  <text x="330" y="455" class="bd">Suporte · Ativos · Sugestões</text>
+  <text x="330" y="478" class="chip">Regras R1–R4 · auditoria</text>
+
+  <rect x="580" y="372" width="260" height="118" class="box" rx="12" stroke="#ff5d78"/>
+  <text x="600" y="400" class="bt">🎓 Academy (Base de conhecimento)</text>
+  <text x="600" y="421" class="bd">/courses · /{id} · /progress</text>
+  <text x="600" y="438" class="bd">/quiz · /certificate · /upload</text>
+  <text x="600" y="455" class="bd">/courses-ranking · /academy/me</text>
+  <text x="600" y="478" class="chip">/academy/mandatory-status</text>
+
+  <!-- ===== Layer 4: Data ===== -->
+  <text x="40" y="530" class="layer">DADOS — Supabase (RLS deny-by-default)</text>
+  <rect x="40" y="538" width="390" height="104" class="box" rx="12"/>
+  <text x="60" y="566" class="bt">🗄️ PostgreSQL 17</text>
+  <text x="60" y="587" class="bd">users · gov_prompts · gov_courses · gov_course_progress</text>
+  <text x="60" y="604" class="bd">gov_support · gov_asset_requests · gov_suggestions</text>
+  <text x="60" y="621" class="bd">gov_* (clientes, stack, skills, incidentes…) · audit_logs</text>
+  <text x="60" y="637" class="chip">Backend conecta como role postgres (bypassa RLS)</text>
+
+  <rect x="450" y="538" width="290" height="104" class="box" rx="12"/>
+  <text x="470" y="566" class="bt">📦 Supabase Storage</text>
+  <text x="470" y="587" class="bd">Bucket público course-materials</text>
+  <text x="470" y="604" class="bd">Upload de PDF/vídeo/slide (50 MB)</text>
+  <text x="470" y="621" class="bd">Via service key (SUPABASE_SERVICE_KEY)</text>
+  <text x="470" y="637" class="chip">Proxy no backend · URL pública</text>
+
+  <!-- external -->
+  <rect x="760" y="538" width="360" height="104" class="box" rx="12"/>
+  <text x="780" y="566" class="bt">🔗 Conteúdo externo (embed)</text>
+  <text x="780" y="587" class="bd">Vídeos YouTube / Vimeo (iframe responsivo)</text>
+  <text x="780" y="604" class="bd">Exportação sob demanda (CDN):</text>
+  <text x="780" y="621" class="bd">SheetJS (XLSX) · jsPDF (PDF) · html2canvas (PNG)</text>
+  <text x="780" y="637" class="chip">Certificado PNG/PDF · relatórios</text>
+
+  <!-- edges vertical -->
+  <path class="edge" d="M165,184 L165,232" marker-end="url(#arw)"/>
+  <path class="edge" d="M435,184 L300,232" marker-end="url(#arw)"/>
+  <path class="edge" d="M300,324 L300,372" marker-end="url(#arw)"/>
+  <text x="308" y="352" class="flowsub">HTTPS · JWT (fetch)</text>
+  <path class="edge" d="M300,490 L235,538" marker-end="url(#arw)"/>
+  <path class="edge" d="M700,490 L600,538" marker-end="url(#arw)"/>
+  <path class="edge" d="M715,490 L900,538" marker-end="url(#arw)"/>
+  <text x="705" y="516" class="flowsub">SQLAlchemy</text>
+
+  <!-- ===== Academy flow pipeline ===== -->
+  <text x="40" y="694" class="layer">FLUXO DA ACADEMIA (estilo Udemy + Hacker Rangers)</text>
+  <rect x="40" y="704" width="1080" height="164" fill="#ffffff" stroke="#d9d3e0" stroke-width="1.5" rx="14"/>
+
+  <!-- steps -->
+  <g>
+    <rect x="60" y="726" width="150" height="60" rx="10" fill="#efeafd" stroke="#c9b6ff"/>
+    <text x="135" y="752" text-anchor="middle" class="flow">📚 Catálogo</text>
+    <text x="135" y="770" text-anchor="middle" class="flowsub">categoria · nível · busca</text>
+
+    <rect x="238" y="726" width="150" height="60" rx="10" fill="#efeafd" stroke="#c9b6ff"/>
+    <text x="313" y="752" text-anchor="middle" class="flow">🎬 Aula</text>
+    <text x="313" y="770" text-anchor="middle" class="flowsub">conteúdo + materiais</text>
+
+    <rect x="416" y="726" width="150" height="60" rx="10" fill="#efeafd" stroke="#c9b6ff"/>
+    <text x="491" y="752" text-anchor="middle" class="flow">📝 Quiz</text>
+    <text x="491" y="770" text-anchor="middle" class="flowsub">nota mínima 70%</text>
+
+    <rect x="594" y="726" width="160" height="60" rx="10" fill="#e6f8ee" stroke="#22c55e"/>
+    <text x="674" y="752" text-anchor="middle" class="flow">✅ Conclusão</text>
+    <text x="674" y="770" text-anchor="middle" class="flowsub">aulas + quiz aprovado</text>
+
+    <rect x="782" y="726" width="150" height="60" rx="10" fill="#fdeef1" stroke="#ff5d78"/>
+    <text x="857" y="752" text-anchor="middle" class="flow">🏆 Certificado</text>
+    <text x="857" y="770" text-anchor="middle" class="flowsub">PDF / PNG + pontos</text>
+
+    <rect x="960" y="726" width="140" height="60" rx="10" fill="#fdeef1" stroke="#ff5d78"/>
+    <text x="1030" y="748" text-anchor="middle" class="flow">📊 Ranking</text>
+    <text x="1030" y="765" text-anchor="middle" class="flowsub">níveis · medalhas</text>
+
+    <path class="edge" d="M210,756 L238,756" marker-end="url(#arw)"/>
+    <path class="edge" d="M388,756 L416,756" marker-end="url(#arw)"/>
+    <path class="edge" d="M566,756 L594,756" marker-end="url(#arw)"/>
+    <path class="edge" d="M754,756 L782,756" marker-end="url(#arw)"/>
+    <path class="edge" d="M932,756 L960,756" marker-end="url(#arw)"/>
+  </g>
+
+  <!-- mandatory lane -->
+  <rect x="60" y="806" width="694" height="46" rx="10" fill="#fff7e6" stroke="#f59e0b"/>
+  <text x="80" y="828" class="flow">⏰ Obrigatórios com prazo</text>
+  <text x="80" y="844" class="flowsub">Política de IA (30d) · Segurança da Informação (45d) — lembrete automático ao aluno</text>
+
+  <rect x="770" y="806" width="330" height="46" rx="10" fill="#eef2ff" stroke="#6d28d9"/>
+  <text x="790" y="828" class="flow">📋 Painel do gestor</text>
+  <text x="790" y="844" class="flowsub">% de conclusão · pendentes · export XLSX/PDF</text>
+</svg>
