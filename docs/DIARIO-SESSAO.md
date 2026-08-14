@@ -9,6 +9,11 @@ Registro cronológico do trabalho por sessão. Entrada mais recente no topo.
 ### 🎯 Objetivo
 Criar uma aba de capacitação (estilo Udemy) para treinamentos de IA, Compliance e Segurança da Informação, com progresso do aluno — e, na sequência, a camada estilo **Hacker Rangers**: cursos **obrigatórios com prazo**, **quiz com nota**, **certificado** ao concluir e **ranking** por pontos.
 
+### 🔧 Ajuste — conteúdo em todos os cursos e remoção de anexos-placeholder
+- Correção após revisão do usuário: os materiais de **exemplo** (vídeo em inglês e "Guia rápido (PDF)" apontando para o site da Vanguarda) foram **removidos de toda a base** — nenhum curso tem materiais fictícios.
+- O curso **"Fundamentos de IA Generativa no trabalho"** (não estava entre os PDFs enviados) recebeu **conteúdo de estudo** nas 4 aulas, no mesmo padrão dos demais, e o quiz foi ampliado para 4 questões.
+- Resultado: os 6 cursos têm 4 aulas **com conteúdo** e **zero materiais**. Reaplicado em produção via re-seed. Validação TestClient: todos com conteúdo e sem material.
+
 ### ✅ Entregas — Conteúdo oficial dos treinamentos (5 PDFs)
 - **Cursos populados conforme os PDFs** enviados: Engenharia de Prompts (NIA-001), Política de IA e Uso Responsável, LGPD na Prática para Agências, Segurança da Informação: o Essencial e Uso Seguro de IA e Proteção de Segredos.
 - Cada curso passou a ter **4 aulas com conteúdo de estudo** (texto fiel ao PDF, incluindo "Ponto de atenção") e o **quiz oficial de 5 questões** de cada apostila, com o gabarito correto (nota mínima 70%).
