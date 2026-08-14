@@ -9,6 +9,13 @@ Registro cronológico do trabalho por sessão. Entrada mais recente no topo.
 ### 🎯 Objetivo
 Criar uma aba de capacitação (estilo Udemy) para treinamentos de IA, Compliance e Segurança da Informação, com progresso do aluno — e, na sequência, a camada estilo **Hacker Rangers**: cursos **obrigatórios com prazo**, **quiz com nota**, **certificado** ao concluir e **ranking** por pontos.
 
+### ✅ Entregas — Conteúdo oficial dos treinamentos (5 PDFs)
+- **Cursos populados conforme os PDFs** enviados: Engenharia de Prompts (NIA-001), Política de IA e Uso Responsável, LGPD na Prática para Agências, Segurança da Informação: o Essencial e Uso Seguro de IA e Proteção de Segredos.
+- Cada curso passou a ter **4 aulas com conteúdo de estudo** (texto fiel ao PDF, incluindo "Ponto de atenção") e o **quiz oficial de 5 questões** de cada apostila, com o gabarito correto (nota mínima 70%).
+- Novo campo `content` por aula (dentro de `lessons`); no curso, cada aula é **expansível** para leitura do material ("toque para ler").
+- Pontuação/obrigatoriedade conforme os PDFs (Política 100 pts/30d, Segurança 100 pts/45d, LGPD 80, Uso Seguro 90, Engenharia 70).
+- Aplicado em produção via re-seed (tabelas de cursos truncadas e repovoadas). Validação: TestClient (conteúdo em todas as aulas, quiz 5Q corrigido, gabarito não exposto) e Playwright (aula expansível) **5/5 PASS**.
+
 ### ✅ Entregas — Upload real de arquivos (Supabase Storage)
 - **Bucket `course-materials`** criado no Supabase Storage (público, limite 50 MB).
 - **Endpoint** `POST /governance/courses/upload` (gestor): recebe o arquivo (multipart), envia ao Storage via chave de serviço e devolve a URL pública + tipo inferido (video/pdf/slide/doc/link). Degrada com **HTTP 503** e mensagem clara caso as variáveis não estejam configuradas; **413** acima de 50 MB.

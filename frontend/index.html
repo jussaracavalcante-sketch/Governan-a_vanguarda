@@ -121,6 +121,9 @@
     .lesson .ltitle{font-size:13px;font-weight:700;flex:1}
     .lesson .lmeta{font-size:11px;color:var(--muted)}
     .lesson a.lwatch{font-size:11px;font-weight:800;color:#ff7189;text-decoration:none}
+    .lesson-wrap{margin-bottom:8px}.lesson-wrap .lesson{margin-bottom:0}
+    .lcaret{color:#ff7189;font-size:11px}
+    .lcontent{border:1px solid var(--line);border-top:0;border-radius:0 0 10px 10px;padding:12px 14px;font-size:13px;line-height:1.55;color:#cbc3cc;background:rgba(255,255,255,.02);white-space:pre-line}
     .cc-mand{position:absolute;bottom:10px;left:10px;background:#f59e0b;color:#3a2a00;font-size:9px;font-weight:900;letter-spacing:.4px;padding:3px 8px;border-radius:999px}
     .cc-tags{display:flex;gap:6px;flex-wrap:wrap}
     .dl{font-size:10px;font-weight:800;padding:3px 8px;border-radius:999px;background:#241f28;color:#cbc3cc;border:1px solid var(--line)}
@@ -966,11 +969,14 @@ function renderCourseDetail(){
   const c=CURRENT_COURSE; if(!c)return;
   const done=new Set(c.my_completed||[]);
   const lessons=(c.lessons||[]).map((l,i)=>{
-    const isDone=done.has(i);
-    return `<div class="lesson">
-      <div class="lck ${isDone?'done':''}" title="Marcar como concluída" onclick="toggleLesson(${i},${!isDone})">✓</div>
-      <div style="flex:1"><div class="ltitle">${esc(l.title)}</div><div class="lmeta">${esc(l.type||'Aula')}${l.duration_min?(' · '+fmtDur(l.duration_min)):''}</div></div>
-      ${l.url?`<a class="lwatch" href="${esc(l.url)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">Assistir ›</a>`:''}
+    const isDone=done.has(i); const hasC=!!(l.content&&l.content.trim());
+    return `<div class="lesson-wrap">
+      <div class="lesson">
+        <div class="lck ${isDone?'done':''}" title="Marcar como concluída" onclick="toggleLesson(${i},${!isDone})">✓</div>
+        <div style="flex:1;${hasC?'cursor:pointer':''}" ${hasC?`onclick="toggleLessonContent(${i})"`:''}><div class="ltitle">${esc(l.title)} ${hasC?`<span class="lcaret" id="lcar${i}">▸</span>`:''}</div><div class="lmeta">${esc(l.type||'Aula')}${l.duration_min?(' · '+fmtDur(l.duration_min)):''}${hasC?' · toque para ler':''}</div></div>
+        ${l.url?`<a class="lwatch" href="${esc(l.url)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">Assistir ›</a>`:''}
+      </div>
+      ${hasC?`<div class="lcontent" id="lcont${i}" style="display:none">${esc(l.content)}</div>`:''}
     </div>`;
   }).join('');
   const pct=c.my_percent||0, doneAll=c.my_status==='Concluído';
@@ -1025,6 +1031,11 @@ function renderCourseDetail(){
     <h3 class="section-title" style="margin:16px 0 10px">Conteúdo do curso</h3>
     ${lessons||'<div class="sub">Sem aulas cadastradas.</div>'}
     ${quizBlock}`;
+}
+function toggleLessonContent(i){
+  const el=document.getElementById('lcont'+i), car=document.getElementById('lcar'+i);
+  if(!el)return; const open=el.style.display!=='none';
+  el.style.display=open?'none':'block'; if(car)car.textContent=open?'▸':'▾';
 }
 function matIcon(k){return {video:'🎬',pdf:'📕',slide:'📊',doc:'📄',link:'🔗'}[k]||'🔗';}
 function embedUrl(url){
