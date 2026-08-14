@@ -306,6 +306,11 @@ CREATE TABLE public.gov_courses (
     tags character varying(240) DEFAULT '',
     lessons text DEFAULT '[]',                            -- JSON: [{title,type,duration_min,url}]
     published boolean DEFAULT true,
+    mandatory boolean DEFAULT false,                      -- curso obrigatório
+    due_date character varying(10) DEFAULT '',            -- prazo YYYY-MM-DD (obrigatórios)
+    points integer DEFAULT 50,                            -- pontos ao concluir (ranking)
+    pass_score integer DEFAULT 70,                        -- nota mínima do quiz (%)
+    quiz text DEFAULT '[]',                               -- JSON: [{q, options:[...], answer:idx}]
     created_at timestamp with time zone DEFAULT now()
 );
 CREATE INDEX ix_gov_courses_id ON public.gov_courses USING btree (id);
@@ -316,6 +321,10 @@ CREATE TABLE public.gov_course_progress (
     user_email character varying(120) DEFAULT '',
     completed text DEFAULT '[]',                          -- JSON: lista de índices de aulas concluídas
     status character varying(20) DEFAULT 'Em andamento',  -- Em andamento | Concluído
+    quiz_score integer DEFAULT -1,                        -- -1 = não realizado; 0..100
+    quiz_passed boolean DEFAULT false,
+    certificate_code character varying(40) DEFAULT '',    -- emitido ao concluir
+    completed_at character varying(30) DEFAULT '',
     updated_at character varying(30) DEFAULT '',
     created_at timestamp with time zone DEFAULT now()
 );
