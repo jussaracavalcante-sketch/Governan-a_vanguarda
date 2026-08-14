@@ -4,6 +4,25 @@ Registro cronológico do trabalho por sessão. Entrada mais recente no topo.
 
 ---
 
+## 2026-08-14 (sessão 11) — Base de conhecimento (cursos estilo Udemy)
+
+### 🎯 Objetivo
+Criar uma aba de capacitação (estilo Udemy) para treinamentos e cursos de IA, Compliance e Segurança da Informação, com acompanhamento de progresso do aluno.
+
+### ✅ Entregas
+- **Backend**: modelos `Course` (`gov_courses`) e `CourseProgress` (`gov_course_progress`). Endpoints `/governance/courses` (catálogo com filtros de categoria/nível/busca; `/mine`; `/{id}`; POST/PUT restritos a gestor com regra R1 e validação de categoria) e `POST /courses/{id}/progress` (marca/desmarca aula, recalcula % e status Concluído).
+- **Seed**: 6 cursos iniciais (2 por trilha) com aulas — ex.: *Fundamentos de IA Generativa*, *Engenharia de Prompts (NIA-001)*, *Política de IA e uso responsável*, *LGPD na prática*, *Segurança da Informação essencial*, *Uso seguro de IA e proteção de segredos*.
+- **Frontend**: aba "🎓 Base de conhecimento" com chips de categoria (IA/Compliance/Seg. Informação), busca, filtro de nível, cards com capa/nível/duração e **barra de progresso**, modal do curso com aulas marcáveis + links "Assistir", trilho **"Continue de onde parou"** e formulário de **novo curso** (gestor). O catálogo carrega ao abrir a aba (robusto a falhas do dashboard).
+- **db/supabase_schema.sql**: DDL de `gov_courses` e `gov_course_progress`.
+
+### 🧪 Validações
+- Backend (TestClient/SQLite): catálogo com 6 cursos e 3 categorias; conclusão de todas as aulas → 100%/"Concluído"; desmarcar reduz %; `/mine`; índice inválido → 422; categoria inválida → 422; RBAC 403 (usuário comum não cria curso) e leitura/progresso liberados.
+- Supabase: `gov_courses` e `gov_course_progress` criadas com **RLS** (seed roda no boot do backend).
+- UI (Playwright/`file://` com mock): **14/14 PASS** (aba ativa; catálogo; filtro por categoria; busca; modal; aulas; link "Assistir"; conclusão; badge CONCLUÍDO; rail; novo curso; sem erros JS).
+
+### ⏳ Pendências
+- Sincronizar a produção na Vercel com esta mudança (o GitHub Pages já reflete).
+
 ## 2026-08-13 (sessão 10) — Suporte técnico, solicitação de ativos e "Sugestões e melhorias"
 
 ### 🎯 Objetivo
