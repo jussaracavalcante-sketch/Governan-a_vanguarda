@@ -866,6 +866,78 @@ def review_suggestion(sid: int, item: SuggestionReviewIn, db: Session = Depends(
 COURSE_CATEGORIES = ("IA", "Compliance", "Segurança da Informação")
 COURSE_LEVELS = ("Iniciante", "Intermediário", "Avançado")
 
+# Níveis por pontuação (estilo Hacker Rangers)
+GAMIFICATION_LEVELS = [
+    (0, "Aprendiz", "🌱"),
+    (100, "Bronze", "🥉"),
+    (250, "Prata", "🥈"),
+    (500, "Ouro", "🥇"),
+    (1000, "Platina", "💎"),
+]
+
+
+def _level_for(points: int) -> dict:
+    points = max(0, int(points or 0))
+    cur = GAMIFICATION_LEVELS[0]
+    nxt = None
+    for i, lv in enumerate(GAMIFICATION_LEVELS):
+        if points >= lv[0]:
+            cur = lv
+            nxt = GAMIFICATION_LEVELS[i + 1] if i + 1 < len(GAMIFICATION_LEVELS) else None
+    return {
+        "name": cur[1], "icon": cur[2], "min": cur[0],
+        "next_name": (nxt[1] if nxt else None),
+        "next_at": (nxt[0] if nxt else None),
+        "to_next": (nxt[0] - points if nxt else 0),
+    }
+
+
+def _user_gamification(db: Session, email: str) -> dict:
+    """Resumo de gamificação do aluno: pontos, nível, medalhas e cursos concluídos."""
+    courses = {c.id: c for c in db.query(Course).all()}
+    progs = (db.query(CourseProgress)
+             .filter(CourseProgress.user_email == email, CourseProgress.status == "Concluído").all())
+    done_ids = {p.course_id for p in progs}
+    points = sum((courses[cid].points or 0) for cid in done_ids if cid in courses)
+    n_done = len(done_ids)
+    # trilhas 100% concluídas por categoria
+    by_cat = {}
+    for c in courses.values():
+        by_cat.setdefault(c.category, {"total": 0, "done": 0})
+        by_cat[c.category]["total"] += 1
+        if c.id in done_ids:
+            by_cat[c.category]["done"] += 1
+    trilhas_completas = [cat for cat, v in by_cat.items() if v["total"] and v["done"] >= v["total"]]
+    # obrigatórios pendentes
+    mand = [c for c in courses.values() if c.mandatory and c.published]
+    mand_pending = [c for c in mand if c.id not in done_ids]
+    all_mandatory_ok = len(mand) > 0 and len(mand_pending) == 0
+    # quiz nota máxima?
+    ace = any((p.quiz_score or 0) >= 100 for p in progs)
+    badges = [
+        {"code": "first", "label": "Primeiros passos", "icon": "🎬",
+         "desc": "Concluiu o primeiro treinamento", "earned": n_done >= 1},
+        {"code": "marathon", "label": "Maratonista", "icon": "🏃",
+         "desc": "Concluiu 3+ treinamentos", "earned": n_done >= 3},
+        {"code": "ace", "label": "Nota máxima", "icon": "🎯",
+         "desc": "Gabaritou um quiz (100%)", "earned": ace},
+        {"code": "compliant", "label": "Em dia", "icon": "✅",
+         "desc": "Concluiu todos os treinamentos obrigatórios", "earned": all_mandatory_ok},
+        {"code": "track_ia", "label": "Trilha de IA", "icon": "🤖",
+         "desc": "Concluiu toda a trilha de IA", "earned": "IA" in trilhas_completas},
+        {"code": "track_comp", "label": "Trilha de Compliance", "icon": "⚖️",
+         "desc": "Concluiu toda a trilha de Compliance", "earned": "Compliance" in trilhas_completas},
+        {"code": "track_sec", "label": "Trilha de Segurança", "icon": "🔐",
+         "desc": "Concluiu toda a trilha de Segurança da Informação",
+         "earned": "Segurança da Informação" in trilhas_completas},
+    ]
+    return {
+        "points": points, "courses_done": n_done,
+        "level": _level_for(points),
+        "badges": badges, "badges_earned": sum(1 for b in badges if b["earned"]),
+        "mandatory_total": len(mand), "mandatory_pending": len(mand_pending),
+    }
+
 
 def _next_course_code(db: Session) -> str:
     n = db.query(Course).count() + 1
@@ -1194,13 +1266,73 @@ def courses_ranking(db: Session = Depends(get_db), u: User = Depends(get_current
     names = {usr.email: usr.name for usr in db.query(User).all()}
     rows = []
     for e, d in agg.items():
+        lv = _level_for(d["points"])
         rows.append({"email": e, "name": names.get(e, e.split("@")[0]),
                      "points": d["points"], "courses": d["courses"],
+                     "level": lv["name"], "level_icon": lv["icon"],
                      "me": (e == u.email)})
     rows.sort(key=lambda r: (-r["points"], -r["courses"], r["name"].lower()))
     for i, r in enumerate(rows):
         r["rank"] = i + 1
     return rows
+
+
+@router.get("/academy/me")
+def academy_me(db: Session = Depends(get_db), u: User = Depends(get_current_user)):
+    """Perfil de gamificação do aluno + lembretes de treinamentos obrigatórios (prazo)."""
+    g = _user_gamification(db, u.email)
+    done_ids = {p.course_id for p in db.query(CourseProgress).filter(
+        CourseProgress.user_email == u.email, CourseProgress.status == "Concluído").all()}
+    today = datetime.now().date()
+    reminders = []
+    for c in db.query(Course).filter(Course.mandatory == True, Course.published == True).order_by(Course.id).all():  # noqa: E712
+        if c.id in done_ids:
+            continue
+        due = _parse_date(c.due_date)
+        days_left = (due - today).days if due else None
+        reminders.append({
+            "id": c.id, "title": c.title, "category": c.category,
+            "due_date": c.due_date or "", "days_left": days_left,
+            "overdue": (days_left is not None and days_left < 0),
+        })
+    reminders.sort(key=lambda r: (r["days_left"] is None, r["days_left"] if r["days_left"] is not None else 9999))
+    g["reminders"] = reminders
+    g["student"] = u.name or u.email
+    return g
+
+
+@router.get("/academy/mandatory-status")
+def mandatory_status(db: Session = Depends(get_db), u: User = Depends(get_current_manager_user)):
+    """Painel do gestor: quem está pendente em cada treinamento obrigatório."""
+    users = db.query(User).filter(User.status == "Ativo").all()
+    total_users = len(users)
+    today = datetime.now().date()
+    out = []
+    mandatory = db.query(Course).filter(Course.mandatory == True, Course.published == True).order_by(Course.id).all()  # noqa: E712
+    for c in mandatory:
+        done_emails = {p.user_email for p in db.query(CourseProgress).filter(
+            CourseProgress.course_id == c.id, CourseProgress.status == "Concluído").all()}
+        # em andamento (tem progresso mas não concluiu)
+        inprog_emails = {p.user_email for p in db.query(CourseProgress).filter(
+            CourseProgress.course_id == c.id, CourseProgress.status != "Concluído").all()}
+        pending = []
+        for usr in users:
+            if usr.email in done_emails:
+                continue
+            pending.append({"name": usr.name or usr.email, "email": usr.email,
+                            "started": usr.email in inprog_emails})
+        due = _parse_date(c.due_date)
+        days_left = (due - today).days if due else None
+        out.append({
+            "id": c.id, "title": c.title, "category": c.category,
+            "due_date": c.due_date or "", "days_left": days_left,
+            "overdue": (days_left is not None and days_left < 0),
+            "total_users": total_users, "completed": len(done_emails),
+            "pending": len(pending),
+            "completion_pct": round(100 * len(done_emails) / total_users) if total_users else 0,
+            "pending_users": pending,
+        })
+    return out
 
 
 # ---- Política de custo (teto por chamada, controlado pelo PrMO) ----

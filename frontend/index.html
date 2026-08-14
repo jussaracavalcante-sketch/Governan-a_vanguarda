@@ -161,6 +161,24 @@
       #certModal .dialog{max-width:100%;box-shadow:none;border:0}
       .no-print{display:none!important}
     }
+    /* lembretes + gamificação + painel gestor */
+    .academy-side{display:grid;gap:14px;align-content:start;position:sticky;top:12px}
+    .reminder-banner{background:linear-gradient(135deg,rgba(245,158,11,.16),rgba(239,68,68,.10));border:1px solid rgba(245,158,11,.45);border-radius:12px;padding:13px 15px;margin-bottom:18px}
+    .rb-h{font-weight:900;font-size:13px;margin-bottom:9px;color:#ffd591}
+    .rb-list{display:flex;flex-wrap:wrap;gap:8px}
+    .rb-item{background:#17151c;border:1px solid var(--line);border-radius:8px;padding:8px 11px;font-size:12px;color:#e9e3ea;cursor:pointer;display:flex;align-items:center;gap:8px;transition:transform .12s ease,border-color .15s ease}
+    .rb-item:hover{transform:translateY(-2px);border-color:rgba(255,31,69,.4)}
+    .gami-level{display:flex;align-items:center;gap:12px;margin:4px 0 2px}
+    .gl-icon{font-size:34px}
+    .badges{display:flex;flex-wrap:wrap;gap:7px}
+    .badge-chip{display:flex;align-items:center;gap:5px;font-size:11px;font-weight:700;padding:5px 9px;border-radius:999px;background:#17151c;border:1px solid var(--line);color:#6b647e;filter:grayscale(1);opacity:.55}
+    .badge-chip.on{filter:none;opacity:1;color:#e9e3ea;border-color:rgba(109,40,217,.5);background:rgba(109,40,217,.14)}
+    .mand-row{padding:12px 0;border-bottom:1px solid rgba(56,47,58,.6)}.mand-row:last-child{border-bottom:0}
+    .mand-head{display:flex;align-items:center;gap:9px;flex-wrap:wrap;font-size:13px;margin-bottom:8px}
+    .mand-bar{display:flex;align-items:center;gap:10px;margin-bottom:8px}.mand-bar .pbar{flex:1}
+    .mand-pend{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+    .pend-chip{font-size:11px;font-weight:700;padding:4px 9px;border-radius:999px;background:rgba(239,68,68,.12);color:#ff9a9a;border:1px solid rgba(239,68,68,.32)}
+    .pend-chip.started{background:rgba(245,158,11,.14);color:#ffd591;border-color:rgba(245,158,11,.4)}
   </style>
 </head>
 <body>
@@ -267,6 +285,11 @@
     </section>
 
     <section id="academy" class="page"><header class="top"><div><div class="eyebrow">Capacitação contínua</div><h1>Base de conhecimento</h1><p>Trilhas e cursos de IA, Compliance e Segurança da Informação. Assista, acompanhe seu progresso e conclua as capacitações obrigatórias.</p></div><button class="btn ctrl-only" onclick="openCourseForm()">+ Novo curso</button></header>
+      <div id="academyReminders"></div>
+      <div class="card ctrl-only" id="mandatoryPanelWrap" style="margin-bottom:18px">
+        <h3 class="section-title">📋 Treinamentos obrigatórios — status da equipe</h3>
+        <div id="mandatoryPanel"><div class="sub">Carregando…</div></div>
+      </div>
       <div id="continueWrap" style="display:none;margin-bottom:18px">
         <h3 class="section-title">Continue de onde parou</h3>
         <div class="course-rail" id="continueRail"></div>
@@ -283,10 +306,13 @@
       </div>
       <div class="academy-cols">
         <div class="course-grid" id="courseGrid"><div class="sub">Carregando cursos…</div></div>
-        <aside class="card rank-card">
-          <h3 class="section-title">🏆 Ranking de aprendizado</h3>
-          <div class="sub" style="margin:-8px 0 12px">Pontos por treinamentos concluídos.</div>
-          <div id="rankBody"><div class="sub">Carregando…</div></div>
+        <aside class="academy-side">
+          <div class="card gami-card" id="gamiCard"><div class="sub">Carregando seu progresso…</div></div>
+          <div class="card rank-card">
+            <h3 class="section-title">🏆 Ranking de aprendizado</h3>
+            <div class="sub" style="margin:-8px 0 12px">Pontos por treinamentos concluídos.</div>
+            <div id="rankBody"><div class="sub">Carregando…</div></div>
+          </div>
         </aside>
       </div>
     </section>
@@ -409,7 +435,7 @@ function navigate(pageid, record=true){
   document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
   const btn=document.querySelector('.nav button[data-page="'+pageid+'"]'); if(btn) btn.classList.add('active');
   const pg=document.getElementById(pageid); if(pg){ pg.classList.add('active'); placeBackBtn(pg); }
-  if(pageid==='academy' && CURRENT && typeof loadCourses==='function'){ loadCourses(); loadRanking(); }
+  if(pageid==='academy' && CURRENT && typeof loadCourses==='function'){ loadCourses(); loadRanking(); loadAcademyMe(); loadMandatoryPanel(); }
   updateBackBtn();
 }
 function homePage(){return isController()?'dashboard':'prompts';}
@@ -597,13 +623,13 @@ async function boot(){
       loadSupportQueue(); loadMySupport();
       loadAssetReqQueue(); loadMyAssetReq();
       loadSuggBoard(); loadMySugg();
-      loadCourses(); loadRanking();
+      loadCourses(); loadRanking(); loadAcademyMe(); loadMandatoryPanel();
     } else {
       // Usuário comum: Biblioteca de prompts (leitura) + canal de suporte + sugestões
       COST_POLICY=await api('/governance/cost-policy');
       renderPrompts(await api('/governance/prompts'));
       loadMySupport(); loadMyAssetReq(); loadMySugg();
-      loadCourses(); loadRanking();
+      loadCourses(); loadRanking(); loadAcademyMe(); loadMandatoryPanel();
       document.getElementById('obsDot').className='dot on';
       document.getElementById('obsText').textContent='Acesso: leitura · Biblioteca + Suporte';
     }
@@ -984,9 +1010,9 @@ async function submitQuiz(){
     CURRENT_COURSE=res.course; renderCourseDetail();
     if(res.passed) toast('✓ Aprovado com '+res.score+'%! '+(res.course.my_certificate?'Certificado liberado 🏆':''));
     else toast('Nota '+res.score+'% — mínimo '+res.pass_score+'%. Tente de novo.',false);
-    loadCourses(); loadRanking();
+    loadCourses(); loadRanking(); loadAcademyMe(); loadMandatoryPanel();
   }catch(ex){err.textContent=ex.message;}
-  finally{btn.disabled=false; btn.textContent='Enviar respostas';}
+  finally{btn.disabled=false; btn.textContent="Enviar respostas";}
 }
 async function openCertificate(cid){
   try{
@@ -1018,7 +1044,50 @@ async function loadRanking(){
     const rows=await api('/governance/courses-ranking');
     if(!rows||!rows.length){el.innerHTML='<div class="sub">Ainda sem conclusões. Seja o primeiro! 🏅</div>';return;}
     const medal=i=>i===0?'🥇':i===1?'🥈':i===2?'🥉':('#'+(i+1));
-    el.innerHTML=rows.slice(0,10).map((r,i)=>`<div class="rank-row2 ${r.me?'me':''}"><span class="rk">${medal(i)}</span><b>${esc(r.name)}${r.me?' (você)':''}</b><span class="rkpts">${r.points} pts · ${r.courses} curso(s)</span></div>`).join('');
+    el.innerHTML=rows.slice(0,10).map((r,i)=>`<div class="rank-row2 ${r.me?'me':''}"><span class="rk">${medal(i)}</span><b>${esc(r.name)}${r.me?' (você)':''}<br><span class="muted" style="font-weight:600">${esc(r.level_icon||'')} ${esc(r.level||'')}</span></b><span class="rkpts">${r.points} pts · ${r.courses} curso(s)</span></div>`).join('');
+  }catch(ex){el.innerHTML='<div class="sub">—</div>';}
+}
+async function loadAcademyMe(){
+  const card=document.getElementById('gamiCard'); const rem=document.getElementById('academyReminders');
+  try{
+    const g=await api('/governance/academy/me');
+    // banner de lembretes (automático ao abrir)
+    if(rem){
+      if(g.reminders && g.reminders.length){
+        rem.innerHTML=`<div class="reminder-banner"><div class="rb-h">⏰ Você tem ${g.reminders.length} treinamento(s) obrigatório(s) pendente(s)</div><div class="rb-list">${
+          g.reminders.map(r=>{
+            const tag=r.overdue?'<span class="dl red">Atrasado</span>':(r.days_left!=null?`<span class="dl ${r.days_left<=7?'warn':''}">${r.days_left===0?'vence hoje':'vence em '+r.days_left+'d'}</span>`:'');
+            return `<button class="rb-item" onclick="openCourse(${r.id})"><b>${esc(r.title)}</b> ${tag}</button>`;
+          }).join('')}</div></div>`;
+      } else { rem.innerHTML=''; }
+    }
+    // card de progresso (nível + medalhas)
+    if(card){
+      const lv=g.level||{}; const pctToNext=lv.next_at?Math.min(100,Math.round(100*(g.points-(lv.min||0))/((lv.next_at-(lv.min||0))||1))):100;
+      const badges=(g.badges||[]).map(b=>`<div class="badge-chip ${b.earned?'on':''}" title="${esc(b.desc)}">${b.icon} <span>${esc(b.label)}</span></div>`).join('');
+      card.innerHTML=`<h3 class="section-title">🎖️ Meu progresso</h3>
+        <div class="gami-level"><span class="gl-icon">${esc(lv.icon||'🌱')}</span><div><b>${esc(lv.name||'Aprendiz')}</b><div class="sub">${g.points} pontos · ${g.courses_done} concluído(s)</div></div></div>
+        <div class="pbar" style="margin:8px 0 4px"><i style="width:${pctToNext}%"></i></div>
+        <div class="ppct">${lv.next_name?('Faltam '+lv.to_next+' pts para '+lv.next_name):'Nível máximo 🎉'}</div>
+        <div class="sub" style="margin:12px 0 6px">Medalhas (${g.badges_earned}/${(g.badges||[]).length})</div>
+        <div class="badges">${badges}</div>`;
+    }
+  }catch(ex){ if(card)card.innerHTML=''; if(rem)rem.innerHTML=''; }
+}
+async function loadMandatoryPanel(){
+  const el=document.getElementById('mandatoryPanel'); if(!el||!isController())return;
+  try{
+    const rows=await api('/governance/academy/mandatory-status');
+    if(!rows||!rows.length){el.innerHTML='<div class="sub">Nenhum treinamento obrigatório cadastrado.</div>';return;}
+    el.innerHTML=rows.map(r=>{
+      const tag=r.overdue?'<span class="dl red">Prazo vencido</span>':(r.days_left!=null?`<span class="dl ${r.days_left<=7?'warn':'ok'}">vence em ${r.days_left}d</span>`:'');
+      const pend=r.pending_users.length?r.pending_users.map(p=>`<span class="pend-chip ${p.started?'started':''}" title="${p.started?'Em andamento':'Não iniciou'}">${esc(p.name)}</span>`).join(''):'<span class="sub">Todos concluíram 🎉</span>';
+      return `<div class="mand-row">
+        <div class="mand-head"><b>${esc(r.title)}</b> <span class="muted">${esc(r.category)}</span> ${tag}</div>
+        <div class="mand-bar"><div class="pbar"><i style="width:${r.completion_pct}%"></i></div><span class="ppct">${r.completed}/${r.total_users} concluíram (${r.completion_pct}%)</span></div>
+        <div class="mand-pend"><span class="sub">Pendentes (${r.pending}):</span> ${pend}</div>
+      </div>`;
+    }).join('');
   }catch(ex){el.innerHTML='<div class="sub">—</div>';}
 }
 async function toggleLesson(idx,done){
@@ -1027,7 +1096,7 @@ async function toggleLesson(idx,done){
     const updated=await api('/governance/courses/'+CURRENT_COURSE.id+'/progress',{method:'POST',body:JSON.stringify({lesson_index:idx,done})});
     CURRENT_COURSE=updated; renderCourseDetail();
     if(updated.my_status==='Concluído')toast('Parabéns! Curso concluído 🎉');
-    loadCourses();
+    loadCourses(); loadRanking(); loadAcademyMe(); loadMandatoryPanel();
   }catch(ex){toast('Erro: '+ex.message,false);}
 }
 function openCourseForm(){document.getElementById('courseErr').textContent='';document.getElementById('courseFormModal').classList.add('open');}
