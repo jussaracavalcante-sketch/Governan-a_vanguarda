@@ -9,6 +9,11 @@ Registro cronológico do trabalho por sessão. Entrada mais recente no topo.
 ### 🎯 Objetivo
 Criar uma aba de capacitação (estilo Udemy) para treinamentos de IA, Compliance e Segurança da Informação, com progresso do aluno — e, na sequência, a camada estilo **Hacker Rangers**: cursos **obrigatórios com prazo**, **quiz com nota**, **certificado** ao concluir e **ranking** por pontos.
 
+### ✅ Entregas — Materiais de apoio nos cursos
+- **Campo de materiais por curso** (`Course.materials`): título, tipo (video/pdf/slide/doc/link) e URL. No curso, os **vídeos do YouTube/Vimeo tocam incorporados** (iframe responsivo) e PDFs/slides/docs/links abrem por botão (Baixar/Abrir/Assistir). Formulário de novo curso ganhou o campo "Materiais (Título | tipo | URL)".
+- Anexação **por link/incorporado** (decisão do usuário) — sem upload de arquivo; upload real via Supabase Storage fica como evolução futura.
+- Migração Supabase: coluna `materials` (RLS mantida) + 2 cursos com materiais de exemplo (progresso preservado). Validação Playwright **8/8 PASS**.
+
 ### ✅ Entregas — Exportação e certificado em PNG
 - **Relatório de obrigatórios exportável** no painel do gestor: **XLSX** (aba "Resumo" por curso — prazo, % conclusão, concluídos, pendentes, status — e aba "Pendentes" com colaborador/e-mail/situação) e **PDF** (captura do painel). Reaproveita o exportador existente (SheetJS/html2canvas/jsPDF via CDN sob demanda).
 - **Certificado com download em PNG** (html2canvas), além do Imprimir/Salvar PDF.
