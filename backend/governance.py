@@ -208,6 +208,7 @@ class Course(Base):
     duration_min = Column(Integer, default=0)             # duração total (min)
     tags = Column(String(240), default="")                # csv
     lessons = Column(Text, default="[]")                  # JSON: [{title,type,duration_min,url}]
+    materials = Column(Text, default="[]")                # JSON: [{title,kind,url}] (vídeo/pdf/slide/doc/link)
     published = Column(Boolean, default=True)
     # --- Gamificação / obrigatoriedade (estilo Hacker Rangers) ---
     mandatory = Column(Boolean, default=False)            # curso obrigatório
@@ -362,6 +363,12 @@ class QuestionIn(BaseModel):
     answer: int = 0                      # índice da alternativa correta
 
 
+class MaterialIn(BaseModel):
+    title: str
+    kind: str = "link"                   # video | pdf | slide | doc | link
+    url: str = ""
+
+
 class CourseIn(BaseModel):
     title: str
     description: str = ""
@@ -378,6 +385,7 @@ class CourseIn(BaseModel):
     pass_score: int = 70
     lessons: list[LessonIn] = []
     quiz: list[QuestionIn] = []
+    materials: list[MaterialIn] = []
 
 
 class CourseUpdateIn(BaseModel):
@@ -396,6 +404,7 @@ class CourseUpdateIn(BaseModel):
     pass_score: int | None = None
     lessons: list[LessonIn] | None = None
     quiz: list[QuestionIn] | None = None
+    materials: list[MaterialIn] | None = None
 
 
 class ProgressIn(BaseModel):
@@ -962,6 +971,10 @@ def _quiz_list(obj: Course) -> list:
     return _json_list(obj.quiz)
 
 
+def _materials_list(obj: Course) -> list:
+    return _json_list(getattr(obj, "materials", None) or "[]")
+
+
 def _parse_date(s: str):
     try:
         return datetime.strptime((s or "").strip(), "%Y-%m-%d").date()
@@ -1020,6 +1033,7 @@ def _course_public(obj: Course, prog: "CourseProgress | None") -> dict:
         "days_left": days_left, "overdue": overdue,
         "points": obj.points or 0, "pass_score": obj.pass_score or 0,
         "lessons": lessons, "lessons_count": total,
+        "materials": _materials_list(obj),
         "quiz": quiz_public, "quiz_count": len(quiz), "has_quiz": has_quiz,
         "my_completed": done, "my_percent": pct, "my_status": status,
         "my_quiz_score": (prog.quiz_score if prog else -1),
@@ -1108,6 +1122,24 @@ def _apply_quiz(obj: Course, quiz: list) -> None:
     obj.quiz = json.dumps(clean, ensure_ascii=False)
 
 
+_MATERIAL_KINDS = ("video", "pdf", "slide", "doc", "link")
+
+
+def _apply_materials(obj: Course, materials: list) -> None:
+    clean = []
+    for mt in materials:
+        d = mt.model_dump() if hasattr(mt, "model_dump") else dict(mt)
+        url = str(d.get("url", "")).strip()[:500]
+        title = str(d.get("title", "")).strip()[:200]
+        if not url and not title:
+            continue
+        kind = (d.get("kind") or "link").lower()
+        if kind not in _MATERIAL_KINDS:
+            kind = "link"
+        clean.append({"title": title or url, "kind": kind, "url": url})
+    obj.materials = json.dumps(clean, ensure_ascii=False)
+
+
 def _valid_due(s: str) -> str:
     s = (s or "").strip()
     return s if (s == "" or _parse_date(s)) else ""
@@ -1131,6 +1163,7 @@ def create_course(item: CourseIn, db: Session = Depends(get_db), u: User = Depen
     )
     _apply_course(obj, item.lessons)
     _apply_quiz(obj, item.quiz)
+    _apply_materials(obj, item.materials)
     db.add(obj); db.commit(); db.refresh(obj)
     _audit(db, u, "CREATE", "course", obj.id, {"title": obj.title, "category": obj.category, "mandatory": obj.mandatory})
     return _course_public(obj, None)
@@ -1151,6 +1184,7 @@ def update_course(cid: int, item: CourseUpdateIn, db: Session = Depends(get_db),
         raise HTTPException(status_code=422, detail={"regras": ["R1: conteúdo proibido — " + ", ".join(sorted(set(forb)))]})
     lessons = data.pop("lessons", None)
     quiz = data.pop("quiz", None)
+    materials = data.pop("materials", None)
     if "due_date" in data:
         data["due_date"] = _valid_due(data["due_date"])
     if "pass_score" in data and data["pass_score"] is not None:
@@ -1161,6 +1195,8 @@ def update_course(cid: int, item: CourseUpdateIn, db: Session = Depends(get_db),
         _apply_course(obj, item.lessons)
     if quiz is not None:
         _apply_quiz(obj, item.quiz)
+    if materials is not None:
+        _apply_materials(obj, item.materials)
     db.commit(); db.refresh(obj)
     _audit(db, u, "UPDATE", "course", obj.id, {"title": obj.title})
     return _course_public(obj, None)
@@ -1655,6 +1691,10 @@ def seed_courses(db: Session):
                  dict(q="IA generativa pode 'alucinar' (inventar informações)?", options=["Nunca, é sempre precisa", "Sim, por isso exige revisão humana", "Só em inglês"], answer=1),
                  dict(q="Onde a IA mais ajuda no dia a dia?", options=["Substituir a revisão humana", "Acelerar rascunhos e análises com supervisão", "Guardar senhas"], answer=1),
                  dict(q="Antes de entregar conteúdo gerado por IA ao cliente, você deve:", options=["Publicar direto", "Revisar e validar", "Ignorar a política"], answer=1),
+             ],
+             materials=[
+                 dict(title="Introdução à IA Generativa (vídeo)", kind="video", url="https://www.youtube.com/watch?v=2IK3DFHRFfw"),
+                 dict(title="Guia rápido de boas práticas (PDF)", kind="pdf", url="https://www.vanguardamartech.com.br/"),
              ]),
         dict(title="Engenharia de Prompts (padrão NIA-001)", category="IA", level="Intermediário",
              instructor="Diretoria de IA", cover="✍️", accent="#2563eb", points=70, pass_score=70,
@@ -1682,6 +1722,10 @@ def seed_courses(db: Session):
                  dict(q="Posso usar qualquer ferramenta de IA que eu quiser?", options=["Sim", "Só as homologadas no stack", "Só as gratuitas"], answer=1),
                  dict(q="Dado classificado como Restrito pode ir para repositório público externo?", options=["Sim", "Não", "Se for pequeno"], answer=1),
                  dict(q="Ao presenciar uso indevido de IA, devo:", options=["Ignorar", "Reportar pelo canal de suporte", "Comentar informalmente"], answer=1),
+             ],
+             materials=[
+                 dict(title="Política Corporativa de IA (documento)", kind="doc", url="https://www.vanguardamartech.com.br/"),
+                 dict(title="Fluxo de reporte de uso indevido (slides)", kind="slide", url="https://www.vanguardamartech.com.br/"),
              ]),
         dict(title="LGPD na prática para agências", category="Compliance", level="Intermediário",
              instructor="Compliance & Governança", cover="🛡️", accent="#0d9488", points=80, pass_score=75,
@@ -1731,10 +1775,11 @@ def seed_courses(db: Session):
              ]),
     ]
     for c in catalogo:
-        lessons = c.pop("lessons"); quiz = c.pop("quiz", [])
+        lessons = c.pop("lessons"); quiz = c.pop("quiz", []); materials = c.pop("materials", [])
         obj = Course(code=_next_course_code(db), published=True, **c)
         obj.lessons = json.dumps(lessons, ensure_ascii=False)
         obj.quiz = json.dumps(quiz, ensure_ascii=False)
+        obj.materials = json.dumps(materials, ensure_ascii=False)
         obj.duration_min = sum(int(l.get("duration_min") or 0) for l in lessons)
         db.add(obj); db.flush()
     db.commit()

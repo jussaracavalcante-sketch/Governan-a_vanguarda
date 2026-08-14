@@ -305,6 +305,7 @@ CREATE TABLE public.gov_courses (
     duration_min integer DEFAULT 0,
     tags character varying(240) DEFAULT '',
     lessons text DEFAULT '[]',                            -- JSON: [{title,type,duration_min,url}]
+    materials text DEFAULT '[]',                          -- JSON: [{title,kind,url}] (video/pdf/slide/doc/link)
     published boolean DEFAULT true,
     mandatory boolean DEFAULT false,                      -- curso obrigatório
     due_date character varying(10) DEFAULT '',            -- prazo YYYY-MM-DD (obrigatórios)

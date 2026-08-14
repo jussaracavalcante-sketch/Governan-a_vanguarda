@@ -182,6 +182,14 @@
     .panel-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px}
     .panel-actions{display:flex;gap:8px}
     .btn.small{padding:7px 12px;font-size:12px}
+    .mat-list{display:grid;gap:10px}
+    .mat-item{display:flex;align-items:center;gap:10px;padding:11px 12px;border:1px solid var(--line);border-radius:10px;text-decoration:none;color:#e9e3ea;transition:border-color .15s ease,background .15s ease}
+    .mat-item:hover{border-color:rgba(255,31,69,.35);background:rgba(255,255,255,.02)}
+    .mat-ic{font-size:18px}.mat-t{flex:1;font-size:13px;font-weight:700}.mat-go{font-size:11px;font-weight:800;color:#ff7189}
+    .mat-embed{border:1px solid var(--line);border-radius:10px;overflow:hidden}
+    .mat-cap{font-size:12px;font-weight:800;padding:9px 12px;background:#17151c}
+    .mat-frame{position:relative;width:100%;padding-top:56.25%;background:#000}
+    .mat-frame iframe{position:absolute;inset:0;width:100%;height:100%}
   </style>
 </head>
 <body>
@@ -367,6 +375,7 @@
   </div>
   <label>Aulas (uma por linha — <span class="muted">Título | tipo | minutos | link</span>)<textarea data-k="lessons" rows="5" placeholder="Boas-vindas | Vídeo | 8 | https://…&#10;Conceitos essenciais | Leitura | 12"></textarea></label>
   <label>Quiz (uma questão por linha — <span class="muted">Pergunta | alt1 ; alt2 ; alt3 | nº da alternativa correta</span>)<textarea data-k="quiz" rows="4" placeholder="Devo revisar conteúdo de IA? | Sim ; Não ; Depende | 1"></textarea></label>
+  <label>Materiais de apoio (um por linha — <span class="muted">Título | tipo (video/pdf/slide/doc/link) | URL</span>)<textarea data-k="materials" rows="3" placeholder="Aula gravada | video | https://youtu.be/…&#10;Apostila | pdf | https://drive.google.com/…"></textarea></label>
   <div class="err" id="courseErr"></div>
 </div><div class="modal-actions"><button class="btn alt" onclick="closeCourseForm()">Cancelar</button><button class="btn" id="courseSaveBtn" onclick="saveCourse()">Publicar curso</button></div></div></div>
 
@@ -978,6 +987,19 @@ function renderCourseDetail(){
         <button class="btn" id="quizBtn" onclick="submitQuiz()">Enviar respostas</button></div>`;
     }
   }
+  // materiais de apoio (vídeos incorporados + links de download)
+  let matBlock='';
+  const mats=c.materials||[];
+  if(mats.length){
+    const items=mats.map(mt=>{
+      const emb=(mt.kind==='video')?embedUrl(mt.url):null;
+      if(emb) return `<div class="mat-embed"><div class="mat-cap">${matIcon(mt.kind)} ${esc(mt.title)}</div><div class="mat-frame"><iframe src="${esc(emb)}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe></div></div>`;
+      const verb=(mt.kind==='video')?'Assistir':(['pdf','slide','doc'].includes(mt.kind)?'Baixar':'Abrir');
+      return mt.url?`<a class="mat-item" href="${esc(mt.url)}" target="_blank" rel="noopener"><span class="mat-ic">${matIcon(mt.kind)}</span><span class="mat-t">${esc(mt.title)}</span><span class="mat-go">${verb} ›</span></a>`
+                   :`<div class="mat-item"><span class="mat-ic">${matIcon(mt.kind)}</span><span class="mat-t">${esc(mt.title)}</span></div>`;
+    }).join('');
+    matBlock=`<h3 class="section-title" style="margin:16px 0 10px">📎 Materiais de apoio</h3><div class="mat-list">${items}</div>`;
+  }
   // certificado
   let certBlock='';
   if(doneAll){
@@ -995,9 +1017,19 @@ function renderCourseDetail(){
     <div class="pbar ${pct?'':'zero'}" style="margin-bottom:4px"><i style="width:${pct}%"></i></div>
     <div class="ppct" style="margin-bottom:14px">${doneAll?'✓ Curso concluído':('Progresso '+pct+'%')}</div>
     ${certBlock}
-    <h3 class="section-title" style="margin-bottom:10px">Conteúdo do curso</h3>
+    ${matBlock}
+    <h3 class="section-title" style="margin:16px 0 10px">Conteúdo do curso</h3>
     ${lessons||'<div class="sub">Sem aulas cadastradas.</div>'}
     ${quizBlock}`;
+}
+function matIcon(k){return {video:'🎬',pdf:'📕',slide:'📊',doc:'📄',link:'🔗'}[k]||'🔗';}
+function embedUrl(url){
+  url=String(url||'');
+  let m=url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([\w-]{6,})/);
+  if(m) return 'https://www.youtube.com/embed/'+m[1];
+  m=url.match(/vimeo\.com\/(?:video\/)?(\d+)/);
+  if(m) return 'https://player.vimeo.com/video/'+m[1];
+  return null;
 }
 async function submitQuiz(){
   const c=CURRENT_COURSE; if(!c)return;
@@ -1119,6 +1151,14 @@ function parseQuiz(txt){
     return {q:p[0]||'', options, answer:(parseInt(p[2]||'1',10)||1)-1};
   }).filter(x=>x.q && x.options.length>=2);
 }
+function parseMaterials(txt){
+  const kinds=['video','pdf','slide','doc','link'];
+  return (txt||'').split('\n').map(l=>l.trim()).filter(Boolean).map(line=>{
+    const p=line.split('|').map(x=>x.trim());
+    let kind=(p[1]||'link').toLowerCase(); if(!kinds.includes(kind))kind='link';
+    return {title:p[0]||p[2]||'Material', kind, url:p[2]||''};
+  }).filter(x=>x.url||x.title);
+}
 async function saveCourse(){
   const f=document.getElementById('courseForm'), err=document.getElementById('courseErr'); err.textContent='';
   const p={}; f.querySelectorAll('[data-k]').forEach(el=>p[el.dataset.k]=el.type==='checkbox'?el.checked:el.value);
@@ -1126,7 +1166,7 @@ async function saveCourse(){
   const body={title:p.title,category:p.category,level:p.level,instructor:p.instructor,cover:p.cover||'🎓',
     description:p.description,tags:p.tags,mandatory:!!p.mandatory,due_date:p.due_date||'',
     points:parseInt(p.points||'50',10)||0,pass_score:parseInt(p.pass_score||'70',10)||70,
-    lessons:parseLessons(p.lessons),quiz:parseQuiz(p.quiz)};
+    lessons:parseLessons(p.lessons),quiz:parseQuiz(p.quiz),materials:parseMaterials(p.materials)};
   const btn=document.getElementById('courseSaveBtn'); btn.disabled=true; btn.textContent='Publicando…';
   try{
     await api('/governance/courses',{method:'POST',body:JSON.stringify(body)});
