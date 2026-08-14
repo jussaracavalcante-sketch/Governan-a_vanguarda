@@ -9,6 +9,27 @@ Registro cronológico do trabalho por sessão. Entrada mais recente no topo.
 ### 🎯 Objetivo
 Criar uma aba de capacitação (estilo Udemy) para treinamentos de IA, Compliance e Segurança da Informação, com progresso do aluno — e, na sequência, a camada estilo **Hacker Rangers**: cursos **obrigatórios com prazo**, **quiz com nota**, **certificado** ao concluir e **ranking** por pontos.
 
+### 🗓️ Resumo do dia (ordem cronológica)
+1. **Base de conhecimento (Udemy)** — nova aba "🎓 Base de conhecimento": catálogo por categoria (IA / Compliance / Segurança da Informação), filtros e busca, cards com capa/nível/duração e barra de progresso, modal do curso com aulas marcáveis e trilho "Continue de onde parou". 6 cursos iniciais semeados.
+2. **Gamificação (Hacker Rangers)** — obrigatórios com prazo, quiz com nota (gate de conclusão), certificado imprimível e ranking por pontos.
+3. **Engajamento** — níveis (Aprendiz→Platina), medalhas, painel do gestor de obrigatórios e lembretes automáticos de prazo (in-app).
+4. **Exportação** — relatório de obrigatórios em XLSX/PDF e certificado em PNG.
+5. **Materiais de apoio** — campo por curso (link/incorporado): vídeos YouTube/Vimeo embutidos e docs por botão.
+6. **Upload real** — bucket `course-materials` no Supabase Storage + endpoint `POST /courses/upload` e botão "⬆ Enviar arquivo" (pendente ligar `SUPABASE_URL`/`SUPABASE_SERVICE_KEY` no Render).
+7. **Conteúdo oficial dos 5 PDFs** — cada treinamento populado com 4 aulas de conteúdo + o quiz oficial de 5 questões (gabarito correto, nota mínima 70%). Aula expansível ("toque para ler").
+8. **Ajuste final (revisão do usuário)** — removidos os materiais-placeholder (vídeo em inglês e PDF apontando para o site institucional) de toda a base; "Fundamentos de IA Generativa" ganhou conteúdo nas 4 aulas. Estado final: **6 cursos, 4 aulas com conteúdo cada, 0 materiais**.
+
+### 🌐 Produção (no ar ao fim do dia)
+- Frontend: **https://prmo-frontend.vercel.app** (Vercel) e GitHub Pages — mesmo build, consumindo `prmo-api`.
+- Backend: **https://prmo-api.onrender.com** (Render) + Supabase (RLS). Novos endpoints: `/governance/courses[...]`, `/courses/{id}/quiz`, `/courses/{id}/certificate`, `/courses/upload`, `/courses-ranking`, `/academy/me`, `/academy/mandatory-status`.
+- Novas colunas Supabase: `gov_courses` (mandatory, due_date, points, pass_score, quiz, materials) e `gov_course_progress` (quiz_score, quiz_passed, certificate_code, completed_at) — todas com RLS.
+
+### ⏳ Pendências do dia (ação do usuário)
+- **Render** — para ativar o upload de arquivos: definir `SUPABASE_URL=https://ubixfcoigwpjdrioymdq.supabase.co` e `SUPABASE_SERVICE_KEY=<service_role>` em `prmo-api`.
+- **Vercel** — definir Production Branch = `claude/prompts-repo-infrastructure-08dmf1` (Settings → Git) para deploy automático e dispensar a sincronização manual via token.
+- **Revogar o token da Vercel** usado nas sincronizações (apareceu no chat).
+- Opcional: envio de lembrete/relatório por e-mail (requer SMTP — Resend/SendGrid/SES).
+
 ### 🔧 Ajuste — conteúdo em todos os cursos e remoção de anexos-placeholder
 - Correção após revisão do usuário: os materiais de **exemplo** (vídeo em inglês e "Guia rápido (PDF)" apontando para o site da Vanguarda) foram **removidos de toda a base** — nenhum curso tem materiais fictícios.
 - O curso **"Fundamentos de IA Generativa no trabalho"** (não estava entre os PDFs enviados) recebeu **conteúdo de estudo** nas 4 aulas, no mesmo padrão dos demais, e o quiz foi ampliado para 4 questões.
