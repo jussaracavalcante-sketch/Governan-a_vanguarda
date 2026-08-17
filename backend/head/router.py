@@ -28,6 +28,11 @@ def list_activities(source: str = Query("", description="Filtra por fonte: Jira,
     return crud.get_activities(db, source=source)
 
 
+@router.get("/purchase-requests", response_model=List[schemas.PurchaseRequestResponse], summary="Solicitações de Compra (e-mails)")
+def list_purchase_requests(status: str = Query(""), db: Session = Depends(get_db), user: User = Depends(get_current_user)):
+    return crud.get_purchase_requests(db, status=status)
+
+
 @router.get("/prmo", summary="Visão do PrMO (consultivo, somente leitura)")
 def prmo_view(user: User = Depends(get_current_user)):
     """Retrato de governança do PrMO. Ao vivo se PRMO_DATABASE_URL estiver

@@ -7,7 +7,7 @@ from datetime import date
 from sqlalchemy.orm import Session
 from sqlalchemy import or_, func
 
-from head.models import Asset, DailyTask, License, Indicator, KnowledgeArticle, ProcessImprovement, Activity
+from head.models import Asset, DailyTask, License, Indicator, KnowledgeArticle, ProcessImprovement, Activity, PurchaseRequest
 from head import schemas
 
 
@@ -353,3 +353,11 @@ def get_activities(db: Session, source: str = "", limit: int = 200):
     if source:
         q = q.filter(Activity.source == source)
     return q.order_by(Activity.activity_date.desc(), Activity.id.desc()).limit(limit).all()
+
+
+# ─── Solicitações de Compra ───
+def get_purchase_requests(db: Session, status: str = "", limit: int = 200):
+    q = db.query(PurchaseRequest)
+    if status:
+        q = q.filter(PurchaseRequest.status == status)
+    return q.order_by(PurchaseRequest.request_date.desc(), PurchaseRequest.id.desc()).limit(limit).all()

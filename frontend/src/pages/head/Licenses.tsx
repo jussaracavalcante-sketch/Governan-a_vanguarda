@@ -11,6 +11,30 @@ const STATUSES: LicenseStatus[] = ['Ativa', 'Em renovação', 'Expirada', 'Cance
 const statusTone = (s: LicenseStatus) =>
   s === 'Ativa' ? 'success' : s === 'Em renovação' ? 'warning' : s === 'Expirada' ? 'danger' : 'default'
 
+type PurchaseRequest = {
+  id: number
+  item: string
+  vendor: string
+  requester: string
+  cost_center: string
+  amount: string
+  status: string
+  approver: string
+  request_date: string
+  due_date: string
+  source: string
+  url: string
+  notes: string
+}
+
+const prStatusTone = (s: string) => {
+  const v = (s || '').toLowerCase()
+  if (v.includes('aprov') || v.includes('pago')) return 'success'
+  if (v.includes('recus') || v.includes('cancel')) return 'danger'
+  return 'warning'
+}
+const sourceTone = (s: string) => ((s || '').toLowerCase().includes('formul') ? 'accent' : 'default')
+
 const emptyForm = {
   software: '', vendor: '', plan: '', seats_total: 0, seats_used: 0,
   monthly_cost: 0, status: 'Ativa' as LicenseStatus, renewal_date: '', owner: '', notes: '',
@@ -20,6 +44,7 @@ export default function Licenses() {
   const { user } = useAuth()
   const canEdit = user?.role === 'Admin' || user?.role === 'Manager'
   const { data, loading, error, setData } = useAsync<License[]>(() => api.get('/head/licenses'))
+  const purchases = useAsync<PurchaseRequest[]>(() => api.get('/head/purchase-requests'))
   const [modal, setModal] = useState<null | { mode: 'create' | 'edit'; item?: License }>(null)
   const [form, setForm] = useState(emptyForm)
   const [busy, setBusy] = useState(false)
@@ -127,6 +152,60 @@ export default function Licenses() {
           )}
         </Card>
       )}
+
+      <div style={{ marginTop: '1.5rem' }}>
+        <Card
+          title="Solicitações de Compra"
+          subtitle="Pedidos de compra e renovação identificados nos seus e-mails e formulários"
+        >
+          {purchases.loading && <Spinner />}
+          {purchases.error && <Empty>{purchases.error}</Empty>}
+          {purchases.data && (
+            purchases.data.length === 0 ? (
+              <Empty>Nenhuma solicitação de compra registrada.</Empty>
+            ) : (
+              <>
+                <div className="row" style={{ gap: '0.75rem', flexWrap: 'wrap', marginBottom: '0.9rem' }}>
+                  <span className="muted" style={{ fontSize: '0.85rem' }}>
+                    {purchases.data.length} solicitações ·{' '}
+                    <strong>{purchases.data.filter((p) => prStatusTone(p.status) === 'success').length}</strong> aprovadas/pagas ·{' '}
+                    <strong>{purchases.data.filter((p) => prStatusTone(p.status) === 'warning').length}</strong> em aberto
+                  </span>
+                </div>
+                <div className="table-wrap">
+                  <table className="table">
+                    <thead>
+                      <tr>
+                        <th>Item</th><th>Fornecedor</th><th>Valor</th><th>Solicitado em</th>
+                        <th>Vencimento</th><th>Status</th><th>Aprovador</th><th>Origem</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {purchases.data.map((p) => (
+                        <tr key={p.id}>
+                          <td style={{ fontWeight: 600, maxWidth: 280 }}>
+                            {p.url ? (
+                              <a href={p.url} target="_blank" rel="noreferrer">{p.item}</a>
+                            ) : p.item}
+                            {p.notes && <div className="muted" style={{ fontSize: '0.72rem', fontWeight: 400 }}>{p.notes}</div>}
+                          </td>
+                          <td className="muted">{p.vendor || '—'}</td>
+                          <td>{p.amount || '—'}</td>
+                          <td className="muted">{p.request_date || '—'}</td>
+                          <td className="muted">{p.due_date || '—'}</td>
+                          <td><Badge tone={prStatusTone(p.status)}>{p.status}</Badge></td>
+                          <td className="muted">{p.approver || '—'}</td>
+                          <td><Badge tone={sourceTone(p.source)}>{p.source || 'E-mail'}</Badge></td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </>
+            )
+          )}
+        </Card>
+      </div>
 
       {modal && (
         <Modal title={modal.mode === 'edit' ? 'Editar licença' : 'Nova licença'} onClose={() => setModal(null)}>

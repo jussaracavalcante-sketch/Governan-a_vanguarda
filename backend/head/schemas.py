@@ -317,3 +317,22 @@ class ActivityResponse(BaseSchema):
     activity_date: str = ""
     created_at: datetime
     updated_at: Optional[datetime] = None
+
+
+# ─── Solicitações de Compra ───
+class PurchaseRequestResponse(BaseSchema):
+    id: int
+    item: str
+    vendor: str = ""
+    requester: str = ""
+    cost_center: str = ""
+    amount: str = ""
+    status: str = "Solicitado"
+    approver: str = ""
+    request_date: str = ""
+    due_date: str = ""
+    source: str = "E-mail"
+    url: str = ""
+    notes: str = ""
+    created_at: datetime
+    updated_at: Optional[datetime] = None

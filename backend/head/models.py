@@ -151,3 +151,24 @@ class Activity(Base):
     activity_date = Column(String(10), default="")
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+
+
+class PurchaseRequest(Base):
+    """Solicitação de compra (importada dos e-mails) para o controle de licenças."""
+    __tablename__ = "head_purchase_requests"
+
+    id = Column(Integer, primary_key=True, index=True)
+    item = Column(String(250), nullable=False)
+    vendor = Column(String(80), default="")
+    requester = Column(String(120), default="")
+    cost_center = Column(String(80), default="")
+    amount = Column(String(60), default="")          # "US$ 20,00" / "R$ 246,67"
+    status = Column(String(30), default="Solicitado")  # Solicitado | Aprovado | Pago | Recusado
+    approver = Column(String(120), default="")
+    request_date = Column(String(10), default="")
+    due_date = Column(String(10), default="")
+    source = Column(String(40), default="E-mail")     # E-mail | Formulário
+    url = Column(Text, default="")
+    notes = Column(Text, default="")
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
