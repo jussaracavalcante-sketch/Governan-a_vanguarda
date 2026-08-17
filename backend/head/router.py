@@ -22,6 +22,12 @@ def head_dashboard(db: Session = Depends(get_db), user: User = Depends(get_curre
     return crud.get_dashboard(db)
 
 
+@router.get("/activities", response_model=List[schemas.ActivityResponse], summary="Minhas Atividades (Jira/Drive/GitHub)")
+def list_activities(source: str = Query("", description="Filtra por fonte: Jira, Drive, GitHub"),
+                    db: Session = Depends(get_db), user: User = Depends(get_current_user)):
+    return crud.get_activities(db, source=source)
+
+
 @router.get("/prmo", summary="Visão do PrMO (consultivo, somente leitura)")
 def prmo_view(user: User = Depends(get_current_user)):
     """Retrato de governança do PrMO. Ao vivo se PRMO_DATABASE_URL estiver

@@ -7,7 +7,7 @@ from datetime import date
 from sqlalchemy.orm import Session
 from sqlalchemy import or_, func
 
-from head.models import Asset, DailyTask, License, Indicator, KnowledgeArticle, ProcessImprovement
+from head.models import Asset, DailyTask, License, Indicator, KnowledgeArticle, ProcessImprovement, Activity
 from head import schemas
 
 
@@ -345,3 +345,11 @@ def get_monthly_report(db: Session, period: str) -> schemas.MonthlyReport:
         kpis_on_target=kpis_on,
         kpis_off_target=kpis_off,
     )
+
+
+# ─── Atividades ───
+def get_activities(db: Session, source: str = "", limit: int = 200):
+    q = db.query(Activity)
+    if source:
+        q = q.filter(Activity.source == source)
+    return q.order_by(Activity.activity_date.desc(), Activity.id.desc()).limit(limit).all()

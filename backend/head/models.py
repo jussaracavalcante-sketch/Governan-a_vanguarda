@@ -134,3 +134,20 @@ class KnowledgeArticle(Base):
     updated_date = Column(String(10), default="")
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+
+
+class Activity(Base):
+    """Atividade agregada das ferramentas do Head (Jira, Drive, GitHub)."""
+    __tablename__ = "head_activities"
+
+    id = Column(Integer, primary_key=True, index=True)
+    source = Column(String(20), nullable=False, index=True)   # Jira | Drive | GitHub
+    title = Column(String(300), nullable=False)
+    reference = Column(String(60), default="")                # SCRUM-50, PR #49...
+    category = Column(String(120), default="")                # projeto / pasta / repo
+    status = Column(String(40), default="")
+    priority = Column(String(20), default="")
+    url = Column(Text, default="")
+    activity_date = Column(String(10), default="")
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())

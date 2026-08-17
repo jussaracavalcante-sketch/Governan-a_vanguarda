@@ -6,6 +6,7 @@ import Layout from '@/components/layout/Layout'
 import Login from '@/pages/Login'
 import NotFound from '@/pages/NotFound'
 import HeadDashboard from '@/pages/head/HeadDashboard'
+import Activities from '@/pages/head/Activities'
 import Assets from '@/pages/head/Assets'
 import Tasks from '@/pages/head/Tasks'
 import Licenses from '@/pages/head/Licenses'
@@ -34,6 +35,7 @@ function AppRoutes() {
       >
         {/* Gestão HEAD de IA */}
         <Route path="/" element={<HeadDashboard />} />
+        <Route path="/atividades" element={<Activities />} />
         <Route path="/ativos" element={<Assets />} />
         <Route path="/tarefas" element={<Tasks />} />
         <Route path="/indicadores" element={<Indicators />} />

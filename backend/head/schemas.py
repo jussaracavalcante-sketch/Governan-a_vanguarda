@@ -302,3 +302,18 @@ class MonthlyReport(BaseSchema):
     indicators: List[IndicatorResponse]
     kpis_on_target: int
     kpis_off_target: int
+
+
+# ─── Atividades (Jira / Drive / GitHub) ───
+class ActivityResponse(BaseSchema):
+    id: int
+    source: str
+    title: str
+    reference: str = ""
+    category: str = ""
+    status: str = ""
+    priority: str = ""
+    url: str = ""
+    activity_date: str = ""
+    created_at: datetime
+    updated_at: Optional[datetime] = None

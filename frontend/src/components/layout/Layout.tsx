@@ -12,6 +12,7 @@ const NAV_GROUPS: { title: string; items: NavItem[] }[] = [
     title: 'Gestão HEAD de IA',
     items: [
       { to: '/', label: 'Visão Geral', icon: 'dashboard', end: true },
+      { to: '/atividades', label: 'Minhas Atividades', icon: 'activities' },
       { to: '/ativos', label: 'Controle de Ativos', icon: 'assets' },
       { to: '/tarefas', label: 'Tarefas do Dia a Dia', icon: 'tasks' },
       { to: '/indicadores', label: 'Indicadores & KPIs', icon: 'indicators' },
@@ -25,6 +26,7 @@ const NAV_GROUPS: { title: string; items: NavItem[] }[] = [
 
 const TITLES: Record<string, string> = {
   '/': 'Visão Geral',
+  '/atividades': 'Minhas Atividades',
   '/ativos': 'Controle de Ativos',
   '/tarefas': 'Tarefas do Dia a Dia',
   '/indicadores': 'Indicadores & KPIs',

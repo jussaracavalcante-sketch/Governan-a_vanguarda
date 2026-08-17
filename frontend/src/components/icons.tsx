@@ -1,7 +1,7 @@
 // Ícones de linha (estilo Lucide) — monocromáticos, herdam a cor via currentColor.
 type IconName =
   | 'dashboard' | 'assets' | 'tasks' | 'indicators'
-  | 'reports' | 'licenses' | 'processes' | 'knowledge'
+  | 'reports' | 'licenses' | 'processes' | 'knowledge' | 'activities'
 
 const PATHS: Record<IconName, JSX.Element> = {
   dashboard: (
@@ -58,6 +58,11 @@ const PATHS: Record<IconName, JSX.Element> = {
     <>
       <path d="M12 7v14" />
       <path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z" />
+    </>
+  ),
+  activities: (
+    <>
+      <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
     </>
   ),
 }
