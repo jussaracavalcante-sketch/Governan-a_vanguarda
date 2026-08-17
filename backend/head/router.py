@@ -29,10 +29,16 @@ def prmo_view(user: User = Depends(get_current_user)):
     from config import get_settings
 
     settings = get_settings()
-    if settings.prmo_database_url:
+    # Aceita a conexão em PRMO_DATABASE_URL ou em PRMO_BASE_URL (se for URL Postgres).
+    prmo_conn = (settings.prmo_database_url or "").strip()
+    if not prmo_conn:
+        base = (settings.prmo_base_url or "").strip()
+        if base.lower().startswith("postgres"):
+            prmo_conn = base
+    if prmo_conn:
         try:
             from head.prmo_live import get_prmo_live
-            return get_prmo_live(settings.prmo_database_url)
+            return get_prmo_live(prmo_conn)
         except Exception as exc:
             # Falha na leitura ao vivo → cai para o snapshot (não quebra a tela).
             data = dict(PRMO_SNAPSHOT)
@@ -41,7 +47,7 @@ def prmo_view(user: User = Depends(get_current_user)):
             return data
     data = dict(PRMO_SNAPSHOT)
     data["live"] = False
-    data["_diag"] = "configured=0 (PRMO_DATABASE_URL vazio no ambiente)"
+    data["_diag"] = "configured=0 (defina PRMO_DATABASE_URL ou PRMO_BASE_URL com a URL Postgres)"
     return data
 
 
