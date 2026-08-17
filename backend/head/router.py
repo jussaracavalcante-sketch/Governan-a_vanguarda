@@ -39,15 +39,13 @@ def prmo_view(user: User = Depends(get_current_user)):
         try:
             from head.prmo_live import get_prmo_live
             return get_prmo_live(prmo_conn)
-        except Exception as exc:
+        except Exception:
             # Falha na leitura ao vivo → cai para o snapshot (não quebra a tela).
             data = dict(PRMO_SNAPSHOT)
             data["live"] = False
-            data["_diag"] = f"configured=1 err={type(exc).__name__}: {str(exc)[:180]}"
             return data
     data = dict(PRMO_SNAPSHOT)
     data["live"] = False
-    data["_diag"] = "configured=0 (defina PRMO_DATABASE_URL ou PRMO_BASE_URL com a URL Postgres)"
     return data
 
 
