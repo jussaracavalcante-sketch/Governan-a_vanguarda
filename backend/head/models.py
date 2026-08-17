@@ -153,6 +153,20 @@ class Activity(Base):
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
 
+class SyncState(Base):
+    """Estado da última sincronização automática por fonte (Jira, Drive, Gmail)."""
+    __tablename__ = "head_sync_state"
+
+    id = Column(Integer, primary_key=True, index=True)
+    source = Column(String(20), nullable=False, unique=True, index=True)  # Jira | Drive | Gmail
+    status = Column(String(30), default="")   # ok | erro | não configurado
+    last_count = Column(Integer, default=0)
+    message = Column(String(300), default="")
+    last_run = Column(DateTime(timezone=True))
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+
+
 class PurchaseRequest(Base):
     """Solicitação de compra (importada dos e-mails) para o controle de licenças."""
     __tablename__ = "head_purchase_requests"

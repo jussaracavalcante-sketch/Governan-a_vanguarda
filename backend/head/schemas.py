@@ -319,6 +319,32 @@ class ActivityResponse(BaseSchema):
     updated_at: Optional[datetime] = None
 
 
+# ─── Sincronização automática ───
+class SyncStateResponse(BaseSchema):
+    id: int
+    source: str
+    status: str = ""
+    last_count: int = 0
+    message: str = ""
+    last_run: Optional[datetime] = None
+
+
+class SyncSourceResult(BaseSchema):
+    source: str
+    ok: bool = False
+    configured: bool = True
+    created: int = 0
+    total: Optional[int] = None
+    error: Optional[str] = None
+
+
+class SyncResult(BaseSchema):
+    ok: bool
+    created: int
+    synced_at: str
+    sources: List[SyncSourceResult]
+
+
 # ─── Solicitações de Compra ───
 class PurchaseRequestResponse(BaseSchema):
     id: int

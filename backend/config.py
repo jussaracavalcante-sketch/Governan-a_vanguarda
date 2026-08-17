@@ -51,6 +51,20 @@ class Settings(BaseSettings):
     admin_email: str = "jussara.cavalcante@vanguardamartech.com.br"
     admin_password: str = "admin123"  # Troque em produção!
 
+    # ─── Integração / Sincronização automática das atividades ───
+    # Jira (Atlassian) — token pessoal em id.atlassian.com/manage-profile/security/api-tokens
+    jira_base_url: str = ""      # ex.: https://vanguardamartech-team-xxxx.atlassian.net
+    jira_email: str = ""         # e-mail da conta Atlassian (vazio = usa admin_email)
+    jira_api_token: str = ""
+
+    # Google (Drive + Gmail) — conta de serviço com delegação em todo o domínio.
+    # Cole o JSON COMPLETO da chave da conta de serviço em GOOGLE_SA_JSON.
+    google_sa_json: str = ""
+    # Usuário institucional a ser impersonado (vazio = usa admin_email).
+    google_impersonate_subject: str = ""
+    # Filtro de busca do Gmail (query no padrão da caixa de entrada).
+    gmail_query: str = ""
+
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"

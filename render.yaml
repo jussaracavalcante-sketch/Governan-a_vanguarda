@@ -42,3 +42,48 @@ services:
       # Senha do banco próprio do HEAD (persistência), se usada — definir no painel.
       - key: DB_PASSWORD
         sync: false
+      # ─── Integração automática das atividades (definir no painel) ───
+      - key: JIRA_BASE_URL
+        sync: false
+      - key: JIRA_EMAIL
+        sync: false
+      - key: JIRA_API_TOKEN
+        sync: false
+      - key: GOOGLE_SA_JSON
+        sync: false
+      - key: GOOGLE_IMPERSONATE_SUBJECT
+        sync: false
+      - key: GMAIL_QUERY
+        sync: false
+
+  # Sincronização automática das atividades (Jira/Drive/Gmail) 3x ao dia.
+  # 11h, 17h e 23h UTC = 08h, 14h e 20h no horário de Brasília (BRT, UTC-3).
+  - type: cron
+    name: app-head-ia-sync
+    env: python
+    region: oregon
+    plan: free
+    schedule: "0 11,17,23 * * *"
+    buildCommand: pip install --upgrade pip && pip install -r backend/requirements.txt
+    startCommand: cd backend && python sync_activities.py
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.8
+      - key: DATABASE_URL
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      - key: ADMIN_EMAIL
+        value: jussara.cavalcante@vanguardamartech.com.br
+      - key: JIRA_BASE_URL
+        sync: false
+      - key: JIRA_EMAIL
+        sync: false
+      - key: JIRA_API_TOKEN
+        sync: false
+      - key: GOOGLE_SA_JSON
+        sync: false
+      - key: GOOGLE_IMPERSONATE_SUBJECT
+        sync: false
+      - key: GMAIL_QUERY
+        sync: false

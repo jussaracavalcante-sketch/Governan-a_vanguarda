@@ -7,7 +7,7 @@ from datetime import date
 from sqlalchemy.orm import Session
 from sqlalchemy import or_, func
 
-from head.models import Asset, DailyTask, License, Indicator, KnowledgeArticle, ProcessImprovement, Activity, PurchaseRequest
+from head.models import Asset, DailyTask, License, Indicator, KnowledgeArticle, ProcessImprovement, Activity, PurchaseRequest, SyncState
 from head import schemas
 
 
@@ -353,6 +353,11 @@ def get_activities(db: Session, source: str = "", limit: int = 200):
     if source:
         q = q.filter(Activity.source == source)
     return q.order_by(Activity.activity_date.desc(), Activity.id.desc()).limit(limit).all()
+
+
+# ─── Sincronização automática ───
+def get_sync_state(db: Session):
+    return db.query(SyncState).order_by(SyncState.source.asc()).all()
 
 
 # ─── Solicitações de Compra ───

@@ -33,6 +33,17 @@ def list_purchase_requests(status: str = Query(""), db: Session = Depends(get_db
     return crud.get_purchase_requests(db, status=status)
 
 
+@router.get("/sync-status", response_model=List[schemas.SyncStateResponse], summary="Estado da última sincronização por fonte")
+def sync_status(db: Session = Depends(get_db), user: User = Depends(get_current_user)):
+    return crud.get_sync_state(db)
+
+
+@router.post("/sync", response_model=schemas.SyncResult, summary="Sincronizar atividades agora (Jira/Drive/Gmail)")
+def run_sync(db: Session = Depends(get_db), user: User = Depends(get_current_manager_user)):
+    from head.connectors import sync_all
+    return sync_all(db)
+
+
 @router.get("/prmo", summary="Visão do PrMO (consultivo, somente leitura)")
 def prmo_view(user: User = Depends(get_current_user)):
     """Retrato de governança do PrMO. Ao vivo se PRMO_DATABASE_URL estiver
