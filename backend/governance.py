@@ -336,7 +336,8 @@ class AssetRequestIn(BaseModel):
 
 
 class AssetReviewIn(BaseModel):
-    decision: str                       # Aprovado | Reprovado
+    decision: str                       # Aprovado | Reprovado | Pendente
+    note: str | None = None             # parecer da análise (opcional)
 
 
 class SuggestionIn(BaseModel):
