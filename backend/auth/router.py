@@ -274,6 +274,126 @@ async def signup(response: Response, body: SignupRequest, db: Session = Depends(
     return TokenResponse(**token_data, user=UserResponse.model_validate(user))
 
 
+# ─────────────── SSO: Google Workspace (conta institucional) ───────────────
+import hmac, hashlib, base64, time, json as _json
+from urllib.parse import urlencode
+from fastapi.responses import RedirectResponse
+
+_GOOGLE_AUTH = "https://accounts.google.com/o/oauth2/v2/auth"
+_GOOGLE_TOKEN = "https://oauth2.googleapis.com/token"
+_GOOGLE_USERINFO = "https://www.googleapis.com/oauth2/v3/userinfo"
+
+
+def _google_cfg():
+    from config import settings
+    return settings
+
+
+def _sso_enabled(s) -> bool:
+    return bool(s.google_client_id and s.google_client_secret)
+
+
+def _sign_state(origin: str, secret: str) -> str:
+    """Estado assinado (anti-CSRF) sem armazenamento no servidor: origin+timestamp+HMAC."""
+    payload = base64.urlsafe_b64encode(_json.dumps({"o": origin, "t": int(time.time())}).encode()).decode()
+    sig = hmac.new(secret.encode(), payload.encode(), hashlib.sha256).hexdigest()[:32]
+    return f"{payload}.{sig}"
+
+
+def _verify_state(state: str, secret: str, max_age: int = 600):
+    try:
+        payload, sig = state.split(".", 1)
+        exp = hmac.new(secret.encode(), payload.encode(), hashlib.sha256).hexdigest()[:32]
+        if not hmac.compare_digest(sig, exp):
+            return None
+        data = _json.loads(base64.urlsafe_b64decode(payload.encode()).decode())
+        if int(time.time()) - int(data.get("t", 0)) > max_age:
+            return None
+        return data.get("o") or ""
+    except Exception:
+        return None
+
+
+@router.get("/google/config", summary="Estado do SSO Google (institucional)")
+async def google_sso_config():
+    s = _google_cfg()
+    return {"enabled": _sso_enabled(s), "domain": s.corporate_domain}
+
+
+@router.get("/google/login", summary="Inicia login com conta institucional (Google)")
+async def google_login(request: Request, origin: str = ""):
+    s = _google_cfg()
+    if not _sso_enabled(s):
+        raise HTTPException(status_code=503, detail="SSO Google ainda não configurado. Defina GOOGLE_CLIENT_ID e GOOGLE_CLIENT_SECRET no backend.")
+    redirect_uri = s.google_redirect_uri or str(request.url_for("google_callback"))
+    params = {
+        "client_id": s.google_client_id,
+        "redirect_uri": redirect_uri,
+        "response_type": "code",
+        "scope": "openid email profile",
+        "hd": s.corporate_domain,          # dica: restringe ao domínio corporativo
+        "prompt": "select_account",
+        "access_type": "online",
+        "state": _sign_state(origin or s.frontend_url, s.secret_key),
+    }
+    return RedirectResponse(f"{_GOOGLE_AUTH}?{urlencode(params)}")
+
+
+def _front_redirect(base: str, **params) -> RedirectResponse:
+    sep = "&" if "?" in base else "?"
+    return RedirectResponse(f"{base}{sep}{urlencode(params)}")
+
+
+@router.get("/google/callback", name="google_callback", summary="Callback do SSO Google")
+async def google_callback(request: Request, db: Session = Depends(get_db), code: str = "", state: str = "", error: str = ""):
+    import httpx
+    s = _google_cfg()
+    origin = _verify_state(state, s.secret_key) or s.frontend_url
+    if error:
+        return _front_redirect(origin, sso_error="Login cancelado no provedor.")
+    if not _sso_enabled(s) or not code:
+        return _front_redirect(origin, sso_error="SSO indisponível.")
+    redirect_uri = s.google_redirect_uri or str(request.url_for("google_callback"))
+    try:
+        with httpx.Client(timeout=20) as c:
+            tok = c.post(_GOOGLE_TOKEN, data={
+                "code": code, "client_id": s.google_client_id, "client_secret": s.google_client_secret,
+                "redirect_uri": redirect_uri, "grant_type": "authorization_code",
+            })
+            if tok.status_code != 200:
+                return _front_redirect(origin, sso_error="Falha ao validar o login no Google.")
+            access = tok.json().get("access_token")
+            ui = c.get(_GOOGLE_USERINFO, headers={"Authorization": f"Bearer {access}"})
+            if ui.status_code != 200:
+                return _front_redirect(origin, sso_error="Não foi possível obter os dados da conta.")
+            info = ui.json()
+    except Exception:
+        return _front_redirect(origin, sso_error="Erro de comunicação com o Google.")
+
+    email = (info.get("email") or "").strip().lower()
+    verified = info.get("email_verified") in (True, "true")
+    hd = (info.get("hd") or "").lower()
+    dom = s.corporate_domain.lower()
+    if not email or not verified:
+        return _front_redirect(origin, sso_error="Conta Google sem e-mail verificado.")
+    if not (email.endswith("@" + dom) or hd == dom):
+        return _front_redirect(origin, sso_error=f"Use sua conta institucional @{dom}.")
+
+    user = crud.get_user_by_email(db, email)
+    if not user:
+        user = crud.create_user(db, {
+            "name": (info.get("name") or email.split("@")[0]).strip(),
+            "email": email, "hashed_password": get_password_hash(base64.urlsafe_b64encode(hashlib.sha256((email + s.secret_key).encode()).digest()).decode()),
+            "role": "User", "status": "Ativo",
+        })
+    if str(getattr(user.status, "value", user.status)) != "Ativo":
+        return _front_redirect(origin, sso_error="Usuário inativo. Contate o administrador.")
+
+    role_value = getattr(user.role, "value", user.role)
+    token_data = create_token_pair(user.id, user.email, role_value)
+    return _front_redirect(origin, token=token_data["access_token"])
+
+
 @router.post("/change-password", response_model=MessageResponse, summary="Alterar senha")
 async def change_password(
     request: PasswordChangeRequest,

@@ -58,6 +58,13 @@ class Settings(BaseSettings):
     supabase_service_key: str = ""      # service_role key (defina no Render; NUNCA commitar)
     supabase_bucket: str = "course-materials"
 
+    # SSO — Google Workspace (login com conta institucional)
+    google_client_id: str = ""          # OAuth Client ID (Google Cloud Console)
+    google_client_secret: str = ""      # OAuth Client Secret (defina no Render; NUNCA commitar)
+    google_redirect_uri: str = ""       # ex.: https://prmo-api.onrender.com/auth/google/callback
+    corporate_domain: str = "vanguardamartech.com.br"   # domínio permitido (hd)
+    frontend_url: str = "https://prmo-frontend.vercel.app"  # fallback p/ retorno do SSO
+
     # Admin
     admin_email: str = "admin@vanguardian.com"
     admin_password: str = "admin123"  # Change in production!
