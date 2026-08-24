@@ -4,6 +4,21 @@ Registro cronológico do trabalho por sessão. Entrada mais recente no topo.
 
 ---
 
+## 2026-08-24 (sessão 12) — SSO Google: validação com credenciais reais
+
+### 🎯 Objetivo
+Ativar e validar o login institucional (SSO Google Workspace) com o OAuth Client provisionado pelo usuário.
+
+### ✅ Validações
+- **Credenciais reais validadas** contra o endpoint de token do Google: `code` fictício retornou `invalid_grant` (client autenticado) — client_id/secret genuínos.
+- **Fluxo completo (14/14 PASS)** em TestClient com as credenciais reais e o HTTP do Google mockado: `config enabled=true`; `/auth/google/login` redireciona ao Google com `client_id`, `hd=vanguardamartech.com.br`, escopo `openid email profile`, `redirect_uri` do Render e `state` assinado; callback com e-mail corporativo verificado cria o usuário (role User) e volta com JWT válido (`/auth/me` 200); bloqueios corretos para gmail, e-mail não verificado e `state` adulterado.
+- Segurança: Client Secret manuseado só em arquivo temporário `600`, sem log/commit, **shredado** ao final.
+
+### ⏳ Pendência para ficar live (ação do usuário no Render → `prmo-api` → Environment)
+- `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REDIRECT_URI=https://prmo-api.onrender.com/auth/google/callback`.
+- Consentimento OAuth em modo "teste": adicionar os colaboradores como usuários de teste **ou** publicar/tornar Interno o app para todo o domínio.
+- Recomendado **rotacionar o Client Secret** (apareceu no chat).
+
 ## 2026-08-14 (sessão 11) — Base de conhecimento (Udemy + gamificação Hacker Rangers)
 
 ### 🎯 Objetivo
